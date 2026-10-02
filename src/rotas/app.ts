@@ -16,6 +16,7 @@ import { moduloExtrato } from '../modules/extrato';
 import { finalizarFatura, moduloFatura } from '../modules/fatura';
 import { AjusteLancamento, consolidar } from '../modules/consolidacao';
 import { gerarExcel } from '../modules/excel';
+import { gerarPlanilhaConsultoria } from '../modules/planilha';
 import { CATEGORIAS, SUBCATEGORIAS } from '../modules/categorias';
 
 const router = express.Router();
@@ -227,6 +228,7 @@ router.delete('/api/app/documentos/:id', rota(async (req, res) => {
 
 // ─── Ajustes do analista ─────────────────────────────────────────────────
 const SITUACOES = new Set(['incluido', 'excluido', 'entre_contas']);
+const CLASSES = new Set(['fixo', 'variavel', 'investimento', 'entrada', 'fora']);
 
 router.put('/api/app/analises/:id/ajustes', rota(async (req, res) => {
     if (!repo) return semRepo(res);
@@ -250,13 +252,14 @@ router.put('/api/app/analises/:id/ajustes', rota(async (req, res) => {
             return res.status(400).json({ error: `Lançamento inválido: ${a?.id}` });
         }
         if (a.situacao != null && !SITUACOES.has(a.situacao)) return res.status(400).json({ error: `Situação inválida: ${a.situacao}` });
+        if (a.classe != null && !CLASSES.has(a.classe)) return res.status(400).json({ error: `Classificação inválida: ${a.classe}` });
         const linha: Ajuste = {
             documento_id: docId, lancamento_ref: ref,
             categoria: texto(a.categoria, 80), subcategoria: texto(a.subcategoria, 80),
-            observacao: texto(a.observacao, 1000), situacao: a.situacao || null,
+            observacao: texto(a.observacao, 1000), situacao: a.situacao || null, classe: a.classe || null,
             atualizado_por: req.usuario!.nome, atualizado_por_id: req.usuario!.id
         };
-        if (!linha.categoria && !linha.subcategoria && !linha.observacao && !linha.situacao) remover.push({ documento_id: docId, lancamento_ref: ref });
+        if (!linha.categoria && !linha.subcategoria && !linha.observacao && !linha.situacao && !linha.classe) remover.push({ documento_id: docId, lancamento_ref: ref });
         else salvar.push(linha);
     }
     await repo.salvarAjustes(salvar, remover);
@@ -287,6 +290,28 @@ router.get('/api/app/analises/:id/excel', rota(async (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nome)}`);
     res.send(buffer);
+}));
+
+// ─── Planilha da consultoria (modelo do cliente preenchido) ─────────────
+router.get('/api/app/analises/:id/planilha', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
+    if (!analise) return res.status(404).json({ error: 'Análise não encontrada.' });
+    const cliente = await repo.obterCliente(analise.cliente_id);
+    const { docs, apuracao } = await montarApuracao(analise.id);
+    if (!docs.length) return res.status(400).json({ error: 'Esta análise ainda não tem documentos.' });
+    const r = await gerarPlanilhaConsultoria(apuracao.lancamentos, apuracao.resumo.parcelamentos, {
+        projetarParcelas: req.query.projetar === '1', cliente: cliente?.nome
+    });
+    const nome = `Consultoria - ${(cliente?.nome || 'cliente').replace(/[^\p{L}\p{N}\- ]/gu, '').trim()} - ${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const nomeAscii = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '_');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nome)}`);
+    res.setHeader('X-Mirror-Resumo', encodeURIComponent(JSON.stringify({
+        meses: r.meses, mesesProjetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, agrupados: r.agrupados, avisos: r.avisos
+    })));
+    res.setHeader('Access-Control-Expose-Headers', 'X-Mirror-Resumo, Content-Disposition');
+    res.send(r.buffer);
 }));
 
 export default router;

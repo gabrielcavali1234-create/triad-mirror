@@ -107,6 +107,20 @@ async function main() {
         const saida = process.argv[2];
         if (saida) fs.writeFileSync(saida, Buffer.from(x.corpo as ArrayBuffer));
 
+        // Classificação para a planilha da consultoria
+        const L3 = (await api('GET', `/api/app/clientes/${cid}`, undefined, T)).corpo.apuracao.lancamentos as any[];
+        ok(L3.filter((l: any) => l.origem === 'extrato').every((l: any) => l.classe === null), 'tudo começa "a classificar" (decisão da consultoria)');
+        const sal = L3.find((l: any) => /SALARIO/.test(l.descricao) && l.data.startsWith('2026-08'));
+        const esc = L3.find((l: any) => /ESCOLA/.test(l.descricao) && l.data.startsWith('2026-08'));
+        const cl = await api('PUT', `/api/app/analises/${aid}/ajustes`, { ajustes: [{ id: sal.id, classe: 'entrada' }, { id: esc.id, classe: 'fixo' }] }, T);
+        ok(cl.status === 200 && cl.corpo.apuracao.lancamentos.find((l: any) => l.id === esc.id).classe === 'fixo', 'classificação salva');
+        ok((await api('PUT', `/api/app/analises/${aid}/ajustes`, { ajustes: [{ id: esc.id, classe: 'luxo' }] }, T)).status === 400, 'classificação inválida é recusada');
+        const pl = await api('GET', `/api/app/analises/${aid}/planilha?projetar=1`, undefined, T);
+        const resumoPl = JSON.parse(decodeURIComponent(pl.headers.get('x-mirror-resumo') || '{}'));
+        ok(pl.status === 200 && (pl.corpo as ArrayBuffer).byteLength > 20000, `planilha da consultoria gerada (${((pl.corpo as ArrayBuffer).byteLength / 1024).toFixed(0)} KB)`);
+        ok(resumoPl.meses?.includes('2026-08') && resumoPl.aClassificar > 0, `resumo da planilha: meses ${resumoPl.meses}, ${resumoPl.aClassificar} a classificar`);
+        if (process.argv[3]) fs.writeFileSync(process.argv[3], Buffer.from(pl.corpo as ArrayBuffer));
+
         // Concluir análise
         ok((await api('PATCH', `/api/app/analises/${aid}`, { status: 'concluida' }, T)).status === 200, 'análise concluída');
 

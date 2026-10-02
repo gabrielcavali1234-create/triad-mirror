@@ -15,7 +15,8 @@
     "extrair:fatura": "tsx scripts/extrair-fatura.ts",
     "exemplo:excel": "tsx scripts/teste-excel.ts",
     "test:app": "tsx scripts/teste-app.ts",
-    "dev:local": "MIRROR_MODO_DEV=1 tsx watch src/server.ts"
+    "dev:local": "MIRROR_MODO_DEV=1 tsx watch src/server.ts",
+    "test:planilha": "tsx scripts/teste-planilha.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",

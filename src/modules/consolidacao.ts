@@ -14,12 +14,15 @@ import { ResultadoFatura, TIPOS_DEBITO_FATURA } from './fatura';
 export type Origem = 'extrato' | 'fatura';
 
 export type Situacao = 'incluido' | 'excluido' | 'entre_contas';
+/** Onde o lançamento entra na planilha da consultoria (decisão do analista). */
+export type Classe = 'fixo' | 'variavel' | 'investimento' | 'entrada' | 'fora';
 
 export interface AjusteLancamento {
     categoria?: string | null;
     subcategoria?: string | null;
     observacao?: string | null;
     situacao?: Situacao | null;
+    classe?: Classe | null;
 }
 
 export interface Alerta {
@@ -49,6 +52,7 @@ export interface Lancamento {
     subcategoriaIA?: string;
     observacao?: string;
     situacao: Situacao;
+    classe: Classe | null;             // null = "a classificar"
     incluidoNoResumo: boolean;         // = situacao === 'incluido'
     padraoIncluido: boolean;           // o que o sistema decidiu antes do analista mexer
     ajustadoPeloAnalista: boolean;
@@ -179,7 +183,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
     };
 
     /** Monta o lançamento aplicando os ajustes do analista por cima do que a IA leu. */
-    const montar = (base: Omit<Lancamento, 'situacao' | 'incluidoNoResumo' | 'ajustadoPeloAnalista' | 'categoriaIA' | 'subcategoriaIA' | 'observacao'>): Lancamento => {
+    const montar = (base: Omit<Lancamento, 'situacao' | 'classe' | 'incluidoNoResumo' | 'ajustadoPeloAnalista' | 'categoriaIA' | 'subcategoriaIA' | 'observacao'>): Lancamento => {
         const aj = ajustes[base.id] || {};
         const situacao = situacaoDe(base.id, base.padraoIncluido);
         return {
@@ -190,8 +194,9 @@ export function consolidar(entrada: EntradaConsolidacao) {
             subcategoria: aj.subcategoria || base.subcategoria,
             observacao: aj.observacao || undefined,
             situacao,
+            classe: aj.classe || null,
             incluidoNoResumo: situacao === 'incluido',
-            ajustadoPeloAnalista: !!(aj.categoria || aj.subcategoria || aj.observacao || aj.situacao)
+            ajustadoPeloAnalista: !!(aj.categoria || aj.subcategoria || aj.observacao || aj.situacao || aj.classe)
         };
     };
 

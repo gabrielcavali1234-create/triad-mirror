@@ -156,6 +156,15 @@ main{max-width:1280px;margin:0 auto;padding:22px 20px 110px}
 .sit.excluido{background:#efeee6;color:#5f5e5a}
 .sit.entre_contas{background:var(--azul-fundo);border-color:var(--azul-borda);color:var(--azul)}
 .acoes-linha{display:flex;gap:4px;justify-content:flex-end;align-items:center}
+.cls{display:flex;width:100%;align-items:center;justify-content:space-between;gap:6px;margin-top:5px;border:1px dashed #d9a5a0;background:#fff8f7;color:var(--vermelho);border-radius:7px;padding:4px 8px;font-size:12px;font-weight:600}
+.cls.fixo{border:1px solid var(--azul-borda);background:var(--azul-fundo);color:var(--azul)}
+.cls.variavel{border:1px solid #f0d98a;background:var(--amarelo-claro);color:var(--marrom)}
+.cls.investimento{border:1px solid #c7e3b0;background:#eef7e6;color:#3b6d11}
+.cls.entrada{border:1px solid var(--verde-borda);background:var(--verde-fundo);color:var(--verde)}
+.cls.fora{border:1px solid var(--borda);background:#f4f3ee;color:#5f5e5a}
+.progresso-cls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px}
+.progresso-cls .trilho{flex:1 1 160px;height:8px;background:var(--borda2);border-radius:99px;overflow:hidden;min-width:120px}
+.progresso-cls .trilho span{display:block;height:100%;background:var(--verde)}
 .icone-btn{border:1px solid var(--borda);background:var(--branco);border-radius:7px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--suave)}
 .icone-btn:hover{border-color:var(--preto);color:var(--preto)}
 .icone-btn.tem{color:var(--marrom);border-color:var(--amarelo);background:#fffdf3}
@@ -243,6 +252,14 @@ const arred = n => Math.round(n * 100) / 100;
 const CORES = ['#111111', '#FFD23F', '#1e4a8a', '#1f8a4c', '#d85a30', '#7f77dd', '#d4537e', '#1d9e75', '#ba7517', '#888780', '#378add', '#993c1d'];
 const corDe = (() => { const m = {}; let i = 0; return c => m[c] || (m[c] = CORES[i++ % CORES.length]); })();
 const NOME_SIT = { incluido: 'No resumo', excluido: 'Ignorado', entre_contas: 'Entre contas' };
+const CLASSES = [
+  ['fixo', 'ti-lock', 'Custo fixo', 'Gasto que se repete todo mês (aluguel, escola, contas)'],
+  ['variavel', 'ti-shopping-cart', 'Custo variável', 'Muda de mês a mês (mercado, lazer, compras)'],
+  ['investimento', 'ti-trending-up', 'Investimento', 'Aplicação, previdência, poupança'],
+  ['entrada', 'ti-arrow-down-left', 'Entrada', 'Salário, renda, recebimentos'],
+  ['fora', 'ti-ban', 'Não vai para a planilha', 'Fica de fora da planilha da consultoria']
+];
+const NOME_CLASSE = Object.fromEntries(CLASSES.map(c => [c[0], c[2]]));
 
 function toast(msg, erro) {
   document.querySelectorAll('.toast').forEach(t => t.remove());
@@ -300,7 +317,7 @@ const E = {
   cli: null,                    // { cliente, analise, documentos, apuracao }
   aba: 'conta', modoMix: 'cat', mesSel: null, filtroCat: {}, busca: {}, sel: new Set(),
   salvando: 0, salvoEm: null,
-  calMes: null, ordemParc: 'fim'
+  calMes: null, ordemParc: 'fim', soPendentes: false
 };
 
 // ════════════════════════════════════════════════════════════════════════
@@ -568,7 +585,8 @@ function linha(l) {
       <div class="meta">${origem}</div>
       ${l.observacao ? `<div class="nota"><i class="ti ti-note"></i> ${esc(l.observacao)}</div>` : ''}${aviso}</div>
     <div class="cat-col"><button class="cat ${mudouCat ? 'mudou' : ''}" data-acao="editar" data-id="${l.id}" title="${mudouCat ? 'Alterado pelo analista. A IA tinha sugerido: ' + esc(l.categoriaIA + (l.subcategoriaIA ? ' › ' + l.subcategoriaIA : '')) : 'Clique para mudar'}">
-      <span class="ponto" style="background:${corDe(l.categoria)}"></span><b>${esc(l.categoria)}</b> <i class="ti ti-chevron-down"></i><br><span class="sub">${esc(l.subcategoria || 'Sem subcategoria')}</span></button></div>
+      <span class="ponto" style="background:${corDe(l.categoria)}"></span><b>${esc(l.categoria)}</b> <i class="ti ti-chevron-down"></i><br><span class="sub">${esc(l.subcategoria || 'Sem subcategoria')}</span></button>
+      ${l.origem === 'extrato' && l.situacao === 'incluido' ? `<button class="cls ${l.classe || ''}" data-acao="menu-cls" data-id="${l.id}" title="Onde este lançamento entra na planilha da consultoria"><span><i class="ti ti-table"></i> ${l.classe ? NOME_CLASSE[l.classe] : 'A classificar'}</span><i class="ti ti-chevron-down"></i></button>` : ''}</div>
     <span class="valor num" style="color:${l.direcao === 'entrada' ? 'var(--verde)' : 'var(--vermelho)'}">${l.direcao === 'entrada' ? '+ ' : '− '}${brl(l.valor)}</span>
     <div class="acoes-linha"><button class="sit ${l.situacao}" data-acao="menu-sit" data-id="${l.id}">${NOME_SIT[l.situacao]} <i class="ti ti-chevron-down"></i></button>
       <button class="icone-btn ${l.observacao ? 'tem' : ''}" data-acao="editar" data-id="${l.id}" data-foco="obs" title="Observação" aria-label="Observação"><i class="ti ti-message-2"></i></button></div>
@@ -580,6 +598,7 @@ function barraLote() {
   if (!E.sel.size) return '';
   return `<div class="lote"><span><b style="color:var(--amarelo)">${E.sel.size}</b> selecionado(s)</span><span style="display:flex;gap:6px;flex-wrap:wrap">
     <button data-acao="lote-cat"><i class="ti ti-tag"></i> Mudar categoria</button>
+    <button data-acao="menu-cls-lote"><i class="ti ti-table"></i> Classificar</button>
     <button data-acao="lote-sit" data-sit="excluido"><i class="ti ti-eye-off"></i> Ignorar</button>
     <button data-acao="lote-sit" data-sit="entre_contas"><i class="ti ti-arrows-exchange"></i> Entre contas</button>
     <button data-acao="lote-sit" data-sit="incluido"><i class="ti ti-check"></i> Voltar ao resumo</button>
@@ -638,7 +657,7 @@ function abaConta() {
   const medE = meses.reduce((a, m) => a + m.e, 0) / n, medS = meses.reduce((a, m) => a + m.s, 0) / n;
   const cats = [...new Set(todos.map(l => l.categoria))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const filtroAtivo = Object.keys(E.filtroCat).filter(k => E.filtroCat[k]);
-  const passa = l => !filtroAtivo.length || filtroAtivo.includes(l.categoria);
+  const passa = l => (!filtroAtivo.length || filtroAtivo.includes(l.categoria)) && (!E.soPendentes || (l.situacao === 'incluido' && !l.classe));
   const mix = mixGastos(todos, E.modoMix);
   let acc = 0;
   const grad = mix.tot > 0 ? mix.itens.map(([k, v]) => { const p = Math.max(0, v) / mix.tot * 100; const s = `${corDe(k)} ${acc}% ${acc + p}%`; acc += p; return s; }).join(',') : '#efeee6 0 100%';
@@ -646,6 +665,9 @@ function abaConta() {
   const pagFatura = todos.filter(l => l.alerta?.tipo === 'possivel_duplicidade_fatura' && l.situacao === 'incluido').length;
   const relatorio = docs.map(d => d.relatorio ? `<p><b>${esc(d.banco || 'Conta')}:</b> ${esc(d.relatorio)}</p>` : '').join('') || '<p class="fraco">Sem relatório.</p>';
   const mesesVis = E.mesSel ? meses.filter(m => m.k === E.mesSel) : meses;
+  const classificaveis = todos.filter(l => l.situacao === 'incluido');
+  const feitos = classificaveis.filter(l => l.classe).length;
+  const pendentes = classificaveis.length - feitos;
 
   return `
   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
@@ -666,6 +688,9 @@ function abaConta() {
   ${pagFatura ? `<div class="alerta"><i class="ti ti-credit-card"></i><span>${pagFatura} pagamento(s) de fatura de cartão na conta. Eles continuam somados até você decidir: se a fatura detalhada estiver na aba Cartão, ignore o pagamento para não contar o gasto duas vezes.</span></div>` : ''}
   <div class="layout-conta">
     <div style="min-width:0">
+      <div class="progresso-cls"><span><i class="ti ti-table"></i> <b>Planilha da consultoria:</b> ${feitos} de ${classificaveis.length} classificados</span>
+        <span class="trilho"><span style="width:${classificaveis.length ? Math.round(feitos / classificaveis.length * 100) : 0}%"></span></span>
+        ${pendentes ? `<button class="fc ${E.soPendentes ? 'on' : ''}" data-acao="so-pendentes">${E.soPendentes ? 'Mostrando só os' : 'Mostrar só os'} ${pendentes} a classificar</button>` : '<span class="pill verde"><i class="ti ti-check"></i> Tudo classificado</span>'}</div>
       <div class="filtros"><span class="suave" style="font-size:12px"><i class="ti ti-filter"></i> Categorias:</span>${cats.map(c => `<button class="fc ${E.filtroCat[c] ? 'on' : ''}" data-acao="filtro" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}${filtroAtivo.length ? `<button class="fc" data-acao="filtro-limpar"><i class="ti ti-x"></i> Limpar</button>` : ''}</div>
       ${barraLote()}
       ${mesesVis.map(g => grupoMes(g, vis => {
@@ -814,14 +839,15 @@ async function aplicarAjustes(mudancas) {
   const porId = new Map(lancs().map(l => [l.id, l]));
   const corpo = mudancas.map(m => {
     const l = porId.get(m.id);
-    const alvo = { categoria: l.categoria, subcategoria: l.subcategoria || '', observacao: l.observacao || '', situacao: l.situacao, ...m };
+    const alvo = { categoria: l.categoria, subcategoria: l.subcategoria || '', observacao: l.observacao || '', situacao: l.situacao, classe: l.classe || null, ...m };
     const padraoSit = l.padraoIncluido ? 'incluido' : 'excluido';
     return {
       id: m.id,
       categoria: alvo.categoria !== l.categoriaIA ? alvo.categoria : null,
       subcategoria: (alvo.subcategoria || '') !== (l.subcategoriaIA || '') || alvo.categoria !== l.categoriaIA ? (alvo.subcategoria || null) : null,
       observacao: alvo.observacao || null,
-      situacao: alvo.situacao !== padraoSit ? alvo.situacao : null
+      situacao: alvo.situacao !== padraoSit ? alvo.situacao : null,
+      classe: alvo.classe || null
     };
   });
   // Atualização otimista: a tela muda na hora; o servidor confirma e recalcula
@@ -889,6 +915,25 @@ function menuSituacao(btn, id) {
   m.style.top = (window.scrollY + r.bottom + 6) + 'px';
   m.style.left = Math.max(8, Math.min(window.scrollX + r.right - m.offsetWidth, window.scrollX + document.documentElement.clientWidth - m.offsetWidth - 8)) + 'px';
 }
+function menuClasse(btn, ids) {
+  fecharMenus();
+  const lista = lancs().filter(l => ids.includes(l.id));
+  const atual = lista.length === 1 ? lista[0].classe : null;
+  const m = document.createElement('div');
+  m.className = 'menu-sit';
+  const creditos = lista.filter(l => l.direcao === 'entrada').length, debitos = lista.length - creditos;
+  const aviso = c => {
+    if (c === 'entrada' && debitos) return `<small style="color:var(--vermelho)">${lista.length > 1 ? debitos + ' são saídas: entram' : 'É uma saída: entra'} como valor negativo na coluna de entradas</small>`;
+    if (['fixo', 'variavel', 'investimento'].includes(c) && creditos) return `<small style="color:var(--vermelho)">${lista.length > 1 ? creditos + ' são créditos: abatem' : 'É um crédito: abate'} o total (use para reembolso/estorno)</small>`;
+    return '';
+  };
+  m.innerHTML = `<div class="fraco" style="font-size:12px;padding:6px 9px 4px">${lista.length > 1 ? lista.length + ' lançamentos · ' : ''}Onde entra na planilha da consultoria</div>` + CLASSES.map(([c, ic, t, d]) => `<button data-acao="cls-escolher" data-ids="${ids.join(',')}" data-cls="${c}"><i class="ti ${ic}" style="font-size:17px;margin-top:1px"></i><span><b>${t}${atual === c ? ' ✓' : ''}</b><small>${d}</small>${aviso(c)}</span></button>`).join('')
+    + (lista.some(l => l.classe) ? `<button data-acao="cls-escolher" data-ids="${ids.join(',')}" data-cls=""><i class="ti ti-eraser" style="font-size:17px;margin-top:1px"></i><span><b>Voltar para "a classificar"</b></span></button>` : '');
+  document.body.appendChild(m);
+  const r = btn.getBoundingClientRect();
+  m.style.top = (window.scrollY + r.bottom + 6) + 'px';
+  m.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - m.offsetWidth - 8)) + 'px';
+}
 function fecharMenus() { document.querySelectorAll('.menu-sit,.menu-usuario').forEach(m => m.remove()); }
 
 // ─── Envio de documento ──────────────────────────────────────────────────
@@ -950,6 +995,28 @@ function modalDocumento(tipoInicial) {
   };
 }
 
+// ─── Exportar ────────────────────────────────────────────────────────────
+function modalExportar() {
+  const conta = lancs().filter(l => l.origem === 'extrato' && l.situacao === 'incluido');
+  const pend = conta.filter(l => !l.classe).length;
+  const temParcelas = (E.cli.apuracao.resumo.parcelamentos?.porMes || []).length > 1;
+  abrirModal(`<h2>Exportar para Excel</h2><p class="suave" style="margin:0 0 16px">Escolha o formato.</p>
+    <div style="border:2px solid var(--preto);border-radius:12px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;gap:12px;align-items:flex-start"><span class="ic cartao"><i class="ti ti-table"></i></span>
+        <div style="flex:1"><b>Planilha da consultoria</b><div class="suave" style="font-size:13px;margin:2px 0 8px">O modelo da consultoria preenchido: custo fixo, custo variável, investimentos, entradas, cartão parcelado e cartão à vista, em cada mês. Nada do modelo é alterado.</div>
+          ${pend ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pend} lançamento(s) da conta ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : conta.length ? '<div class="pill verde" style="margin-bottom:8px"><i class="ti ti-check"></i> Todos os lançamentos da conta classificados</div>' : ''}
+          ${temParcelas ? `<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;margin-bottom:10px"><input type="checkbox" id="xProj" style="margin-top:3px"><span>Projetar as parcelas do cartão nos meses seguintes (até dezembro). <span class="fraco">Mostra no "Cartão parcelado" de cada mês o que já está comprometido.</span></span></label>` : ''}
+          <button class="btn primario" data-acao="baixar" data-tipo="consultoria"><i class="ti ti-download"></i> Baixar planilha da consultoria</button></div></div>
+      <div id="xResultado"></div>
+    </div>
+    <div style="border:1px solid var(--borda);border-radius:12px;padding:14px">
+      <div style="display:flex;gap:12px;align-items:flex-start"><span class="ic conta"><i class="ti ti-file-spreadsheet"></i></span>
+        <div style="flex:1"><b>Excel detalhado do Mirror</b><div class="suave" style="font-size:13px;margin:2px 0 8px">Todos os lançamentos com categoria, subcategoria, situação, observação e a conferência das faturas.</div>
+          <button class="btn" data-acao="baixar" data-tipo="mirror"><i class="ti ti-download"></i> Baixar Excel detalhado</button></div></div>
+    </div>
+    <div class="acoes"><button class="btn" data-acao="fechar-modal">Fechar</button></div>`);
+}
+
 // ─── Modal genérico ──────────────────────────────────────────────────────
 function abrirModal(html) {
   fecharModal();
@@ -969,7 +1036,7 @@ document.addEventListener('click', async ev => {
   const el = ev.target.closest('[data-acao]');
   if (!el) { if (!ev.target.closest('.menu-sit,.menu-usuario')) fecharMenus(); return; }
   const a = el.dataset.acao, id = el.dataset.id;
-  if (!['menu-sit', 'menu-usuario'].includes(a) && !el.closest('.menu-sit,.menu-usuario')) fecharMenus();
+  if (!['menu-sit', 'menu-usuario', 'menu-cls', 'menu-cls-lote'].includes(a) && !el.closest('.menu-sit,.menu-usuario')) fecharMenus();
   switch (a) {
     case 'ir-clientes': location.hash = '#/clientes'; break;
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
@@ -1005,6 +1072,22 @@ document.addEventListener('click', async ev => {
     case 'sit-escolher': fecharMenus(); aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
     case 'sit-rapida': aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
     case 'ver-conf': $('#conf-' + id)?.classList.toggle('oculto'); break;
+    case 'menu-cls': ev.stopPropagation(); menuClasse(el, [id]); break;
+    case 'menu-cls-lote': {
+      ev.stopPropagation();
+      const ids = [...E.sel].filter(i => { const l = lancs().find(x => x.id === i); return l && l.origem === 'extrato' && l.situacao === 'incluido'; });
+      if (!ids.length) { toast('Selecione lançamentos da conta que estejam no resumo.', true); break; }
+      menuClasse(el, ids); break;
+    }
+    case 'cls-escolher': {
+      fecharMenus();
+      const ids = (el.dataset.ids || '').split(',').filter(Boolean);
+      if (ids.length > 1) E.sel.clear();
+      aplicarAjustes(ids.map(i => ({ id: i, classe: el.dataset.cls || null })));
+      break;
+    }
+    case 'so-pendentes': E.soPendentes = !E.soPendentes; desenharConteudo(); break;
+    case 'ir-pendentes': fecharModal(); E.soPendentes = true; E.mesSel = null; if (E.aba !== 'conta') { E.aba = 'conta'; history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/conta`); desenharCliente(); } else desenharConteudo(); window.scrollTo({ top: 0 }); break;
     case 'cal-mes': E.calMes = el.dataset.mes && el.dataset.mes !== E.calMes ? el.dataset.mes : null; desenharConteudo(); break;
     case 'ordem-parc': E.ordemParc = el.dataset.ordem; { const d = document.querySelector('.card details'); const aberto = d?.open; desenharConteudo(); if (aberto) document.querySelector('.card details').open = true; } break;
     case 'novo-doc': modalDocumento(el.dataset.tipo); break;
@@ -1014,14 +1097,25 @@ document.addEventListener('click', async ev => {
       try { await api('DELETE', '/api/app/documentos/' + id); toast('Documento excluído'); await telaCliente(E.cli.cliente.id, true); } catch (e) { toast(e.message, true); }
       break;
     }
-    case 'excel': {
+    case 'excel': modalExportar(); break;
+    case 'baixar': {
       el.disabled = true; const txt = el.innerHTML; el.innerHTML = '<i class="ti ti-loader-2"></i> Gerando…';
       try {
-        const r = await api('GET', `/api/app/analises/${E.cli.analise.id}/excel`, undefined, { blob: true });
+        const consultoria = el.dataset.tipo === 'consultoria';
+        const rota = consultoria ? `/api/app/analises/${E.cli.analise.id}/planilha${$('#xProj')?.checked ? '?projetar=1' : ''}` : `/api/app/analises/${E.cli.analise.id}/excel`;
+        const r = await api('GET', rota, undefined, { blob: true });
         const nome = decodeURIComponent((r.headers.get('content-disposition') || '').match(/filename\*=UTF-8''([^;]+)/)?.[1] || 'mirror.xlsx');
         const url = URL.createObjectURL(await r.blob());
         const a2 = document.createElement('a'); a2.href = url; a2.download = nome; document.body.appendChild(a2); a2.click(); a2.remove();
         setTimeout(() => URL.revokeObjectURL(url), 3000);
+        if (consultoria) {
+          let info = {}; try { info = JSON.parse(decodeURIComponent(r.headers.get('x-mirror-resumo') || '%7B%7D')); } catch {}
+          const linhas = [`<p style="margin:0 0 8px"><b>${info.linhas || 0}</b> linha(s) preenchidas em: ${(info.meses || []).map(nomeMesCurto).join(', ') || '—'}${info.mesesProjetados?.length ? ` · parcelas projetadas em ${info.mesesProjetados.map(nomeMesCurto).join(', ')}` : ''}.</p>`];
+          if (info.aClassificar) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificar} lançamento(s) da conta ainda "a classificar" ficaram fora.</p>`);
+          (info.agrupados || []).forEach(g => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(g.aba)} · ${esc(g.bloco)}: não coube tudo; ${g.quantidade} lançamento(s) foram somados na linha "Outros" (a lista está no comentário da célula).</p>`));
+          (info.avisos || []).forEach(a => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(a)}</p>`));
+          $('#xResultado').innerHTML = `<div class="alerta azul" style="display:block;margin-top:14px">${linhas.join('')}</div>`;
+        } else fecharModal();
       } catch (e) { toast(e.message, true); }
       el.disabled = false; el.innerHTML = txt; break;
     }
