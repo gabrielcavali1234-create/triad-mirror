@@ -1,0 +1,19 @@
+# Dependências e build
+node_modules/
+dist-server/
+dist/
+
+# Segredos — NUNCA subir
+.env
+.env.local
+.env.*.local
+
+# Arquivos de clientes e saídas locais
+uploads/
+error_log.txt
+*.pdf
+*.extraido.json
+
+# Sistema
+.DS_Store
+Thumbs.db
