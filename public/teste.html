@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>TRIAD Mirror — Teste</title>
+<style>
+  :root {
+    --preto: #111111; --preto-2: #1d1d1d; --amarelo: #ffd23f; --branco: #ffffff;
+    --fundo: #f6f5f0; --borda: #e2e0d6; --texto: #1a1a1a; --suave: #6b6b63;
+    --ok: #1f8a4c; --erro: #c0392b; --aviso: #b7791f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fundo); color: var(--texto); font-size: 14px; }
+  header { background: var(--preto); color: var(--branco); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 800; letter-spacing: 1.5px; display: flex; align-items: center; gap: 10px; }
+  .logo i { width: 14px; height: 14px; border-radius: 3px; background: var(--amarelo); display: inline-block; }
+  .logo span { color: #8f8f86; font-weight: 600; }
+  .tag { background: var(--amarelo); color: var(--preto); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 60px; display: grid; gap: 20px; }
+  .card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 20px; }
+  h2 { margin: 0 0 14px; font-size: 16px; }
+  h3 { margin: 18px 0 8px; font-size: 14px; }
+  label { font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px; }
+  input[type=text], input[type=password] { width: 100%; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 8px; font: inherit; }
+  .linha { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: end; }
+  .seg { display: inline-flex; background: var(--preto-2); border-radius: 9px; padding: 3px; }
+  .seg button { background: none; border: 0; color: #a5a59c; padding: 8px 16px; border-radius: 7px; font: inherit; font-weight: 700; cursor: pointer; }
+  .seg button.ativo { background: var(--amarelo); color: var(--preto); }
+  .btn { background: var(--preto); color: var(--branco); border: 0; border-radius: 8px; padding: 11px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+  .btn.amarelo { background: var(--amarelo); color: var(--preto); }
+  .btn.claro { background: var(--branco); color: var(--preto); border: 1px solid var(--borda); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .status { margin-top: 14px; font-size: 13px; color: var(--suave); min-height: 18px; }
+  .status.erro { color: var(--erro); font-weight: 600; }
+  .barra { height: 6px; background: var(--borda); border-radius: 99px; overflow: hidden; margin-top: 8px; display: none; }
+  .barra div { height: 100%; width: 0; background: var(--amarelo); transition: width .3s; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .kpi { border: 1px solid var(--borda); border-radius: 10px; padding: 12px 14px; }
+  .kpi.destaque { background: var(--preto); color: var(--branco); border-color: var(--preto); }
+  .kpi.destaque b { color: var(--amarelo); }
+  .kpi small { display: block; color: var(--suave); font-size: 12px; margin-bottom: 4px; }
+  .kpi.destaque small { color: #a5a59c; }
+  .kpi b { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .tabela { width: 100%; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--suave); border-bottom: 2px solid var(--preto); padding: 8px; white-space: nowrap; }
+  td { border-bottom: 1px solid var(--borda); padding: 8px; vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.fora td { color: #a8a89f; text-decoration: line-through; }
+  .ok { color: var(--ok); font-weight: 700; }
+  .ruim { color: var(--erro); font-weight: 700; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #efeee6; }
+  .pill.saida { background: #fbe9e7; color: var(--erro); }
+  .pill.entrada { background: #e6f4ec; color: var(--ok); }
+  .alerta { background: #fff7d6; border: 1px solid var(--amarelo); border-radius: 8px; padding: 8px 10px; margin-top: 6px; font-size: 12px; line-height: 1.45; }
+  .falado { background: var(--fundo); border-left: 4px solid var(--amarelo); padding: 10px 14px; border-radius: 6px; margin: 14px 0 0; line-height: 1.5; }
+  .docs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .doc { border: 1px solid var(--borda); border-radius: 8px; padding: 8px 12px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+  .doc button { border: 0; background: none; cursor: pointer; color: var(--suave); font-size: 16px; line-height: 1; }
+  .acoes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .vazio { color: var(--suave); font-size: 13px; }
+  .oculto { display: none; }
+  @media (max-width: 600px) { header { padding: 0 16px; } .card { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><i></i>TRIAD <span>MIRROR</span></div>
+  <div class="tag">AMBIENTE DE TESTE</div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. Enviar documento</h2>
+    <div class="linha">
+      <div>
+        <label for="chave">Chave de acesso do Mirror</label>
+        <input id="chave" type="password" autocomplete="off" placeholder="valor de MIRROR_ACCESS_KEY">
+      </div>
+      <div>
+        <label>Tipo de documento</label>
+        <div class="seg" id="tipo">
+          <button type="button" data-tipo="fatura" class="ativo">Fatura de cartão</button>
+          <button type="button" data-tipo="extrato">Extrato bancário</button>
+        </div>
+      </div>
+    </div>
+    <div class="linha" style="margin-top:16px">
+      <div>
+        <label for="arquivo">Arquivo (PDF ou imagem)</label>
+        <input id="arquivo" type="file" accept="application/pdf,image/*">
+      </div>
+      <div>
+        <label for="senha">Senha do PDF <span style="font-weight:400;color:var(--suave)">(só se tiver)</span></label>
+        <input id="senha" type="password" autocomplete="off">
+      </div>
+      <div><button class="btn amarelo" id="enviar">Analisar</button></div>
+    </div>
+    <div class="barra" id="barra"><div></div></div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="card oculto" id="resultado">
+    <h2 id="resultadoTitulo">2. Resultado</h2>
+    <div id="resultadoCorpo"></div>
+    <div class="acoes">
+      <button class="btn claro" id="baixar">Baixar JSON</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Visão consolidada</h2>
+    <div id="listaDocs" class="docs"><span class="vazio">Nenhum documento analisado ainda. Cada análise concluída entra aqui.</span></div>
+    <button class="btn" id="consolidar" disabled>Consolidar</button>
+    <div id="consolidado"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const brl = (n) => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const data = (iso) => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.split('-').reverse().join('/') : esc(iso);
+
+  let tipo = 'fatura';
+  let ultimo = null;
+  const documentos = [];   // { tipo, nome, resultado }
+  const exclusoes = new Set();
+  const inclusoes = new Set();
+
+  try { $('chave').value = sessionStorage.getItem('mirrorKey') || ''; } catch (e) {}
+  $('chave').addEventListener('change', () => { try { sessionStorage.setItem('mirrorKey', $('chave').value); } catch (e) {} });
+
+  document.querySelectorAll('#tipo button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#tipo button').forEach(x => x.classList.remove('ativo'));
+    b.classList.add('ativo'); tipo = b.dataset.tipo;
+  }));
+
+  function status(msg, erro) { const s = $('status'); s.textContent = msg; s.className = 'status' + (erro ? ' erro' : ''); }
+  function barra(p) { const b = $('barra'); b.style.display = p == null ? 'none' : 'block'; b.firstElementChild.style.width = (p || 0) + '%'; }
+
+  async function api(url, opts = {}) {
+    const headers = Object.assign({ 'x-mirror-key': $('chave').value.trim() }, opts.headers || {});
+    const r = await fetch(url, Object.assign({}, opts, { headers }));
+    const corpo = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(corpo.error || ('Erro HTTP ' + r.status));
+    return corpo;
+  }
+
+  $('enviar').addEventListener('click', async () => {
+    const arq = $('arquivo').files[0];
+    if (!$('chave').value.trim()) return status('Informe a chave de acesso do Mirror.', true);
+    if (!arq) return status('Escolha um arquivo.', true);
+    const fd = new FormData();
+    fd.append('file', arq);
+    fd.append('tipoDocumento', tipo);
+    if ($('senha').value) fd.append('password', $('senha').value);
+
+    $('enviar').disabled = true; barra(5); status('Enviando…');
+    const inicio = Date.now();
+    try {
+      const { jobId } = await api('/api/mirror/analyze-async', { method: 'POST', body: fd });
+      while (true) {
+        await new Promise(r => setTimeout(r, 2000));
+        const job = await api('/api/mirror/status/' + encodeURIComponent(jobId));
+        const seg = Math.round((Date.now() - inicio) / 1000);
+        if (job.status === 'processing') {
+          const p = job.progress;
+          const pct = p && p.chunksTotal ? 10 + 85 * (p.chunksCompleted / p.chunksTotal) : 15;
+          barra(pct);
+          status(`Analisando com IA… ${seg}s` + (p && p.chunksTotal > 1 ? ` (parte ${p.chunksCompleted}/${p.chunksTotal})` : ''));
+          continue;
+        }
+        if (job.status === 'error') throw new Error(job.error);
+        barra(null);
+        status(`Concluído em ${job.result.processingTime || seg}s.`);
+        ultimo = job.result;
+        documentos.push({ tipo, nome: arq.name, resultado: job.result });
+        mostrarResultado(job.result, tipo, arq.name);
+        atualizarLista();
+        break;
+      }
+    } catch (e) {
+      barra(null); status(e.message, true);
+    } finally {
+      $('enviar').disabled = false;
+    }
+  });
+
+  function kpi(rotulo, valor, destaque) {
+    return `<div class="kpi${destaque ? ' destaque' : ''}"><small>${esc(rotulo)}</small><b>${valor}</b></div>`;
+  }
+
+  function mostrarResultado(r, t, nome) {
+    $('resultado').classList.remove('oculto');
+    $('resultadoTitulo').textContent = `2. Resultado — ${nome}`;
+    let h = '';
+    if (r.qualidadeRuim) h += `<div class="alerta"><b>Qualidade baixa:</b> ${esc(r.motivoQualidadeRuim || 'documento pode estar ilegível ou incompleto.')}</div>`;
+
+    if (t === 'fatura') {
+      const c = r.conferencia || {};
+      h += '<div class="kpis">' +
+        kpi('Total da fatura', brl(r.valorTotal), true) +
+        kpi('Vencimento', data(r.vencimento) || '—') +
+        kpi('Lançamentos', String(r.transacoes.length)) +
+        kpi('Conferência', c.bateu === true ? '<span class="ok">Bateu ✓</span>' : c.bateu === false ? '<span class="ruim">Divergente</span>' : '—') +
+        kpi('Saldo financiado', brl(r.saldoFinanciado)) +
+        kpi('Encargos', brl(r.encargosTotal)) +
+        kpi('Próxima fatura (parcelas)', brl(r.proximaFatura)) +
+        kpi('Limite disponível', brl(r.limiteDisponivel)) +
+        '</div>';
+      if (c.verificacoes && c.verificacoes.length) {
+        h += '<h3>Conferência com os totais impressos</h3><div class="tabela"><table><thead><tr><th>Verificação</th><th class="num">Declarado</th><th class="num">Calculado</th><th class="num">Diferença</th><th></th></tr></thead><tbody>' +
+          c.verificacoes.map(v => `<tr><td>${esc(v.nome)}</td><td class="num">${brl(v.declarado)}</td><td class="num">${brl(v.calculado)}</td><td class="num">${brl(v.diferenca)}</td><td class="${v.bateu ? 'ok' : 'ruim'}">${v.bateu ? '✓' : '✗'}</td></tr>`).join('') +
+          '</tbody></table></div>';
+      }
+      h += '<h3>Lançamentos</h3><div class="tabela"><table><thead><tr><th>Data</th><th>Estabelecimento</th><th>Portador</th><th>Parcela</th><th>Tipo</th><th>Categoria</th><th class="num">Valor</th></tr></thead><tbody>' +
+        r.transacoes.map(x => `<tr><td>${data(x.data)}</td><td>${esc(x.estabelecimento)}${x.internacional ? ` <span class="pill">${esc(x.moedaOriginal || 'INTL')} ${x.valorMoedaOriginal ?? ''}</span>` : ''}${x.cidadePais ? `<br><small style="color:var(--suave)">${esc(x.ramo || '')} ${esc(x.cidadePais)}</small>` : ''}</td><td>${esc(x.portador || '')}</td><td>${x.parcelaAtual ? x.parcelaAtual + '/' + x.parcelaTotal : ''}</td><td><span class="pill">${esc(x.tipo)}</span></td><td>${esc(x.categoria)}</td><td class="num">${['estorno', 'pagamento'].includes(x.tipo) ? '−' : ''}${brl(x.valor)}</td></tr>`).join('') +
+        '</tbody></table></div>';
+    } else {
+      const ent = r.transacoes.filter(x => x.tipo === 'CREDITO').reduce((s, x) => s + x.valor, 0);
+      const sai = r.transacoes.filter(x => x.tipo === 'DEBITO').reduce((s, x) => s + x.valor, 0);
+      h += '<div class="kpis">' +
+        kpi('Banco', esc(r.banco)) + kpi('Titular', esc(r.titular || '—')) +
+        kpi('Entradas', brl(ent), true) + kpi('Saídas', brl(sai)) + kpi('Lançamentos', String(r.transacoes.length)) +
+        '</div>';
+      h += '<h3>Lançamentos</h3><div class="tabela"><table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Categoria</th><th class="num">Valor</th></tr></thead><tbody>' +
+        r.transacoes.map(x => `<tr><td>${data(x.data)}</td><td>${esc(x.descricao)}</td><td><span class="pill ${x.tipo === 'CREDITO' ? 'entrada' : 'saida'}">${x.tipo === 'CREDITO' ? 'entrada' : 'saída'}</span></td><td>${esc(x.categoria)}</td><td class="num">${brl(x.valor)}</td></tr>`).join('') +
+        '</tbody></table></div>';
+    }
+    if (r.relatorioFalado) h += `<p class="falado">${esc(r.relatorioFalado)}</p>`;
+    $('resultadoCorpo').innerHTML = h;
+  }
+
+  $('baixar').addEventListener('click', () => {
+    if (!ultimo) return;
+    const blob = new Blob([JSON.stringify(ultimo, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mirror-resultado.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  function atualizarLista() {
+    const el = $('listaDocs');
+    if (!documentos.length) { el.innerHTML = '<span class="vazio">Nenhum documento analisado ainda.</span>'; $('consolidar').disabled = true; return; }
+    el.innerHTML = documentos.map((d, i) => `<div class="doc"><span class="pill">${d.tipo}</span>${esc(d.nome)}<button title="Remover" data-i="${i}">×</button></div>`).join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      documentos.splice(Number(b.dataset.i), 1); exclusoes.clear(); inclusoes.clear();
+      $('consolidado').innerHTML = ''; atualizarLista();
+    }));
+    $('consolidar').disabled = false;
+  }
+
+  async function consolidar() {
+    try {
+      const corpo = {
+        extratos: documentos.filter(d => d.tipo === 'extrato').map(d => d.resultado),
+        faturas: documentos.filter(d => d.tipo === 'fatura').map(d => d.resultado),
+        exclusoes: [...exclusoes], inclusoes: [...inclusoes]
+      };
+      const r = await api('/api/mirror/consolidar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+      mostrarConsolidado(r);
+    } catch (e) { $('consolidado').innerHTML = `<p class="status erro">${esc(e.message)}</p>`; }
+  }
+  $('consolidar').addEventListener('click', consolidar);
+
+  function mostrarConsolidado(r) {
+    const s = r.resumo, e = s.endividamentoCartao || {};
+    let h = '<div class="kpis" style="margin-top:16px">' +
+      kpi('Entradas', brl(s.totalEntradas)) +
+      kpi('Saídas (extrato + cartão)', brl(s.totalSaidas), true) +
+      kpi('Saldo', brl(s.saldo)) +
+      kpi('Gastos no cartão', brl(s.totalGastosCartao)) +
+      kpi('Parcelas futuras', brl(s.compromissoFuturoParcelas) + (s.compromissoEstimado ? ' <small style="display:inline">(estimado)</small>' : '')) +
+      kpi('Encargos do cartão', brl(e.encargos)) +
+      '</div>';
+    if (s.pagamentosDeFaturaNoExtrato && s.pagamentosDeFaturaNoExtrato.quantidade) {
+      h += `<div class="alerta"><b>${s.pagamentosDeFaturaNoExtrato.quantidade} pagamento(s) de fatura no extrato</b> (${brl(s.pagamentosDeFaturaNoExtrato.valor)}), ${s.pagamentosDeFaturaNoExtrato.aindaIncluidosNoResumo} ainda incluído(s) no resumo. Revise os lançamentos marcados abaixo.</div>`;
+    }
+    if (e.emRotativo) h += `<div class="alerta"><b>Cliente no rotativo:</b> saldo financiado de ${brl(e.saldoFinanciado)} e ${brl(e.encargos)} em juros, mora e multa nesta fatura.</div>`;
+
+    h += '<h3>Gastos por categoria</h3><div class="tabela"><table><thead><tr><th>Categoria</th><th class="num">Valor</th><th class="num">%</th></tr></thead><tbody>' +
+      s.gastosPorCategoria.map(c => `<tr><td>${esc(c.categoria)}</td><td class="num">${brl(c.valor)}</td><td class="num">${c.percentual.toFixed(1)}%</td></tr>`).join('') +
+      '</tbody></table></div>';
+
+    h += '<h3>Lançamentos</h3><div class="tabela"><table><thead><tr><th>No resumo</th><th>Data</th><th>Descrição</th><th>Origem</th><th>Categoria</th><th class="num">Valor</th></tr></thead><tbody>' +
+      r.lancamentos.map(l => `<tr class="${l.incluidoNoResumo ? '' : 'fora'}">
+        <td><input type="checkbox" data-id="${esc(l.id)}" data-padrao="${l.padraoIncluido}" ${l.incluidoNoResumo ? 'checked' : ''}></td>
+        <td>${data(l.data)}</td>
+        <td>${esc(l.descricao)}${l.parcela ? ` <span class="pill">${esc(l.parcela)}</span>` : ''}${l.alerta ? `<div class="alerta">${esc(l.alerta.mensagem)}</div>` : ''}</td>
+        <td>${esc(l.documento)}</td><td>${esc(l.categoria)}</td>
+        <td class="num"><span class="pill ${l.direcao}">${l.direcao === 'entrada' ? '+' : '−'}</span> ${brl(l.valor)}</td></tr>`).join('') +
+      '</tbody></table></div>';
+    $('consolidado').innerHTML = h;
+
+    $('consolidado').querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => {
+      const id = cb.dataset.id, padrao = cb.dataset.padrao === 'true';
+      exclusoes.delete(id); inclusoes.delete(id);
+      if (cb.checked && !padrao) inclusoes.add(id);
+      if (!cb.checked && padrao) exclusoes.add(id);
+      consolidar();
+    }));
+  }
+})();
+</script>
+</body>
+</html>

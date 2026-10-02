@@ -9,6 +9,7 @@
 import './env'; // precisa ser o primeiro import
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -53,11 +54,46 @@ app.get('/api/mirror/health', (_req, res) => {
     res.json({
         ok: true,
         servico: 'TRIAD Mirror',
-        versao: '0.1.0',
+        versao: '0.1.1',
         anthropicConfigurado: !!process.env.ANTHROPIC_API_KEY,
         supabaseConfigurado: !!supabaseAdmin,
+        acessoProtegido: !!process.env.MIRROR_ACCESS_KEY,
         jobsEmMemoria: jobs.size
     });
+});
+
+// ─── Trava de acesso ──────────────────────────────────────────────────────
+// Toda rota /api/mirror/* (exceto /health) exige o cabeçalho "x-mirror-key"
+// igual à variável MIRROR_ACCESS_KEY. Roda ANTES do upload: requisição sem
+// chave é recusada sem gravar arquivo nem chamar a IA. Sem a variável
+// configurada, as rotas ficam fechadas (falha segura, nunca aberta).
+const MIRROR_ACCESS_KEY = process.env.MIRROR_ACCESS_KEY || '';
+if (!MIRROR_ACCESS_KEY) console.warn('[Acesso] MIRROR_ACCESS_KEY não configurada — rotas de análise BLOQUEADAS até configurar.');
+
+function chaveConfere(recebida: string): boolean {
+    const a = crypto.createHash('sha256').update(recebida).digest();
+    const b = crypto.createHash('sha256').update(MIRROR_ACCESS_KEY).digest();
+    return crypto.timingSafeEqual(a, b);
+}
+
+app.use('/api/mirror', (req, res, next) => {
+    if (req.path === '/health') return next();
+    if (!MIRROR_ACCESS_KEY) {
+        return res.status(503).json({ error: 'Servidor sem MIRROR_ACCESS_KEY configurada. Defina a variável de ambiente e reinicie.' });
+    }
+    const recebida = String(req.get('x-mirror-key') || '');
+    if (!recebida || !chaveConfere(recebida)) {
+        return res.status(401).json({ error: 'Chave de acesso do Mirror ausente ou inválida.' });
+    }
+    next();
+});
+
+// ─── Página de teste (sem dados: só HTML; as chamadas exigem a chave) ─────
+const paginaTeste = [path.join(process.cwd(), 'public', 'teste.html'), path.join(__dirname, '..', 'public', 'teste.html')]
+    .find(p => fs.existsSync(p));
+app.get('/teste', (_req, res) => {
+    if (!paginaTeste) return res.status(404).send('Página de teste não encontrada.');
+    res.sendFile(paginaTeste);
 });
 
 // ─── Análise assíncrona (extrato ou fatura) ───────────────────────────────

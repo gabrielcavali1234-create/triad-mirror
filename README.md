@@ -33,6 +33,11 @@ src/
 
 ## Rotas
 
+Todas as rotas `/api/mirror/*`, exceto `/health`, exigem o cabeçalho `x-mirror-key` com o valor de `MIRROR_ACCESS_KEY`. Sem essa variável configurada, ficam bloqueadas.
+
+- Página de teste: **`/teste`** (envio de documento, conferência e consolidação com incluir/excluir).
+- Saúde: **`/api/mirror/health`** (aberta).
+
 | Método | Rota | O que faz |
 |---|---|---|
 | POST | `/api/mirror/analyze-async` | multipart: `file`, `tipoDocumento` (`extrato` ou `fatura`), `password?`, `userId?`, `orgId?` → `{ jobId }` |
