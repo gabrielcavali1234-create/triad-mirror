@@ -36,7 +36,10 @@ export interface Lancamento {
     ref: number;                       // posição do lançamento dentro do documento
     documento: string;                 // ex: "Extrato Itaú" / "Fatura Itaú final 1234"
     banco?: string;
-    data: string;
+    data: string;                      // data do lançamento (no cartão: data da COMPRA)
+    /** Mês em que o dinheiro sai (YYYY-MM): conta = data; cartão = mês do vencimento da fatura. */
+    mesReferencia: string;
+    vencimentoFatura?: string;         // só cartão
     descricao: string;
     valor: number;                     // sempre positivo
     direcao: 'entrada' | 'saida';
@@ -183,7 +186,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
 
             lancamentos.push(montar({
                 id, origem: 'extrato', documentoIndice: di, documentoId: idsExt[di], ref: i, documento: nomeDoc,
-                banco: ext.banco, data: t.data, descricao: t.descricao, valor: t.valor,
+                banco: ext.banco, data: t.data, mesReferencia: (t.data || '').slice(0, 7), descricao: t.descricao, valor: t.valor,
                 direcao: t.tipo === 'CREDITO' ? 'entrada' : 'saida',
                 categoria: alerta?.tipo === 'possivel_duplicidade_fatura' ? 'Pagamento de fatura' : t.categoria,
                 subcategoria: (t as any).subcategoria,
@@ -214,6 +217,9 @@ export function consolidar(entrada: EntradaConsolidacao) {
     faturas.forEach((fat, di) => {
         const finais = (fat.cartoes || []).map(c => c.final).filter(Boolean);
         const nomeDoc = `Fatura ${fat.banco || ''}${finais.length ? ` final ${finais.join('/')}` : ''}`.trim();
+        // Tudo da fatura conta no mês do VENCIMENTO (quando o cliente paga), não no mês da compra.
+        const mesFatura = /^\d{4}-\d{2}/.test(fat.vencimento || '') ? fat.vencimento!.slice(0, 7) : null;
+        const refDe = (data: string) => mesFatura || (data || '').slice(0, 7);
 
         fat.transacoes.forEach((t, i) => {
             const id = idsFat[di] ? `${idsFat[di]}:${i}` : `fatura-${di}-${i}`;
@@ -224,7 +230,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
                 // receita do cliente — fica fora do resumo por padrão, mas visível.
                 lancamentos.push(montar({
                     id, origem: 'fatura', documentoIndice: di, documentoId: idsFat[di], ref: i, documento: nomeDoc,
-                    banco: fat.banco, data: t.data, descricao: t.estabelecimento, valor: t.valor,
+                    banco: fat.banco, data: t.data, mesReferencia: refDe(t.data), vencimentoFatura: fat.vencimento, descricao: t.estabelecimento, valor: t.valor,
                     direcao: 'entrada', categoria: 'Pagamento de fatura', subcategoria: (t as any).subcategoria,
                     padraoIncluido: false,
                     alerta: {
@@ -237,7 +243,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
 
             lancamentos.push(montar({
                 id, origem: 'fatura', documentoIndice: di, documentoId: idsFat[di], ref: i, documento: nomeDoc,
-                banco: fat.banco, data: t.data,
+                banco: fat.banco, data: t.data, mesReferencia: refDe(t.data), vencimentoFatura: fat.vencimento,
                 descricao: t.estabelecimento + (t.portador ? ` — ${t.portador}` : ''),
                 valor: t.valor,
                 // estorno de cartão volta dinheiro: entra como "entrada" e abate os gastos

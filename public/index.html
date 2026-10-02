@@ -542,7 +542,8 @@ function linha(l) {
   } else if (l.alerta && l.alerta.tipo === 'pagamento_na_fatura') {
     aviso = `<div class="aviso" style="color:var(--fraco)"><i class="ti ti-info-circle"></i><span>Pagamento da fatura anterior: fica fora do resumo.</span></div>`;
   }
-  const origem = l.origem === 'extrato' ? `<i class="ti ti-building-bank"></i> Conta ${esc(l.banco || '')}` : `<i class="ti ti-credit-card"></i> ${esc(l.documento)}`;
+  const origem = l.origem === 'extrato' ? `<i class="ti ti-building-bank"></i> Conta ${esc(l.banco || '')}`
+    : `<i class="ti ti-credit-card"></i> ${esc(l.documento)}${l.parcela ? ` · compra feita em ${dataCompleta(l.data)}` : ''}`;
   return `<div class="r ${sel ? 'sel' : ''} ${l.situacao !== 'incluido' ? 'off' : ''}" data-id="${l.id}">
     <span class="ck"><input type="checkbox" data-acao="sel" data-id="${l.id}" ${sel ? 'checked' : ''} aria-label="Selecionar lançamento"></span>
     <span class="data suave num" title="${esc(l.data)}">${dataBR(l.data)}${anoDiferente(l.data) ? '<br><span style="font-size:11px">' + l.data.slice(0, 4) + '</span>' : ''}</span>
@@ -569,10 +570,14 @@ function barraLote() {
 }
 
 // ─── Cálculos por mês ────────────────────────────────────────────────────
+/** Mês em que o dinheiro sai: conta = data do lançamento; cartão = mês do vencimento da fatura. */
+const mesDe = l => l.mesReferencia || (l.data || '').slice(0, 7);
+const dataCompleta = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : esc(iso || '');
+
 function porMes(lista) {
   const m = {};
   for (const l of lista) {
-    const k = (l.data || '').slice(0, 7); if (!/^\d{4}-\d{2}$/.test(k)) continue;
+    const k = mesDe(l); if (!/^\d{4}-\d{2}$/.test(k)) continue;
     (m[k] = m[k] || { k, itens: [], e: 0, s: 0 }).itens.push(l);
     if (l.situacao !== 'incluido') continue;
     if (l.direcao === 'entrada') { if (l.origem === 'extrato') m[k].e += l.valor; else m[k].s -= l.valor; }
@@ -729,7 +734,7 @@ function abaTudo() {
     const conta = vis.filter(l => l.origem === 'extrato'), cartao = vis.filter(l => l.origem === 'fatura');
     const soma = ls => ls.filter(l => l.situacao === 'incluido').reduce((a, l) => a + (l.direcao === 'saida' ? l.valor : (l.origem === 'fatura' ? -l.valor : 0)), 0);
     return (conta.length ? `<div class="bloco-cab conta"><span><i class="ti ti-building-bank"></i> Conta bancária</span><span>Saídas <b class="num">${brl(soma(conta))}</b></span></div>` + cabLinhas() + conta.map(linha).join('') : '')
-      + (cartao.length ? `<div class="bloco-cab cartao"><span><i class="ti ti-credit-card"></i> Cartão de crédito</span><span>Gastos <b class="num">${brl(soma(cartao))}</b></span></div>` + cabLinhas() + cartao.map(linha).join('') : '')
+      + (cartao.length ? `<div class="bloco-cab cartao"><span><i class="ti ti-credit-card"></i> Cartão de crédito${(() => { const v = [...new Set(cartao.map(l => l.vencimentoFatura).filter(Boolean))]; return v.length ? ` <span style="font-weight:400">· fatura com vencimento em ${v.map(dataCompleta).join(', ')}</span>` : ''; })()}</span><span>Gastos <b class="num">${brl(soma(cartao))}</b></span></div>` + cabLinhas() + cartao.map(linha).join('') : '')
       || '<div class="fraco" style="padding:14px">Nenhum lançamento encontrado.</div>';
   })).join('')}`;
 }
@@ -921,7 +926,7 @@ document.addEventListener('click', async ev => {
       const busca = (E.busca[el.dataset.mes] || '').toLowerCase();
       const filtro = Object.keys(E.filtroCat).filter(k => E.filtroCat[k]);
       const base = E.aba === 'conta' ? lancs().filter(l => l.origem === 'extrato') : lancs();
-      const alvo = base.filter(l => (l.data || '').slice(0, 7) === el.dataset.mes && (!busca || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(busca)) && (E.aba !== 'conta' || !filtro.length || filtro.includes(l.categoria)));
+      const alvo = base.filter(l => mesDe(l) === el.dataset.mes && (!busca || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(busca)) && (E.aba !== 'conta' || !filtro.length || filtro.includes(l.categoria)));
       alvo.forEach(l => ev.target.checked ? E.sel.add(l.id) : E.sel.delete(l.id)); desenharConteudo(); break;
     }
     case 'sel-lista': (el.dataset.ids || '').split(',').filter(Boolean).forEach(i => ev.target.checked ? E.sel.add(i) : E.sel.delete(i)); desenharConteudo(); break;
