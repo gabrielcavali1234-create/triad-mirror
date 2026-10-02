@@ -1,0 +1,37 @@
+{
+  "_sobre": "Extratos fictícios para testes locais (sem dados reais). A titular é inventada.",
+  "itau": {
+    "banco": "Itaú",
+    "titular": "MARIA APARECIDA SOUZA",
+    "relatorioFalado": "Entradas de salário de R$ 9.000,00 por mês. Maiores saídas: pagamento da fatura do cartão, escola e transferências.",
+    "qualidadeRuim": false,
+    "transacoes": [
+      { "data": "2026-06-05", "descricao": "SALARIO EMPRESA X", "valor": 9000, "tipo": "CREDITO", "categoria": "Salário", "subcategoria": "Salário" },
+      { "data": "2026-06-10", "descricao": "ENEL SP", "valor": 198.4, "tipo": "DEBITO", "categoria": "Contas de consumo", "subcategoria": "Energia" },
+      { "data": "2026-06-12", "descricao": "ESCOLA PEQUENO PRINCIPE", "valor": 1250, "tipo": "DEBITO", "categoria": "Educação", "subcategoria": "Escola" },
+      { "data": "2026-06-20", "descricao": "PIX QRS AUTO POSTO 20/06", "valor": 220, "tipo": "DEBITO", "categoria": "Combustível", "subcategoria": "Gasolina" },
+      { "data": "2026-07-05", "descricao": "SALARIO EMPRESA X", "valor": 9000, "tipo": "CREDITO", "categoria": "Salário", "subcategoria": "Salário" },
+      { "data": "2026-07-10", "descricao": "ENEL SP", "valor": 205.1, "tipo": "DEBITO", "categoria": "Contas de consumo", "subcategoria": "Energia" },
+      { "data": "2026-07-12", "descricao": "ESCOLA PEQUENO PRINCIPE", "valor": 1250, "tipo": "DEBITO", "categoria": "Educação", "subcategoria": "Escola" },
+      { "data": "2026-07-15", "descricao": "PIX TRANSF MARIA A SOUZA 15/07", "valor": 1500, "tipo": "DEBITO", "categoria": "Transferência", "subcategoria": "Entre contas próprias" },
+      { "data": "2026-07-18", "descricao": "ITAU UNIBANCO CARTAO PAGTO", "valor": 4213, "tipo": "DEBITO", "categoria": "Pagamento de fatura", "subcategoria": "Fatura de cartão" },
+      { "data": "2026-08-05", "descricao": "SALARIO EMPRESA X", "valor": 9000, "tipo": "CREDITO", "categoria": "Salário", "subcategoria": "Salário" },
+      { "data": "2026-08-08", "descricao": "PIX TRANSF JOAO PEREIRA 08/08", "valor": 917, "tipo": "DEBITO", "categoria": "Pix Enviado", "subcategoria": "Para terceiros" },
+      { "data": "2026-08-10", "descricao": "ENEL SP", "valor": 210.55, "tipo": "DEBITO", "categoria": "Contas de consumo", "subcategoria": "Energia" },
+      { "data": "2026-08-12", "descricao": "ESCOLA PEQUENO PRINCIPE", "valor": 1250, "tipo": "DEBITO", "categoria": "Educação", "subcategoria": "Escola" },
+      { "data": "2026-08-22", "descricao": "PIX QRS RECEITA FEDERAL", "valor": 66, "tipo": "DEBITO", "categoria": "Impostos", "subcategoria": "Taxas do governo" }
+    ]
+  },
+  "nubank": {
+    "banco": "Nubank",
+    "titular": "MARIA APARECIDA SOUZA",
+    "relatorioFalado": "Conta usada para gastos do dia a dia, abastecida por transferência da própria titular.",
+    "qualidadeRuim": false,
+    "transacoes": [
+      { "data": "2026-07-15", "descricao": "Transferência recebida pelo Pix - MARIA APARECIDA SOUZA", "valor": 1500, "tipo": "CREDITO", "categoria": "Transferência", "subcategoria": "Entre contas próprias" },
+      { "data": "2026-07-16", "descricao": "Compra no débito - PADARIA REAL", "valor": 38.9, "tipo": "DEBITO", "categoria": "Alimentação", "subcategoria": "Padaria" },
+      { "data": "2026-07-20", "descricao": "Compra no débito - SUPERMERCADO DIA", "valor": 412.35, "tipo": "DEBITO", "categoria": "Supermercado", "subcategoria": "Supermercado" },
+      { "data": "2026-08-02", "descricao": "Compra no débito - FARMACIA SAO JOAO", "valor": 87.6, "tipo": "DEBITO", "categoria": "Farmácia", "subcategoria": "Medicamentos" }
+    ]
+  }
+}

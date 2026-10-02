@@ -31,6 +31,35 @@ src/
     consolidacao.ts       NOVO — visão unificada + aviso de duplicidade
 ```
 
+## Aplicação dos analistas (v0.2)
+
+Abrir o endereço do site → **login** → **clientes** → **perfil do cliente** com a apuração.
+
+- **Login:** Supabase Auth (e-mail e senha). Os analistas são criados no Supabase em *Authentication → Users → Add user → Create new user* (marcar *Auto Confirm User*). O nome mostrado vem do e-mail (`ana.paula@...` → "Ana Paula").
+- **Clientes:** cada cliente tem um perfil (CPF, telefone, renda declarada, objetivo e observações) e uma análise com seus documentos.
+- **Apuração:** três abas.
+  - *Conta bancária*, no estilo TRIAD: cards por mês, médias, filtros, busca por mês, seleção em lote, relatório executivo e mix de gastos.
+  - *Cartão de crédito*: faturas com a conferência dos totais.
+  - *Tudo junto.*
+- **Ações do analista em cada lançamento:**
+  - trocar a categoria e a subcategoria;
+  - escrever uma observação;
+  - definir a situação: *No resumo*, *Ignorado* ou *Entre contas*.
+
+  Tudo fica salvo no banco, em `mirror_ajustes`. O que a IA leu nunca é alterado: os ajustes ficam por cima.
+- **Sugestões automáticas:** o sistema avisa quando um PIX ou TED parece transferência entre contas da própria cliente (mesmo nome do titular, ou o mesmo valor saindo de um banco e entrando em outro). Também avisa sobre pagamento de fatura na conta. As duas sugestões precisam de **um clique do analista** para valer.
+- **Excel:** leva as abas Resumo (com gastos por subcategoria), Lançamentos (com situação e observação) e uma aba por documento.
+
+### Banco (Supabase do Mirror)
+Rodar no SQL Editor, nesta ordem: `supabase/schema.sql` e depois `supabase/002_clientes.sql`.
+
+### Desenvolvimento local, sem Supabase e sem IA
+```bash
+MIRROR_MODO_DEV=1 MIRROR_ACCESS_KEY=qualquer npm run dev
+# login: qualquer e-mail, com a senha igual à MIRROR_ACCESS_KEY (dados ficam em memória)
+npm test   # consolidação + fatura Itaú + API completa da aplicação
+```
+
 ## Rotas
 
 Todas as rotas `/api/mirror/*`, exceto `/health`, exigem o cabeçalho `x-mirror-key` com o valor de `MIRROR_ACCESS_KEY`. Sem essa variável configurada, ficam bloqueadas.

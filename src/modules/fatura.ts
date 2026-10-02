@@ -24,7 +24,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ExtracaoConfig, normalizarNomeBanco } from '../core/ia';
 import { ModuloDocumento } from '../core/pipeline';
-import { CATEGORIAS_TEXTO } from './categorias';
+import { CATEGORIAS_TEXTO, REGRA_SUBCATEGORIA } from './categorias';
 
 export type TipoLancamentoFatura =
     'compra' | 'saque' | 'estorno' | 'encargo' | 'anuidade' | 'tarifa' | 'iof' | 'financiamento' | 'pagamento';
@@ -42,6 +42,7 @@ export interface TransacaoFatura {
     valor: number;                      // em BRL, sempre positivo — a direção vem do "tipo"
     tipo: TipoLancamentoFatura;
     categoria: string;
+    subcategoria?: string;
     internacional?: boolean;
     moedaOriginal?: string | null;      // USD, EUR... ou BRL (cobrança em real convertida em dólar)
     valorMoedaOriginal?: number | null;
@@ -160,6 +161,9 @@ REGRAS DE CADA LANÇAMENTO:
    - estorno → mesma categoria da compra original (ex: estorno de um serviço → mesma categoria do serviço), para abater no lugar certo.
    - compras: use o ramo do Itaú como pista principal: supermercado → "Supermercado"; restaurante → "Alimentação"; vestuário → "Vestuário"; educacao → "Educação"; HEALTH/saúde → "Saúde"; lazer → "Lazer"; GOVERNMENT → "Impostos"; serviços/outros/ELETRONICS → decida pelo estabelecimento.
      Pelo estabelecimento: APPLE.COM/BILL, assinaturas de software/IA (ANTHROPIC, CLAUDE), streaming, HOSTINGER → "Assinaturas"; academias/TOTALPASS/GYMPASS → "Lazer"; iFood/Rappi → "Delivery"; postos → "Combustível"; Uber/99/estacionamento/pedágio → "Transporte"; aéreas/hotéis → "Viagem"; ótica/farmácia → "Saúde"/"Farmácia"; salão/barbearia/estética → "Cuidados pessoais"; marketplace (SHOPEE, MAGALU, MERCADO LIVRE, AMAZON) → "Compras" salvo ramo mais específico.
+   - Parcelas antigas costumam vir SEM a linha de ramo. Se o MESMO estabelecimento aparecer em outra compra desta fatura COM ramo (ex: "JIM.COM GABRIE" sem ramo e outra "JIM.COM GABRIE" com "supermercado JANDIRA"), use aquele ramo e a mesma categoria para as duas.
+
+${REGRA_SUBCATEGORIA}
 
 ANÁLISE DE QUALIDADE:
 qualidadeRuim=true só se o documento estiver ilegível, cortado, ou não for fatura de cartão. Uma página só de resumo/boleto, limites ou "próximas faturas" com "transacoes" vazio é resultado CORRETO, não qualidade ruim.
@@ -210,6 +214,7 @@ const FATURA_TOOL: Anthropic.Tool = {
                         valor: { type: 'number', description: 'Valor em BRL, sempre positivo.' },
                         tipo: { type: 'string', enum: ['compra', 'saque', 'estorno', 'encargo', 'anuidade', 'tarifa', 'iof', 'financiamento', 'pagamento'] },
                         categoria: { type: 'string' },
+                        subcategoria: { type: 'string', description: 'Subcategoria detalhada, da lista da categoria escolhida.' },
                         internacional: { type: 'boolean' },
                         moedaOriginal: { type: ['string', 'null'] },
                         valorMoedaOriginal: { type: ['number', 'null'] },

@@ -10,8 +10,20 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 export const supabaseAdmin: SupabaseClient | null =
     process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-        ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+        ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+            // Servidor: nunca guardar sessão no cliente compartilhado (senão um login
+            // trocaria a credencial usada por todas as consultas ao banco).
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        })
         : null;
+
+/** Cliente descartável, só para operações de login (signIn / refresh). */
+export function clienteAuthDescartavel(): SupabaseClient | null {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
+    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+}
 
 if (!supabaseAdmin) {
     console.warn('[Supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY ausentes — cache de duplicados e gravação de custo desativados.');

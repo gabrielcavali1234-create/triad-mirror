@@ -13,8 +13,17 @@ import { ResultadoFatura, TIPOS_DEBITO_FATURA } from './fatura';
 
 export type Origem = 'extrato' | 'fatura';
 
+export type Situacao = 'incluido' | 'excluido' | 'entre_contas';
+
+export interface AjusteLancamento {
+    categoria?: string | null;
+    subcategoria?: string | null;
+    observacao?: string | null;
+    situacao?: Situacao | null;
+}
+
 export interface Alerta {
-    tipo: 'possivel_duplicidade_fatura' | 'pagamento_na_fatura';
+    tipo: 'possivel_duplicidade_fatura' | 'pagamento_na_fatura' | 'possivel_entre_contas';
     mensagem: string;
     faturaRelacionada?: { indice: number; vencimento?: string; valorTotal?: number; relacao: 'esta' | 'anterior' };
 }
@@ -23,14 +32,23 @@ export interface Lancamento {
     id: string;
     origem: Origem;
     documentoIndice: number;
+    documentoId?: string;              // id no banco (quando a análise está salva)
+    ref: number;                       // posição do lançamento dentro do documento
     documento: string;                 // ex: "Extrato Itaú" / "Fatura Itaú final 1234"
+    banco?: string;
     data: string;
     descricao: string;
     valor: number;                     // sempre positivo
     direcao: 'entrada' | 'saida';
     categoria: string;
-    incluidoNoResumo: boolean;
+    subcategoria?: string;
+    categoriaIA: string;               // o que a IA sugeriu (para o analista poder voltar)
+    subcategoriaIA?: string;
+    observacao?: string;
+    situacao: Situacao;
+    incluidoNoResumo: boolean;         // = situacao === 'incluido'
     padraoIncluido: boolean;           // o que o sistema decidiu antes do analista mexer
+    ajustadoPeloAnalista: boolean;
     parcela?: string;                  // ex: "3/10"
     alerta?: Alerta;
 }
@@ -42,6 +60,23 @@ export interface EntradaConsolidacao {
     exclusoes?: string[];
     /** ids que o analista mandou INCLUIR (para lançamentos que por padrão ficam fora) */
     inclusoes?: string[];
+    /** ids dos documentos no banco, na mesma ordem de extratos/faturas → id do lançamento vira "docId:ref" */
+    idsDocumentos?: { extratos?: string[]; faturas?: string[] };
+    /** ajustes do analista por id de lançamento */
+    ajustes?: Record<string, AjusteLancamento>;
+}
+
+const REGEX_TRANSFERENCIA = /\b(pix|ted|doc|transf|transfer[eê]ncia|tef)\b/i;
+const normalizar = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const PARTICULAS = new Set(['da', 'de', 'do', 'das', 'dos', 'e']);
+
+/** Transferência para/de alguém com o nome do titular (primeiro + último sobrenome). */
+function pareceMesmoTitular(descricao: string, titular?: string): boolean {
+    if (!titular) return false;
+    const partes = normalizar(titular).split(/\s+/).filter(p => p.length > 1 && !PARTICULAS.has(p));
+    if (partes.length < 2) return false;
+    const d = normalizar(descricao);
+    return REGEX_TRANSFERENCIA.test(d) && d.includes(partes[0]) && d.includes(partes[partes.length - 1]);
 }
 
 const REGEX_PAGAMENTO_FATURA = /(pgto|pagto|pag|pagamento|deb\.?\s*aut|debito\s*aut).{0,20}(fatura|fat\b|cart[aã]o|itaucard|credicard)|fatura\s*cart|itaucard/i;
@@ -77,7 +112,8 @@ function acharFaturaCorrespondente(valor: number, faturas: ResultadoFatura[]) {
 }
 
 function mensagemDuplicidade(valor: number, fat: ReturnType<typeof acharFaturaCorrespondente>): string {
-    const venc = fat?.vencimento ? ` de vencimento ${fat.vencimento}` : '';
+    const venc = fat?.vencimento && /^\d{4}-\d{2}-\d{2}$/.test(fat.vencimento)
+        ? ` de vencimento ${fat.vencimento.slice(8, 10)}/${fat.vencimento.slice(5, 7)}/${fat.vencimento.slice(0, 4)}` : '';
     if (fat?.relacao === 'esta') {
         return `Este pagamento (${brl(valor)}) bate com o total da fatura${venc} carregada nesta análise — os gastos dela já estão detalhados item a item. Considere excluí-lo do resumo.`;
     }
@@ -93,14 +129,42 @@ export function consolidar(entrada: EntradaConsolidacao) {
     const faturas = entrada.faturas || [];
     const lancamentos: Lancamento[] = [];
 
-    const decidir = (id: string, padrao: boolean) =>
-        exclusoes.has(id) ? false : inclusoes.has(id) ? true : padrao;
+    const ajustes = entrada.ajustes || {};
+    const idsExt = entrada.idsDocumentos?.extratos || [];
+    const idsFat = entrada.idsDocumentos?.faturas || [];
+
+    /** Situação final: ajuste do analista > listas exclusoes/inclusoes > padrão do sistema. */
+    const situacaoDe = (id: string, padrao: boolean): Situacao => {
+        const aj = ajustes[id]?.situacao;
+        if (aj) return aj;
+        if (exclusoes.has(id)) return 'excluido';
+        if (inclusoes.has(id)) return 'incluido';
+        return padrao ? 'incluido' : 'excluido';
+    };
+
+    /** Monta o lançamento aplicando os ajustes do analista por cima do que a IA leu. */
+    const montar = (base: Omit<Lancamento, 'situacao' | 'incluidoNoResumo' | 'ajustadoPeloAnalista' | 'categoriaIA' | 'subcategoriaIA' | 'observacao'>): Lancamento => {
+        const aj = ajustes[base.id] || {};
+        const situacao = situacaoDe(base.id, base.padraoIncluido);
+        return {
+            ...base,
+            categoriaIA: base.categoria,
+            subcategoriaIA: base.subcategoria,
+            categoria: aj.categoria || base.categoria,
+            subcategoria: aj.subcategoria || base.subcategoria,
+            observacao: aj.observacao || undefined,
+            situacao,
+            incluidoNoResumo: situacao === 'incluido',
+            ajustadoPeloAnalista: !!(aj.categoria || aj.subcategoria || aj.observacao || aj.situacao)
+        };
+    };
 
     // ── Extratos ────────────────────────────────────────────────────────────
-    (entrada.extratos || []).forEach((ext, di) => {
+    const extratos = entrada.extratos || [];
+    extratos.forEach((ext, di) => {
         const nomeDoc = `Extrato ${ext.banco || ''}`.trim();
         ext.transacoes.forEach((t, i) => {
-            const id = `extrato-${di}-${i}`;
+            const id = idsExt[di] ? `${idsExt[di]}:${i}` : `extrato-${di}-${i}`;
             let alerta: Alerta | undefined;
 
             if (t.tipo === 'DEBITO' && ehPagamentoDeFatura(t.descricao, t.categoria)) {
@@ -110,19 +174,41 @@ export function consolidar(entrada: EntradaConsolidacao) {
                     faturaRelacionada: fat,
                     mensagem: mensagemDuplicidade(t.valor, fat)
                 };
+            } else if (pareceMesmoTitular(t.descricao, ext.titular)) {
+                alerta = {
+                    tipo: 'possivel_entre_contas',
+                    mensagem: 'Parece transferência para outra conta da própria cliente (mesmo nome do titular). Se for, marque como "entre contas" para não contar como gasto nem como renda.'
+                };
             }
 
-            lancamentos.push({
-                id, origem: 'extrato', documentoIndice: di, documento: nomeDoc,
-                data: t.data, descricao: t.descricao, valor: t.valor,
+            lancamentos.push(montar({
+                id, origem: 'extrato', documentoIndice: di, documentoId: idsExt[di], ref: i, documento: nomeDoc,
+                banco: ext.banco, data: t.data, descricao: t.descricao, valor: t.valor,
                 direcao: t.tipo === 'CREDITO' ? 'entrada' : 'saida',
-                categoria: alerta ? 'Pagamento de fatura' : t.categoria,
+                categoria: alerta?.tipo === 'possivel_duplicidade_fatura' ? 'Pagamento de fatura' : t.categoria,
+                subcategoria: (t as any).subcategoria,
                 padraoIncluido: true,                    // regra do cliente: nunca tira sozinho
-                incluidoNoResumo: decidir(id, true),
                 alerta
-            });
+            }));
         });
     });
+
+    // Par de transferência entre bancos diferentes: mesmo valor, mesmo dia (±1),
+    // uma saída num extrato e uma entrada em outro, ambas com cara de transferência.
+    const doExtrato = lancamentos.filter(l => l.origem === 'extrato' && REGEX_TRANSFERENCIA.test(l.descricao));
+    const diaNum = (d: string) => Date.parse(d + 'T00:00:00Z') / 86400000;
+    for (const s of doExtrato.filter(l => l.direcao === 'saida')) {
+        const par = doExtrato.find(e => e.direcao === 'entrada' && e.documentoIndice !== s.documentoIndice
+            && Math.abs(e.valor - s.valor) < 0.01 && Math.abs(diaNum(e.data) - diaNum(s.data)) <= 1);
+        if (!par) continue;
+        for (const l of [s, par]) {
+            if (l.alerta) continue;
+            l.alerta = {
+                tipo: 'possivel_entre_contas',
+                mensagem: `Mesmo valor saiu de uma conta e entrou em outra (${s.banco || 'banco'} → ${par.banco || 'banco'}) no mesmo dia. Provável transferência entre contas da cliente.`
+            };
+        }
+    }
 
     // ── Faturas ─────────────────────────────────────────────────────────────
     faturas.forEach((fat, di) => {
@@ -130,36 +216,36 @@ export function consolidar(entrada: EntradaConsolidacao) {
         const nomeDoc = `Fatura ${fat.banco || ''}${finais.length ? ` final ${finais.join('/')}` : ''}`.trim();
 
         fat.transacoes.forEach((t, i) => {
-            const id = `fatura-${di}-${i}`;
+            const id = idsFat[di] ? `${idsFat[di]}:${i}` : `fatura-${di}-${i}`;
             const parcela = t.parcelaAtual && t.parcelaTotal ? `${t.parcelaAtual}/${t.parcelaTotal}` : undefined;
 
             if (t.tipo === 'pagamento') {
                 // Pagamento da fatura ANTERIOR, lançado dentro desta fatura. Não é gasto nem
                 // receita do cliente — fica fora do resumo por padrão, mas visível.
-                lancamentos.push({
-                    id, origem: 'fatura', documentoIndice: di, documento: nomeDoc,
-                    data: t.data, descricao: t.estabelecimento, valor: t.valor,
-                    direcao: 'entrada', categoria: 'Pagamento de fatura',
-                    padraoIncluido: false, incluidoNoResumo: decidir(id, false),
+                lancamentos.push(montar({
+                    id, origem: 'fatura', documentoIndice: di, documentoId: idsFat[di], ref: i, documento: nomeDoc,
+                    banco: fat.banco, data: t.data, descricao: t.estabelecimento, valor: t.valor,
+                    direcao: 'entrada', categoria: 'Pagamento de fatura', subcategoria: (t as any).subcategoria,
+                    padraoIncluido: false,
                     alerta: {
                         tipo: 'pagamento_na_fatura',
                         mensagem: 'Pagamento da fatura anterior registrado nesta fatura. Fica fora do resumo por padrão (não é gasto nem receita); inclua só se fizer sentido para a análise.'
                     }
-                });
+                }));
                 return;
             }
 
-            lancamentos.push({
-                id, origem: 'fatura', documentoIndice: di, documento: nomeDoc,
-                data: t.data,
+            lancamentos.push(montar({
+                id, origem: 'fatura', documentoIndice: di, documentoId: idsFat[di], ref: i, documento: nomeDoc,
+                banco: fat.banco, data: t.data,
                 descricao: t.estabelecimento + (t.portador ? ` — ${t.portador}` : ''),
                 valor: t.valor,
                 // estorno de cartão volta dinheiro: entra como "entrada" e abate os gastos
                 direcao: TIPOS_DEBITO_FATURA.includes(t.tipo) ? 'saida' : 'entrada',
-                categoria: t.categoria,
-                padraoIncluido: true, incluidoNoResumo: decidir(id, true),
+                categoria: t.categoria, subcategoria: (t as any).subcategoria,
+                padraoIncluido: true,
                 parcela
-            });
+            }));
         });
     });
 
@@ -248,6 +334,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
             },
             temEncargosNoCartao: temEncargos
         },
-        conferenciaFaturas: faturas.map((f, i) => ({ indice: i, vencimento: f.vencimento, ...f.conferencia }))
+        conferenciaFaturas: faturas.map((f, i) => ({ indice: i, vencimento: f.vencimento, ...f.conferencia })),
+        sugestoesEntreContas: lancamentos.filter(l => l.alerta?.tipo === 'possivel_entre_contas' && l.situacao !== 'entre_contas').length
     };
 }

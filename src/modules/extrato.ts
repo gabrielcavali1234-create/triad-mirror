@@ -10,7 +10,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ExtracaoConfig, normalizarNomeBanco } from '../core/ia';
 import { ModuloDocumento } from '../core/pipeline';
-import { CATEGORIAS_TEXTO } from './categorias';
+import { CATEGORIAS_TEXTO, REGRA_SUBCATEGORIA } from './categorias';
 
 export interface TransacaoExtrato {
     data: string;
@@ -18,6 +18,7 @@ export interface TransacaoExtrato {
     valor: number;
     tipo: 'CREDITO' | 'DEBITO';
     categoria: string;
+    subcategoria?: string;
 }
 
 export interface ResultadoExtrato {
@@ -69,6 +70,8 @@ REGRAS DE EXTRAÇÃO:
    REGRA ESPECIAL — PAGAMENTO DE FATURA DE CARTÃO: débitos que sejam pagamento de fatura de cartão de crédito (ex: "PGTO FATURA", "PAGAMENTO CARTAO", "DEB AUT FATURA", "ITAUCARD", "FATURA CARTAO", "PAG FAT") DEVEM receber a categoria "Pagamento de fatura". Isso é essencial: o sistema usa essa categoria para avisar o analista sobre possível duplicidade com a fatura detalhada.
    Use "Tarifa bancária" para tarifas/pacotes de serviço, "Encargos e juros" para juros de cheque especial/IOF de conta, "Empréstimo e financiamento" para parcelas de empréstimo/financiamento.
 
+${REGRA_SUBCATEGORIA}
+
 PARA O ITAÚ ESPECIFICAMENTE:
 - PIX/TED/DOC com descrições NEUTRAS ("PIX TRANSF Maria 03/06", às vezes sem espaço antes da data). NUNCA presuma DEBITO só por ver "PIX TRANSF" — a direção vem do sinal/cor/coluna do valor.
 - Linhas "SALDO DO DIA" são saldo progressivo — IGNORE-as.
@@ -106,7 +109,8 @@ const EXTRATO_TOOL: Anthropic.Tool = {
                         descricao: { type: 'string' },
                         valor: { type: 'number' },
                         tipo: { type: 'string', enum: ['CREDITO', 'DEBITO'] },
-                        categoria: { type: 'string' }
+                        categoria: { type: 'string' },
+                        subcategoria: { type: 'string', description: 'Subcategoria detalhada, da lista da categoria escolhida.' }
                     },
                     required: ['data', 'descricao', 'valor', 'tipo', 'categoria']
                 }

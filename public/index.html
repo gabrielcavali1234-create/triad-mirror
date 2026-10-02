@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>TRIAD Mirror</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --preto:#111111;--preto2:#1d1d1d;--preto3:#2a2a2a;--amarelo:#FFD23F;--amarelo-claro:#fff4c2;--amarelo-fundo:#fff7d6;
+  --fundo:#F6F5F0;--branco:#ffffff;--borda:#e2e0d6;--borda2:#efeee6;--texto:#111111;--suave:#6b6b63;--fraco:#8a8a82;--apagado:#a8a89f;
+  --verde:#1f6b3d;--verde-fundo:#e3f3e9;--verde-borda:#bfe3cc;--vermelho:#a8321f;--vermelho-fundo:#fbe9e7;
+  --azul:#1e4a8a;--azul-fundo:#e6eefb;--azul-borda:#c8d8f2;--marrom:#6b5200;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fundo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.oculto{display:none!important}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.suave{color:var(--suave)}.fraco{color:var(--fraco)}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 9px;font-size:12px;white-space:nowrap}
+.pill.amarelo{background:var(--amarelo-claro);color:var(--marrom)}.pill.verde{background:var(--verde-fundo);color:var(--verde)}
+.pill.cinza{background:#efeee6;color:#5f5e5a}.pill.vermelho{background:var(--vermelho-fundo);color:var(--vermelho)}.pill.azul{background:var(--azul-fundo);color:var(--azul)}
+.btn{border:1px solid var(--borda);background:var(--branco);border-radius:8px;padding:8px 14px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:#c9c7bc}
+.btn.primario{background:var(--amarelo);border-color:var(--amarelo);color:var(--preto)}
+.btn.escuro{background:var(--preto);border-color:var(--preto);color:var(--branco)}
+.btn.perigo{color:var(--vermelho)}
+.btn:disabled{opacity:.5;cursor:default}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=search],select,textarea{width:100%;border:1px solid var(--borda);border-radius:8px;padding:9px 11px;background:var(--branco)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--amarelo);outline-offset:0;border-color:var(--preto)}
+label.rot{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+.erro-txt{color:var(--vermelho);font-size:13px;margin-top:8px;min-height:18px}
+
+/* topo */
+.topo{background:var(--preto);color:var(--branco);height:56px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1.5px;font-size:15px;cursor:pointer}
+.logo i.q{width:13px;height:13px;border-radius:3px;background:var(--amarelo);display:inline-block}
+.logo span{color:#8f8f86;font-weight:600}
+.topo .dir{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--amarelo);color:var(--preto);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:0}
+.menu-usuario{position:absolute;right:20px;top:52px;background:var(--branco);color:var(--texto);border:1px solid var(--borda);border-radius:10px;padding:6px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:30}
+.menu-usuario button{width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:6px}
+.menu-usuario button:hover{background:var(--fundo)}
+.salvo{font-size:12px;color:#a5a59c;display:flex;align-items:center;gap:5px}
+
+main{max-width:1280px;margin:0 auto;padding:22px 20px 110px}
+.card{background:var(--branco);border:1px solid var(--borda);border-radius:12px}
+
+/* login */
+.login{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.login .esq{background:var(--preto);color:var(--branco);padding:48px;display:flex;flex-direction:column;justify-content:space-between}
+.login .esq h1{font-size:34px;line-height:1.2;margin:0 0 16px;font-weight:700}
+.login .esq h1 em{color:var(--amarelo);font-style:normal}
+.login .esq p{color:#a5a59c;line-height:1.6;max-width:440px;margin:0}
+.login .dir{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--branco)}
+.login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:16px}
+@media (max-width:820px){.login{grid-template-columns:1fr}.login .esq{padding:28px;min-height:auto;gap:28px}.login .esq h1{font-size:26px}}
+
+/* clientes */
+.cab-pagina{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.cab-pagina h1{font-size:22px;margin:0}
+.tabela-clientes{width:100%;border-collapse:collapse}
+.tabela-clientes th{text-align:left;font-size:12px;color:var(--suave);font-weight:600;padding:11px 16px;border-bottom:2px solid var(--preto)}
+.tabela-clientes td{padding:13px 16px;border-bottom:1px solid var(--borda2);vertical-align:middle}
+.tabela-clientes tr.linha{cursor:pointer}
+.tabela-clientes tr.linha:hover td{background:#faf9f5}
+.ini{width:34px;height:34px;border-radius:50%;background:var(--preto);color:var(--amarelo);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.vazio{padding:48px 20px;text-align:center}
+.vazio h2{margin:0 0 6px;font-size:18px}
+
+/* modal */
+.fundo-modal{position:fixed;inset:0;background:rgba(17,17,17,.45);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:50;overflow:auto}
+.modal{background:var(--branco);border-radius:14px;width:100%;max-width:560px;padding:22px}
+.modal h2{margin:0 0 4px;font-size:18px}
+.modal .acoes{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.grade2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.grade2{grid-template-columns:1fr}}
+.opcoes-tipo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opcao-tipo{border:1px solid var(--borda);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer;background:var(--branco);text-align:left}
+.opcao-tipo.on{border:2px solid var(--preto);padding:11px}
+.ic{width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.ic.conta{background:var(--azul-fundo);color:var(--azul)}.ic.cartao{background:var(--amarelo-claro);color:var(--marrom)}.ic.tudo{background:var(--preto);color:var(--amarelo)}
+
+/* perfil */
+.perfil{padding:16px 18px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}
+.perfil .ini{width:46px;height:46px;font-size:15px}
+.perfil h1{font-size:20px;margin:0}
+.docs{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 16px}
+.doc{border:1px solid var(--borda);border-radius:9px;padding:7px 10px;display:flex;align-items:center;gap:8px;font-size:12px;background:#faf9f5}
+.doc button{border:0;background:none;color:var(--fraco);padding:0 2px;font-size:15px}
+.abas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.aba{border:1px solid var(--borda);background:var(--branco);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;text-align:left}
+.aba.on{border:2px solid var(--preto);padding:11px 13px}
+.aba b{display:block;font-size:14px}
+.aba small{color:var(--suave);font-size:12px}
+@media (max-width:760px){.abas{grid-template-columns:1fr}}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:12px 14px}
+.kpi small{display:block;color:var(--suave);font-size:12px;margin-bottom:4px}
+.kpi b{font-size:19px}
+.kpi.escuro{background:var(--preto);border-color:var(--preto);color:var(--branco)}
+.kpi.escuro small{color:#a5a59c}.kpi.escuro b{color:var(--amarelo)}
+.alerta{background:var(--amarelo-fundo);border:1px solid var(--amarelo);border-radius:10px;padding:10px 12px;font-size:13px;color:#5c4600;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start}
+.alerta.azul{background:var(--azul-fundo);border-color:var(--azul-borda);color:var(--azul)}
+
+/* conta - estilo triad */
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stats span{background:var(--preto2);color:var(--branco);border-radius:7px;padding:5px 10px;font-size:12px}
+.meses{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:6px}
+.mc{flex:0 0 168px;background:var(--branco);border:1px solid var(--borda);border-radius:11px;padding:11px 12px;cursor:pointer;text-align:left}
+.mc.on{border:2px solid var(--preto);padding:10px 11px}
+.mc b{display:block;margin-bottom:4px}
+.mc div{font-size:12px;display:flex;justify-content:space-between;gap:6px}
+.medias{background:var(--preto);color:var(--branco);border-radius:12px;padding:13px 16px;display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:10px;align-items:center;margin-bottom:14px}
+.medias small{color:#a5a59c;font-size:12px;display:block}
+.medias b{font-size:17px}
+@media (max-width:700px){.medias{grid-template-columns:1fr 1fr}}
+.layout-conta{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:1000px){.layout-conta{grid-template-columns:1fr}}
+.filtros{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.fc{border:1px solid var(--borda);background:var(--branco);border-radius:99px;padding:5px 11px;font-size:12px}
+.fc.on{background:var(--preto);color:var(--amarelo);border-color:var(--preto)}
+.lote{background:var(--preto);color:var(--branco);border-radius:10px;padding:9px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:sticky;top:62px;z-index:10}
+.lote button{background:var(--preto3);border:0;color:var(--branco);border-radius:7px;padding:6px 10px;font-size:12px}
+.lote button:hover{background:#3a3a3a}
+.mes{background:var(--branco);border:1px solid var(--borda);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.mes-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--preto);color:var(--branco);flex-wrap:wrap}
+.mes-cab b{font-size:14px}
+.mes-cab input[type=search]{background:var(--preto3);border:0;color:var(--branco);padding:6px 10px;width:200px;font-size:12px}
+.mes-cab input[type=search]::placeholder{color:#a5a59c}
+.bloco-cab{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;font-weight:600;font-size:13px;border-top:1px solid var(--borda);gap:8px;flex-wrap:wrap}
+.bloco-cab.conta{background:var(--azul-fundo);color:var(--azul)}.bloco-cab.cartao{background:var(--amarelo-claro);color:var(--marrom)}
+.r{display:grid;grid-template-columns:22px 50px minmax(0,1fr) 210px 120px 132px;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--borda2)}
+.r:hover{background:#fcfbf7}
+.r.sel{background:#fffbe6}
+.r.off .desc b,.r.off .valor{color:var(--apagado)}
+.r.off .valor{text-decoration:line-through}
+.r .desc b{font-weight:600;word-break:break-word}
+.r .meta{font-size:12px;color:var(--fraco);margin-top:2px}
+.r .nota{font-size:12px;color:var(--marrom);margin-top:4px}
+.r .aviso{font-size:12px;color:var(--azul);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.r .aviso button{border:1px solid var(--azul-borda);background:var(--branco);color:var(--azul);border-radius:6px;padding:2px 8px;font-size:12px}
+.r .valor{text-align:right;font-weight:700}
+.cat{border:1px solid var(--borda);border-radius:8px;padding:5px 9px;background:var(--branco);text-align:left;font-size:12px;line-height:1.35;width:100%}
+.cat:hover{border-color:var(--preto)}
+.cat .ponto{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.cat .sub{color:var(--suave)}
+.cat.mudou{border-color:var(--amarelo);background:#fffdf3}
+.sit{border:1px solid var(--borda);background:var(--branco);border-radius:99px;padding:4px 10px;font-size:12px;white-space:nowrap}
+.sit.incluido{background:var(--verde-fundo);border-color:var(--verde-borda);color:var(--verde)}
+.sit.excluido{background:#efeee6;color:#5f5e5a}
+.sit.entre_contas{background:var(--azul-fundo);border-color:var(--azul-borda);color:var(--azul)}
+.acoes-linha{display:flex;gap:4px;justify-content:flex-end;align-items:center}
+.icone-btn{border:1px solid var(--borda);background:var(--branco);border-radius:7px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--suave)}
+.icone-btn:hover{border-color:var(--preto);color:var(--preto)}
+.icone-btn.tem{color:var(--marrom);border-color:var(--amarelo);background:#fffdf3}
+.menu-sit{position:absolute;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:40;min-width:250px}
+.menu-sit button{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:8px 9px;border-radius:7px}
+.menu-sit button:hover{background:var(--fundo)}
+.menu-sit small{display:block;color:var(--suave);font-size:12px}
+.r-cab{font-size:12px;color:var(--suave);background:#faf9f5;font-weight:600}
+.r-cab:hover{background:#faf9f5}
+@media (max-width:860px){
+  .r{grid-template-columns:22px minmax(0,1fr) 110px;grid-template-areas:"ck desc valor" "ck cat cat" "ck acoes acoes"}
+  .r>.ck{grid-area:ck}.r>.data{display:none}.r>.desc{grid-area:desc}.r>.cat-col{grid-area:cat}.r>.valor{grid-area:valor}.r>.acoes-linha{grid-area:acoes;justify-content:flex-start}
+  .r-cab{display:none}
+}
+.lateral{display:flex;flex-direction:column;gap:14px}
+.lateral .card{padding:14px}
+.lateral h3{margin:0 0 8px;font-size:12px;letter-spacing:.6px;color:var(--marrom)}
+.relatorio p{margin:0 0 8px;font-size:13px;line-height:1.55;color:#3a3a36}
+.rosca{width:150px;height:150px;border-radius:50%;margin:4px auto 10px;display:flex;align-items:center;justify-content:center}
+.rosca div{width:98px;height:98px;border-radius:50%;background:var(--branco);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.leg{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin:5px 0;cursor:pointer}
+.leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.barra-cat{display:grid;grid-template-columns:180px minmax(0,1fr) 110px 46px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.barra-cat .trilho{background:var(--borda2);border-radius:4px;height:11px;overflow:hidden}
+.barra-cat .trilho span{display:block;height:100%}
+@media (max-width:600px){.barra-cat{grid-template-columns:110px minmax(0,1fr) 90px}.barra-cat .pct{display:none}}
+.alterna{background:var(--preto2);border-radius:9px;padding:3px;display:inline-flex}
+.alterna button{border:0;background:none;color:#a5a59c;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600}
+.alterna button.on{background:var(--amarelo);color:var(--preto)}
+
+/* cartão */
+.fatura-cab{padding:14px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--borda)}
+.conf{width:100%;border-collapse:collapse;font-size:13px}
+.conf td,.conf th{padding:7px 14px;border-top:1px solid var(--borda2);text-align:left}
+.conf th{font-size:12px;color:var(--suave)}
+.conf td.n{text-align:right}
+
+/* barra de ações flutuante */
+.barra-acoes{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--preto);border-radius:14px;padding:7px;display:flex;gap:4px;z-index:25;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 24px);overflow-x:auto}
+.barra-acoes button{background:none;border:0;color:var(--branco);padding:9px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap}
+.barra-acoes button:hover{background:var(--preto3)}
+.barra-acoes button.destaque{background:var(--amarelo);color:var(--preto)}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--preto);color:var(--branco);padding:10px 16px;border-radius:10px;z-index:60;font-size:13px;max-width:90vw}
+.toast.erro{background:var(--vermelho)}
+.progresso{height:6px;background:var(--borda);border-radius:99px;overflow:hidden;margin-top:12px}
+.progresso div{height:100%;background:var(--amarelo);width:0;transition:width .3s}
+.carregando{padding:60px;text-align:center;color:var(--suave)}
+</style>
+</head>
+<body>
+<div id="app"><div class="carregando">Carregando…</div></div>
+
+<script>
+(() => {
+'use strict';
+// ════════════════════════════════════════════════════════════════════════
+// Utilidades
+// ════════════════════════════════════════════════════════════════════════
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const brl = n => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const dataBR = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : esc(iso || '');
+const dataLonga = iso => { try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return ''; } };
+const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const nomeMes = k => MESES[Number(k.slice(5, 7)) - 1] + ' de ' + k.slice(0, 4);
+const nomeMesCurto = k => MESES[Number(k.slice(5, 7)) - 1].slice(0, 3) + '/' + k.slice(2, 4);
+const iniciais = n => String(n || '?').trim().split(/\s+/).filter(Boolean).map(p => p[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join('').toUpperCase().slice(0, 2);
+const arred = n => Math.round(n * 100) / 100;
+const CORES = ['#111111', '#FFD23F', '#1e4a8a', '#1f8a4c', '#d85a30', '#7f77dd', '#d4537e', '#1d9e75', '#ba7517', '#888780', '#378add', '#993c1d'];
+const corDe = (() => { const m = {}; let i = 0; return c => m[c] || (m[c] = CORES[i++ % CORES.length]); })();
+const NOME_SIT = { incluido: 'No resumo', excluido: 'Ignorado', entre_contas: 'Entre contas' };
+
+function toast(msg, erro) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast' + (erro ? ' erro' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), erro ? 6000 : 2600);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Sessão e API
+// ════════════════════════════════════════════════════════════════════════
+const ARMAZ = 'mirror.sessao';
+let sessao = null;
+try { sessao = JSON.parse(localStorage.getItem(ARMAZ) || 'null'); } catch { sessao = null; }
+function salvarSessao(s) { sessao = s; try { s ? localStorage.setItem(ARMAZ, JSON.stringify(s)) : localStorage.removeItem(ARMAZ); } catch {} }
+
+let renovando = null;
+async function renovarSessao() {
+  if (!sessao?.renovacao) return false;
+  renovando = renovando || fetch('/api/auth/renovar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ renovacao: sessao.renovacao }) })
+    .then(async r => { if (!r.ok) return false; salvarSessao(await r.json()); return true; })
+    .catch(() => false).finally(() => { setTimeout(() => { renovando = null; }, 0); });
+  return renovando;
+}
+
+async function api(metodo, rota, corpo, opcoes = {}) {
+  const fazer = () => {
+    const h = {};
+    if (sessao?.token) h.Authorization = 'Bearer ' + sessao.token;
+    let body;
+    if (corpo instanceof FormData) body = corpo;
+    else if (corpo !== undefined) { h['Content-Type'] = 'application/json'; body = JSON.stringify(corpo); }
+    return fetch(rota, { method: metodo, headers: h, body });
+  };
+  if (sessao && sessao.expiraEm && sessao.expiraEm * 1000 < Date.now() + 60000) await renovarSessao();
+  let r = await fazer();
+  if (r.status === 401 && sessao && !opcoes.semRenovar) {
+    if (await renovarSessao()) r = await fazer();
+  }
+  if (r.status === 401) { salvarSessao(null); location.hash = '#/login'; throw new Error('Sua sessão expirou. Entre de novo.'); }
+  if (opcoes.blob) { if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'Erro ' + r.status); } return r; }
+  const dados = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(dados.error || 'Erro ' + r.status); e.status = r.status; e.codigo = dados.codigo; throw e; }
+  return dados;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Estado
+// ════════════════════════════════════════════════════════════════════════
+const E = {
+  taxonomia: null,              // { categorias, subcategorias }
+  clientes: null, buscaClientes: '',
+  cli: null,                    // { cliente, analise, documentos, apuracao }
+  aba: 'conta', modoMix: 'cat', mesSel: null, filtroCat: {}, busca: {}, sel: new Set(),
+  salvando: 0, salvoEm: null
+};
+
+// ════════════════════════════════════════════════════════════════════════
+// Roteamento
+// ════════════════════════════════════════════════════════════════════════
+window.addEventListener('hashchange', rotear);
+async function rotear() {
+  fecharMenus();
+  const h = location.hash || '#/clientes';
+  if (!sessao) { if (h !== '#/login') { location.hash = '#/login'; return; } return telaLogin(); }
+  if (h === '#/login') { location.hash = '#/clientes'; return; }
+  if (!E.taxonomia) { try { E.taxonomia = await api('GET', '/api/app/categorias'); } catch (e) { return telaErro(e.message); } }
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(conta|cartao|tudo))?$/i);
+  if (m) {
+    if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); }
+    if (m[2]) E.aba = m[2];
+    return telaCliente(m[1]);
+  }
+  return telaClientes();
+}
+
+function telaErro(msg) {
+  $('#app').innerHTML = topo() + `<main><div class="card vazio"><h2>Não foi possível carregar</h2><p class="suave">${esc(msg)}</p><button class="btn" onclick="location.reload()">Tentar de novo</button></div></main>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Topo
+// ════════════════════════════════════════════════════════════════════════
+function topo(extraDir = '') {
+  return `<header class="topo">
+    <div class="logo" data-acao="ir-clientes"><i class="q"></i>TRIAD <span>MIRROR</span></div>
+    <div class="dir">${extraDir}<button class="avatar" data-acao="menu-usuario" aria-label="Menu do usuário">${esc(iniciais(sessao?.usuario?.nome))}</button></div>
+  </header>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════════════════════════════════
+function telaLogin() {
+  document.title = 'Entrar — TRIAD Mirror';
+  $('#app').innerHTML = `<div class="login">
+    <div class="esq">
+      <div class="logo"><i class="q"></i>TRIAD <span>MIRROR</span></div>
+      <div><h1>Pra onde vai o dinheiro do seu cliente, <em>em minutos.</em></h1>
+      <p>Extratos e faturas de cartão lidos por IA, conferidos com os totais do banco e prontos para a sua análise.</p></div>
+      <div class="suave" style="display:flex;gap:18px;font-size:13px;color:#a5a59c;flex-wrap:wrap"><span><i class="ti ti-lock"></i> Dados no Brasil</span><span><i class="ti ti-shield-check"></i> Acesso por analista</span></div>
+    </div>
+    <div class="dir">
+      <form id="fLogin" novalidate>
+        <div><h2 style="margin:0 0 4px;font-size:22px">Entrar</h2><p class="suave" style="margin:0">Use o acesso enviado pela sua empresa</p></div>
+        <div><label class="rot" for="lEmail">E-mail</label><input id="lEmail" type="email" autocomplete="username" placeholder="analista@consultoria.com.br" required></div>
+        <div><label class="rot" for="lSenha">Senha</label>
+          <div style="position:relative"><input id="lSenha" type="password" autocomplete="current-password" required style="padding-right:42px">
+          <button type="button" id="lVer" aria-label="Mostrar senha" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--suave);font-size:18px"><i class="ti ti-eye"></i></button></div></div>
+        <button class="btn primario" type="submit" id="lBtn" style="justify-content:center;padding:11px">Entrar</button>
+        <div class="erro-txt" id="lErro" role="alert"></div>
+        <p class="suave" style="font-size:12px;margin:0;text-align:center">Esqueceu a senha? Fale com o administrador da sua empresa.</p>
+      </form>
+    </div></div>`;
+  $('#lVer').onclick = () => { const i = $('#lSenha'); i.type = i.type === 'password' ? 'text' : 'password'; };
+  $('#lEmail').focus();
+  $('#fLogin').onsubmit = async ev => {
+    ev.preventDefault();
+    const email = $('#lEmail').value.trim(), senha = $('#lSenha').value;
+    if (!email || !senha) { $('#lErro').textContent = 'Preencha e-mail e senha.'; return; }
+    $('#lBtn').disabled = true; $('#lBtn').textContent = 'Entrando…'; $('#lErro').textContent = '';
+    try {
+      const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, senha }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || 'Não foi possível entrar.');
+      salvarSessao(d);
+      location.hash = '#/clientes';
+    } catch (e) {
+      $('#lErro').textContent = e.message;
+      $('#lBtn').disabled = false; $('#lBtn').textContent = 'Entrar';
+    }
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════════════════════════════════════
+async function telaClientes() {
+  document.title = 'Clientes — TRIAD Mirror';
+  $('#app').innerHTML = topo() + `<main><div class="carregando">Carregando clientes…</div></main>`;
+  try { E.clientes = (await api('GET', '/api/app/clientes')).clientes; }
+  catch (e) { return telaErro(e.message); }
+  desenharClientes();
+}
+
+function situacaoCliente(c) {
+  const docs = c.documentos || [];
+  const alertas = [];
+  if (docs.some(d => d.em_rotativo)) alertas.push('<span style="color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> Rotativo no cartão</span>');
+  if (docs.some(d => d.qualidade_ruim)) alertas.push('<span style="color:var(--vermelho)"><i class="ti ti-file-alert"></i> Documento ilegível</span>');
+  const temExt = docs.some(d => d.tipo === 'extrato'), temFat = docs.some(d => d.tipo === 'fatura');
+  if (temExt && !temFat) alertas.push('<span style="color:var(--marrom)"><i class="ti ti-credit-card"></i> Falta fatura</span>');
+  if (temFat && !temExt) alertas.push('<span style="color:var(--marrom)"><i class="ti ti-building-bank"></i> Falta extrato</span>');
+  let pill = '<span class="pill cinza">Novo</span>';
+  if (docs.length) pill = c.analise?.status === 'concluida' ? '<span class="pill verde">Concluída</span>' : '<span class="pill amarelo">Em revisão</span>';
+  return { pill, alertas };
+}
+
+function desenharClientes() {
+  const q = E.buscaClientes.toLowerCase();
+  const lista = (E.clientes || []).filter(c => !q || [c.nome, c.cpf, c.email].some(v => String(v || '').toLowerCase().includes(q)));
+  const emAndamento = (E.clientes || []).filter(c => c.documentos?.length && c.analise?.status !== 'concluida').length;
+  const linhas = lista.map(c => {
+    const s = situacaoCliente(c);
+    const ext = c.documentos.filter(d => d.tipo === 'extrato').length, fat = c.documentos.filter(d => d.tipo === 'fatura').length;
+    const docsTxt = c.documentos.length ? [ext ? `${ext} extrato${ext > 1 ? 's' : ''}` : '', fat ? `${fat} fatura${fat > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') : 'Sem documentos';
+    return `<tr class="linha" data-acao="abrir-cliente" data-id="${c.id}">
+      <td><div style="display:flex;align-items:center;gap:10px"><span class="ini">${esc(iniciais(c.nome))}</span><div><b>${esc(c.nome)}</b><div class="fraco" style="font-size:12px">${esc(docsTxt)}</div></div></div></td>
+      <td class="suave">${c.analise?.atualizado_em && c.documentos.length ? dataLonga(c.analise.atualizado_em) : '—'}</td>
+      <td>${s.pill}</td>
+      <td style="font-size:13px">${s.alertas.join('<br>') || '<span class="fraco">Nenhum</span>'}</td>
+      <td class="suave" style="font-size:13px">${esc(c.criado_por_nome || '')}</td>
+    </tr>`;
+  }).join('');
+  $('#app').innerHTML = topo() + `<main>
+    <div class="cab-pagina">
+      <div><h1>Seus clientes</h1><div class="suave" style="margin-top:4px">${(E.clientes || []).length} cliente(s) · ${emAndamento} análise(s) em andamento</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="search" id="bCli" placeholder="Buscar por nome, CPF ou e-mail" value="${esc(E.buscaClientes)}" style="width:260px">
+        <button class="btn primario" data-acao="novo-cliente"><i class="ti ti-plus"></i> Novo cliente</button>
+      </div>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      ${E.clientes.length ? `<table class="tabela-clientes"><thead><tr><th>Cliente</th><th>Última atualização</th><th>Situação</th><th>Alertas</th><th>Responsável</th></tr></thead><tbody>${linhas || '<tr><td colspan="5" class="suave" style="padding:24px">Nenhum cliente encontrado para essa busca.</td></tr>'}</tbody></table>`
+      : `<div class="vazio"><h2>Cadastre seu primeiro cliente</h2><p class="suave">Cada cliente tem um perfil próprio, com os extratos, as faturas e a sua análise.</p><button class="btn primario" data-acao="novo-cliente"><i class="ti ti-plus"></i> Novo cliente</button></div>`}
+    </div></main>`;
+  const b = $('#bCli');
+  if (b) { b.oninput = () => { E.buscaClientes = b.value; const p = b.selectionStart; desenharClientes(); const n = $('#bCli'); n.focus(); n.setSelectionRange(p, p); }; }
+}
+
+function modalCliente(c) {
+  const v = k => esc(c?.[k] ?? '');
+  abrirModal(`<h2>${c ? 'Editar perfil' : 'Novo cliente'}</h2><p class="suave" style="margin:0 0 16px">Só o nome é obrigatório. O resto ajuda na análise e no relatório.</p>
+    <form id="fCli" novalidate>
+      <div style="margin-bottom:14px"><label class="rot" for="cNome">Nome completo *</label><input id="cNome" type="text" value="${v('nome')}" maxlength="200" required></div>
+      <div class="grade2">
+        <div><label class="rot" for="cCpf">CPF</label><input id="cCpf" type="text" value="${v('cpf')}" placeholder="000.000.000-00" maxlength="20"></div>
+        <div><label class="rot" for="cTel">Telefone</label><input id="cTel" type="text" value="${v('telefone')}" placeholder="(11) 90000-0000" maxlength="30"></div>
+        <div><label class="rot" for="cEmail">E-mail</label><input id="cEmail" type="email" value="${v('email')}" maxlength="200"></div>
+        <div><label class="rot" for="cRenda">Renda declarada (R$ por mês)</label><input id="cRenda" type="number" min="0" step="0.01" value="${v('renda_declarada')}"></div>
+      </div>
+      <div style="margin-top:14px"><label class="rot" for="cObj">Objetivo da consultoria</label><input id="cObj" type="text" value="${v('objetivo')}" placeholder="Sair do rotativo, montar reserva de emergência…" maxlength="2000"></div>
+      <div style="margin-top:14px"><label class="rot" for="cObs">Observações</label><textarea id="cObs" rows="3" maxlength="2000">${v('observacao')}</textarea></div>
+      <div class="erro-txt" id="cErro" role="alert"></div>
+      <div class="acoes"><button type="button" class="btn" data-acao="fechar-modal">Cancelar</button><button class="btn primario" type="submit" id="cBtn">${c ? 'Salvar' : 'Criar cliente'}</button></div>
+    </form>`);
+  $('#cNome').focus();
+  $('#cNome').oninput = () => { $('#cErro').textContent = ''; };
+  $('#fCli').onsubmit = async ev => {
+    ev.preventDefault();
+    const dados = { nome: $('#cNome').value.trim(), cpf: $('#cCpf').value, telefone: $('#cTel').value, email: $('#cEmail').value, renda_declarada: $('#cRenda').value, objetivo: $('#cObj').value, observacao: $('#cObs').value };
+    if (!dados.nome) { $('#cErro').textContent = 'Informe o nome do cliente.'; $('#cNome').focus(); return; }
+    if (dados.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email)) { $('#cErro').textContent = 'E-mail inválido.'; return; }
+    $('#cBtn').disabled = true;
+    try {
+      if (c) { const r = await api('PATCH', '/api/app/clientes/' + c.id, dados); E.cli.cliente = r.cliente; fecharModal(); desenharCliente(); toast('Perfil salvo'); }
+      else { const r = await api('POST', '/api/app/clientes', dados); fecharModal(); location.hash = '#/cliente/' + r.cliente.id + '/conta'; }
+    } catch (e) { $('#cErro').textContent = e.message; $('#cBtn').disabled = false; }
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// CLIENTE — apuração
+// ════════════════════════════════════════════════════════════════════════
+async function telaCliente(id, silencioso) {
+  if (!silencioso) $('#app').innerHTML = topo() + `<main><div class="carregando">Abrindo análise…</div></main>`;
+  try { E.cli = await api('GET', '/api/app/clientes/' + id); }
+  catch (e) { return telaErro(e.message); }
+  document.title = E.cli.cliente.nome + ' — TRIAD Mirror';
+  desenharCliente();
+}
+
+const lancs = () => E.cli?.apuracao?.lancamentos || [];
+/** Mostra o ano só quando ele é diferente do ano mais recente da análise (ex: parcelas antigas). */
+const anoDiferente = iso => { const anos = lancs().map(l => (l.data || '').slice(0, 4)).filter(Boolean); const max = anos.sort().pop(); return iso && max && iso.slice(0, 4) !== max; };
+const docsDe = tipo => (E.cli?.documentos || []).filter(d => d.tipo === tipo);
+
+function salvoTxt() {
+  if (E.salvando) return '<span class="salvo"><i class="ti ti-loader-2"></i> Salvando…</span>';
+  if (E.salvoEm) return `<span class="salvo"><i class="ti ti-check" style="color:#7fd19c"></i> Salvo ${new Date(E.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>`;
+  return '';
+}
+
+function desenharCliente() {
+  const { cliente, analise, documentos } = E.cli;
+  const ext = docsDe('extrato'), fat = docsDe('fatura');
+  const bancosConta = [...new Set(ext.map(d => d.banco).filter(Boolean))];
+  const cartoes = fat.map(d => d.produto || ('Cartão ' + (d.banco || ''))).filter((v, i, a) => a.indexOf(v) === i);
+  if (!ext.length && fat.length && E.aba === 'conta') E.aba = 'cartao';
+  const concluida = analise.status === 'concluida';
+  const info = [cliente.cpf ? 'CPF ' + esc(cliente.cpf) : '', cliente.telefone ? esc(cliente.telefone) : '', cliente.renda_declarada ? 'Renda declarada ' + brl(cliente.renda_declarada) : '', cliente.objetivo ? 'Objetivo: ' + esc(cliente.objetivo) : ''].filter(Boolean).join(' · ');
+
+  const chipsDocs = documentos.map(d => {
+    const conta = d.tipo === 'extrato';
+    const extra = conta ? '' : (d.conferencia?.bateu === true ? ' <span class="pill verde" title="Todos os totais impressos conferem">conferida</span>' : d.conferencia?.bateu === false ? ' <span class="pill vermelho">divergente</span>' : '');
+    const ruim = d.qualidade_ruim ? ' <span class="pill vermelho" title="' + esc(d.motivo_qualidade_ruim || '') + '">ilegível</span>' : '';
+    return `<span class="doc"><span class="ic ${conta ? 'conta' : 'cartao'}" style="width:24px;height:24px;font-size:14px;border-radius:6px"><i class="ti ${conta ? 'ti-building-bank' : 'ti-credit-card'}"></i></span>
+      <span><b>${conta ? 'Conta' : 'Cartão'} ${esc(d.banco || '')}</b>${!conta && d.vencimento ? ' · venc. ' + dataBR(d.vencimento) + '/' + d.vencimento.slice(2, 4) : ''} <span class="fraco">· ${d.lancamentos} lanç.</span>${extra}${ruim}</span>
+      <button data-acao="excluir-doc" data-id="${d.id}" title="Excluir documento" aria-label="Excluir documento"><i class="ti ti-x"></i></button></span>`;
+  }).join('');
+
+  $('#app').innerHTML = topo(salvoTxt()) + `<main>
+    <div style="margin-bottom:10px"><a href="#/clientes" class="suave" style="text-decoration:none;font-size:13px"><i class="ti ti-arrow-left"></i> Clientes</a></div>
+    <div class="card">
+      <div class="perfil">
+        <div style="display:flex;gap:14px;align-items:center;min-width:0"><span class="ini">${esc(iniciais(cliente.nome))}</span>
+          <div style="min-width:0"><h1>${esc(cliente.nome)}</h1><div class="suave" style="font-size:13px;margin-top:3px">${info || 'Perfil sem dados complementares'}</div></div></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${concluida ? '<span class="pill verde"><i class="ti ti-check"></i> Análise concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}
+          <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Perfil</button>
+        </div>
+      </div>
+      ${documentos.length ? `<div class="docs">${chipsDocs}<button class="btn" data-acao="novo-doc" style="padding:6px 11px;font-size:13px"><i class="ti ti-plus"></i> Documento</button></div>` : ''}
+    </div>
+    ${documentos.length ? `
+    <div class="abas" role="tablist">
+      <button class="aba ${E.aba === 'tudo' ? 'on' : ''}" data-acao="aba" data-aba="tudo" role="tab"><span class="ic tudo"><i class="ti ti-layout-list"></i></span><span><b>Tudo junto</b><small>Conta + cartão</small></span></button>
+      <button class="aba ${E.aba === 'conta' ? 'on' : ''}" data-acao="aba" data-aba="conta" role="tab"><span class="ic conta"><i class="ti ti-building-bank"></i></span><span><b>Conta bancária</b><small>${bancosConta.length ? esc(bancosConta.join(', ')) : 'Nenhum extrato ainda'}</small></span></button>
+      <button class="aba ${E.aba === 'cartao' ? 'on' : ''}" data-acao="aba" data-aba="cartao" role="tab"><span class="ic cartao"><i class="ti ti-credit-card"></i></span><span><b>Cartão de crédito</b><small>${cartoes.length ? esc(cartoes.join(', ')) : 'Nenhuma fatura ainda'}</small></span></button>
+    </div>
+    <div id="conteudo"></div>` : `
+    <div class="card vazio" style="margin-top:16px"><h2>Envie o primeiro documento</h2><p class="suave">Extrato bancário (conta) ou fatura do cartão de crédito, em PDF ou foto.</p><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>`}
+  </main>
+  ${documentos.length ? `<div class="barra-acoes">
+    <button data-acao="novo-doc"><i class="ti ti-file-plus"></i> Documento</button>
+    <button data-acao="excel"><i class="ti ti-table-export"></i> Excel</button>
+    <button data-acao="editar-perfil"><i class="ti ti-user"></i> Perfil</button>
+    ${concluida ? '<button data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="destaque" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>'}
+  </div>` : ''}`;
+  if (documentos.length) desenharConteudo();
+}
+
+function desenharConteudo() {
+  const el = $('#conteudo'); if (!el) return;
+  if (E.aba === 'conta') el.innerHTML = abaConta();
+  else if (E.aba === 'cartao') el.innerHTML = abaCartao();
+  else el.innerHTML = abaTudo();
+  const topoDir = document.querySelector('.topo .dir');
+  if (topoDir) { const s = topoDir.querySelector('.salvo'); const novo = salvoTxt(); if (s) s.outerHTML = novo || ''; else if (novo) topoDir.insertAdjacentHTML('afterbegin', novo); }
+}
+
+// ─── Linha de lançamento (comum às três abas) ───────────────────────────
+function linha(l) {
+  const sel = E.sel.has(l.id);
+  const mudouCat = l.categoria !== l.categoriaIA || (l.subcategoria || '') !== (l.subcategoriaIA || '');
+  let aviso = '';
+  if (l.alerta && l.situacao === 'incluido') {
+    const btn = l.alerta.tipo === 'possivel_entre_contas' ? `<button data-acao="sit-rapida" data-id="${l.id}" data-sit="entre_contas">Marcar entre contas</button>`
+      : l.alerta.tipo === 'possivel_duplicidade_fatura' ? `<button data-acao="sit-rapida" data-id="${l.id}" data-sit="excluido">Ignorar</button>` : '';
+    aviso = `<div class="aviso"><i class="ti ti-info-circle"></i><span>${esc(l.alerta.mensagem)}</span>${btn}</div>`;
+  } else if (l.alerta && l.alerta.tipo === 'pagamento_na_fatura') {
+    aviso = `<div class="aviso" style="color:var(--fraco)"><i class="ti ti-info-circle"></i><span>Pagamento da fatura anterior: fica fora do resumo.</span></div>`;
+  }
+  const origem = l.origem === 'extrato' ? `<i class="ti ti-building-bank"></i> Conta ${esc(l.banco || '')}` : `<i class="ti ti-credit-card"></i> ${esc(l.documento)}`;
+  return `<div class="r ${sel ? 'sel' : ''} ${l.situacao !== 'incluido' ? 'off' : ''}" data-id="${l.id}">
+    <span class="ck"><input type="checkbox" data-acao="sel" data-id="${l.id}" ${sel ? 'checked' : ''} aria-label="Selecionar lançamento"></span>
+    <span class="data suave num" title="${esc(l.data)}">${dataBR(l.data)}${anoDiferente(l.data) ? '<br><span style="font-size:11px">' + l.data.slice(0, 4) + '</span>' : ''}</span>
+    <div class="desc"><b>${esc(l.descricao)}</b>${l.parcela ? ` <span class="pill cinza" style="font-size:11px">parcela ${esc(l.parcela)}</span>` : ''}
+      <div class="meta">${origem}</div>
+      ${l.observacao ? `<div class="nota"><i class="ti ti-note"></i> ${esc(l.observacao)}</div>` : ''}${aviso}</div>
+    <div class="cat-col"><button class="cat ${mudouCat ? 'mudou' : ''}" data-acao="editar" data-id="${l.id}" title="${mudouCat ? 'Alterado pelo analista. A IA tinha sugerido: ' + esc(l.categoriaIA + (l.subcategoriaIA ? ' › ' + l.subcategoriaIA : '')) : 'Clique para mudar'}">
+      <span class="ponto" style="background:${corDe(l.categoria)}"></span><b>${esc(l.categoria)}</b> <i class="ti ti-chevron-down"></i><br><span class="sub">${esc(l.subcategoria || 'Sem subcategoria')}</span></button></div>
+    <span class="valor num" style="color:${l.direcao === 'entrada' ? 'var(--verde)' : 'var(--vermelho)'}">${l.direcao === 'entrada' ? '+ ' : '− '}${brl(l.valor)}</span>
+    <div class="acoes-linha"><button class="sit ${l.situacao}" data-acao="menu-sit" data-id="${l.id}">${NOME_SIT[l.situacao]} <i class="ti ti-chevron-down"></i></button>
+      <button class="icone-btn ${l.observacao ? 'tem' : ''}" data-acao="editar" data-id="${l.id}" data-foco="obs" title="Observação" aria-label="Observação"><i class="ti ti-message-2"></i></button></div>
+  </div>`;
+}
+const cabLinhas = () => `<div class="r r-cab"><span></span><span>Data</span><span>Descrição</span><span>Categoria › subcategoria</span><span style="text-align:right">Valor</span><span style="text-align:right">Situação</span></div>`;
+
+function barraLote() {
+  if (!E.sel.size) return '';
+  return `<div class="lote"><span><b style="color:var(--amarelo)">${E.sel.size}</b> selecionado(s)</span><span style="display:flex;gap:6px;flex-wrap:wrap">
+    <button data-acao="lote-cat"><i class="ti ti-tag"></i> Mudar categoria</button>
+    <button data-acao="lote-sit" data-sit="excluido"><i class="ti ti-eye-off"></i> Ignorar</button>
+    <button data-acao="lote-sit" data-sit="entre_contas"><i class="ti ti-arrows-exchange"></i> Entre contas</button>
+    <button data-acao="lote-sit" data-sit="incluido"><i class="ti ti-check"></i> Voltar ao resumo</button>
+    <button data-acao="lote-limpar"><i class="ti ti-x"></i> Limpar</button></span></div>`;
+}
+
+// ─── Cálculos por mês ────────────────────────────────────────────────────
+function porMes(lista) {
+  const m = {};
+  for (const l of lista) {
+    const k = (l.data || '').slice(0, 7); if (!/^\d{4}-\d{2}$/.test(k)) continue;
+    (m[k] = m[k] || { k, itens: [], e: 0, s: 0 }).itens.push(l);
+    if (l.situacao !== 'incluido') continue;
+    if (l.direcao === 'entrada') { if (l.origem === 'extrato') m[k].e += l.valor; else m[k].s -= l.valor; }
+    else m[k].s += l.valor;
+  }
+  return Object.values(m).sort((a, b) => b.k.localeCompare(a.k));
+}
+
+function mixGastos(lista, modo) {
+  const t = {}; let tot = 0;
+  for (const l of lista) {
+    if (l.situacao !== 'incluido' || (l.direcao === 'entrada' && l.origem === 'extrato')) continue;
+    const k = modo === 'sub' ? (l.subcategoria || 'Sem subcategoria') : l.categoria;
+    const v = l.direcao === 'saida' ? l.valor : -l.valor;
+    t[k] = (t[k] || 0) + v; tot += v;
+  }
+  return { itens: Object.entries(t).filter(([, v]) => Math.abs(v) >= 0.01).sort((a, b) => b[1] - a[1]), tot };
+}
+
+function grupoMes(g, conteudoBlocos, filtrados) {
+  const busca = (E.busca[g.k] || '').toLowerCase();
+  const visiveis = g.itens.filter(l => !busca || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '') + ' ' + (l.observacao || '')).toLowerCase().includes(busca));
+  const todosSel = visiveis.length && visiveis.every(l => E.sel.has(l.id));
+  return `<section class="mes" id="mes-${g.k}">
+    <div class="mes-cab"><span style="display:flex;align-items:center;gap:10px"><input type="checkbox" data-acao="sel-mes" data-mes="${g.k}" ${todosSel ? 'checked' : ''} aria-label="Selecionar todos do mês"><b>${nomeMes(g.k)}</b><span style="color:#a5a59c;font-size:12px">${g.itens.length} lançamento(s)</span></span>
+      <span style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13px"><input type="search" data-acao="busca-mes" data-mes="${g.k}" placeholder="Buscar no mês" value="${esc(E.busca[g.k] || '')}">
+        ${g.e ? `<span>Entrou <b style="color:#7fd19c">${brl(g.e)}</b></span>` : ''}<span>Saiu <b style="color:var(--amarelo)">${brl(g.s)}</b></span></span></div>
+    ${conteudoBlocos(visiveis)}
+    ${filtrados ? `<div class="fraco" style="padding:8px 14px;font-size:12px;border-top:1px solid var(--borda2)">Filtro de categoria ativo: mostrando só parte dos lançamentos. Os totais do mês continuam completos.</div>` : ''}
+  </section>`;
+}
+
+// ─── ABA CONTA BANCÁRIA (estilo TRIAD) ──────────────────────────────────
+function abaConta() {
+  const docs = docsDe('extrato');
+  if (!docs.length) return `<div class="card vazio"><h2>Nenhum extrato bancário</h2><p class="suave">Envie o extrato da conta para ver entradas, saídas e médias por mês.</p><button class="btn primario" data-acao="novo-doc" data-tipo="extrato"><i class="ti ti-upload"></i> Enviar extrato</button></div>`;
+  const todos = lancs().filter(l => l.origem === 'extrato');
+  const meses = porMes(todos);
+  const bancos = [...new Set(docs.map(d => d.banco).filter(Boolean))];
+  const n = meses.length || 1;
+  const medE = meses.reduce((a, m) => a + m.e, 0) / n, medS = meses.reduce((a, m) => a + m.s, 0) / n;
+  const cats = [...new Set(todos.map(l => l.categoria))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const filtroAtivo = Object.keys(E.filtroCat).filter(k => E.filtroCat[k]);
+  const passa = l => !filtroAtivo.length || filtroAtivo.includes(l.categoria);
+  const mix = mixGastos(todos, E.modoMix);
+  let acc = 0;
+  const grad = mix.tot > 0 ? mix.itens.map(([k, v]) => { const p = Math.max(0, v) / mix.tot * 100; const s = `${corDe(k)} ${acc}% ${acc + p}%`; acc += p; return s; }).join(',') : '#efeee6 0 100%';
+  const sugestoes = todos.filter(l => l.alerta?.tipo === 'possivel_entre_contas' && l.situacao === 'incluido').length;
+  const pagFatura = todos.filter(l => l.alerta?.tipo === 'possivel_duplicidade_fatura' && l.situacao === 'incluido').length;
+  const relatorio = docs.map(d => d.relatorio ? `<p><b>${esc(d.banco || 'Conta')}:</b> ${esc(d.relatorio)}</p>` : '').join('') || '<p class="fraco">Sem relatório.</p>';
+  const mesesVis = E.mesSel ? meses.filter(m => m.k === E.mesSel) : meses;
+
+  return `
+  <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+    <div class="stats"><span><i class="ti ti-file"></i> ${docs.length} extrato(s)</span><span><i class="ti ti-list"></i> ${todos.length} transações</span><span><i class="ti ti-building-bank"></i> ${bancos.length} banco(s)</span><span><i class="ti ti-calendar"></i> ${meses.length} mês(es)</span></div>
+    ${E.mesSel ? `<button class="btn" data-acao="mes" data-mes="" style="padding:6px 11px;font-size:13px"><i class="ti ti-x"></i> Ver todos os meses</button>` : ''}
+  </div>
+  <div class="meses">${meses.slice().reverse().map(m => `<button class="mc ${E.mesSel === m.k ? 'on' : ''}" data-acao="mes" data-mes="${m.k}"><b>${nomeMes(m.k)}</b>
+    <div><span class="suave">Entradas</span><span class="num" style="color:var(--verde)">+ ${brl(m.e)}</span></div>
+    <div><span class="suave">Saídas</span><span class="num" style="color:var(--vermelho)">− ${brl(m.s)}</span></div>
+    <div style="margin-top:4px;padding-top:4px;border-top:1px solid var(--borda2)"><span class="suave">Saldo</span><b class="num" style="margin:0;color:${m.e - m.s >= 0 ? 'var(--texto)' : 'var(--vermelho)'}">${brl(m.e - m.s)}</b></div></button>`).join('')}</div>
+  <div class="medias">
+    <div><span style="color:var(--amarelo);font-weight:800;font-size:12px;letter-spacing:.6px">MÉDIAS E DESEMPENHO</span><small>${meses.length} mês(es) consolidado(s) · ${esc(bancos.join(', '))}</small></div>
+    <div><small>Entrada média</small><b class="num" style="color:#7fd19c">${brl(medE)}</b></div>
+    <div><small>Saída média</small><b class="num" style="color:#ff8a7a">${brl(medS)}</b></div>
+    <div><small>Saldo médio</small><b class="num" style="color:var(--amarelo)">${brl(medE - medS)}</b></div>
+  </div>
+  ${sugestoes ? `<div class="alerta azul"><i class="ti ti-arrows-exchange"></i><span>${sugestoes} lançamento(s) parece(m) transferência entre contas da própria cliente. Confira os avisos em azul nas linhas: se for, marque como "Entre contas" para não inflar entradas e saídas.</span></div>` : ''}
+  ${pagFatura ? `<div class="alerta"><i class="ti ti-credit-card"></i><span>${pagFatura} pagamento(s) de fatura de cartão na conta. Eles continuam somados até você decidir: se a fatura detalhada estiver na aba Cartão, ignore o pagamento para não contar o gasto duas vezes.</span></div>` : ''}
+  <div class="layout-conta">
+    <div style="min-width:0">
+      <div class="filtros"><span class="suave" style="font-size:12px"><i class="ti ti-filter"></i> Categorias:</span>${cats.map(c => `<button class="fc ${E.filtroCat[c] ? 'on' : ''}" data-acao="filtro" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}${filtroAtivo.length ? `<button class="fc" data-acao="filtro-limpar"><i class="ti ti-x"></i> Limpar</button>` : ''}</div>
+      ${barraLote()}
+      ${mesesVis.map(g => grupoMes(g, vis => {
+        const v = vis.filter(passa);
+        return v.length ? cabLinhas() + v.map(linha).join('') : `<div class="fraco" style="padding:14px">Nenhum lançamento ${filtroAtivo.length ? 'nessas categorias' : 'encontrado'} neste mês.</div>`;
+      }, filtroAtivo.length)).join('')}
+    </div>
+    <aside class="lateral">
+      <div class="card relatorio"><h3>RELATÓRIO EXECUTIVO</h3>${relatorio}</div>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3 style="margin:0">MIX DE GASTOS</h3>
+        <div class="alterna"><button class="${E.modoMix === 'cat' ? 'on' : ''}" data-acao="mix" data-modo="cat">Categoria</button><button class="${E.modoMix === 'sub' ? 'on' : ''}" data-acao="mix" data-modo="sub">Sub</button></div></div>
+        <div class="rosca" style="background:conic-gradient(${grad})"><div><b class="num">${brl(mix.tot)}</b><span class="fraco" style="font-size:12px">saídas da conta</span></div></div>
+        ${mix.itens.map(([k, v]) => `<div class="leg" ${E.modoMix === 'cat' ? `data-acao="filtro" data-cat="${esc(k)}"` : ''} title="${E.modoMix === 'cat' ? 'Filtrar por esta categoria' : ''}"><span><i style="background:${corDe(k)}"></i>${esc(k)}</span><span class="num">${brl(v)} <span class="fraco">${mix.tot > 0 ? Math.round(v / mix.tot * 100) : 0}%</span></span></div>`).join('') || '<p class="fraco" style="font-size:13px">Sem saídas no resumo.</p>'}
+      </div>
+    </aside>
+  </div>`;
+}
+
+// ─── ABA CARTÃO ──────────────────────────────────────────────────────────
+function abaCartao() {
+  const docs = docsDe('fatura');
+  if (!docs.length) return `<div class="card vazio"><h2>Nenhuma fatura de cartão</h2><p class="suave">Envie a fatura para ver compras, parcelas, juros e o que já está comprometido.</p><button class="btn primario" data-acao="novo-doc" data-tipo="fatura"><i class="ti ti-upload"></i> Enviar fatura</button></div>`;
+  const todos = lancs().filter(l => l.origem === 'fatura');
+  const e = E.cli.apuracao.resumo.endividamentoCartao;
+  const r = E.cli.apuracao.resumo;
+  let html = `<div class="kpis">
+    <div class="kpi escuro"><small>Gastos no cartão (líquido)</small><b class="num">${brl(r.totalGastosCartao)}</b></div>
+    <div class="kpi"><small>Próxima fatura (parcelas já compradas)</small><b class="num">${brl(r.comprometidoProximaFatura)}</b></div>
+    <div class="kpi"><small>Parcelas futuras (todas)</small><b class="num">${brl(r.compromissoFuturoParcelas)}</b></div>
+    <div class="kpi"><small>Juros, mora e multa</small><b class="num" style="color:${e.encargos ? 'var(--vermelho)' : 'inherit'}">${brl(e.encargos)}</b></div>
+  </div>
+  ${e.emRotativo ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(e.saldoFinanciado)} da fatura anterior foram financiados, gerando ${brl(e.encargos)} de juros, mora e multa.${e.parcelasDeFinanciamento ? ` Há também ${brl(e.parcelasDeFinanciamento)} de parcelamento de fatura.` : ''}</span></div>` : ''}
+  ${barraLote()}`;
+  for (const d of docs) {
+    const itens = todos.filter(l => l.documentoId === d.id);
+    const c = d.conferencia;
+    const visiveis = itens.filter(l => { const b = (E.busca[d.id] || '').toLowerCase(); return !b || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(b); });
+    const todosSel = visiveis.length && visiveis.every(l => E.sel.has(l.id));
+    html += `<section class="mes">
+      <div class="fatura-cab" style="background:var(--amarelo-claro)">
+        <div style="display:flex;gap:12px;align-items:center"><span class="ic cartao" style="background:var(--branco)"><i class="ti ti-credit-card"></i></span>
+          <div><b style="font-size:15px">${esc(d.produto || 'Cartão ' + (d.banco || ''))}</b>
+          <div class="suave" style="font-size:12px">${d.vencimento ? 'Vencimento ' + new Date(d.vencimento + 'T12:00:00').toLocaleDateString('pt-BR') : ''}${(d.cartoes || []).length ? ' · ' + d.cartoes.map(x => esc(x.portador || '') + (x.final ? ' (final ' + esc(x.final) + ')' : '') + (x.adicional ? ' adicional' : '')).join(', ') : ''}</div></div></div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13px">
+          <span>Total da fatura <b class="num" style="font-size:16px">${brl(d.valor_total)}</b></span>
+          ${c?.bateu === true ? '<span class="pill verde" title="Os totais impressos pelo banco conferem com os lançamentos lidos"><i class="ti ti-circle-check"></i> Conferida com o banco</span>' : c?.bateu === false ? '<span class="pill vermelho"><i class="ti ti-alert-circle"></i> Divergência na conferência</span>' : ''}
+          ${c?.verificacoes?.length ? `<button class="btn" data-acao="ver-conf" data-id="${d.id}" style="padding:5px 10px;font-size:12px">Ver conferência</button>` : ''}
+        </div>
+      </div>
+      <div id="conf-${d.id}" class="oculto">${c?.verificacoes?.length ? `<table class="conf"><tr><th>Conferência</th><th style="text-align:right">Impresso na fatura</th><th style="text-align:right">Calculado</th><th></th></tr>${c.verificacoes.map(v => `<tr><td>${esc(v.nome)}</td><td class="n num">${brl(v.declarado)}</td><td class="n num">${brl(v.calculado)}</td><td style="color:${v.bateu ? 'var(--verde)' : 'var(--vermelho)'};font-weight:700">${v.bateu ? '✓' : 'Diferença ' + brl(v.diferenca)}</td></tr>`).join('')}</table>` : ''}</div>
+      <div class="mes-cab" style="background:var(--preto2)"><span style="display:flex;align-items:center;gap:10px"><input type="checkbox" data-acao="sel-lista" data-ids="${visiveis.map(l => l.id).join(',')}" ${todosSel ? 'checked' : ''} aria-label="Selecionar todos da fatura"><b>Lançamentos da fatura</b><span style="color:#a5a59c;font-size:12px">${itens.length}</span></span>
+        <input type="search" data-acao="busca-mes" data-mes="${d.id}" placeholder="Buscar na fatura" value="${esc(E.busca[d.id] || '')}"></div>
+      ${visiveis.length ? cabLinhas() + visiveis.map(linha).join('') : '<div class="fraco" style="padding:14px">Nenhum lançamento encontrado.</div>'}
+    </section>`;
+  }
+  return html;
+}
+
+// ─── ABA TUDO JUNTO ──────────────────────────────────────────────────────
+function abaTudo() {
+  const r = E.cli.apuracao.resumo;
+  const todos = lancs();
+  const meses = porMes(todos);
+  const nGastos = meses.filter(m => m.s > 0).length || 1;
+  const mix = mixGastos(todos, E.modoMix);
+  const max = mix.itens.length ? Math.max(...mix.itens.map(([, v]) => v)) : 1;
+  const renda = E.cli.cliente.renda_declarada;
+  return `<div class="kpis">
+    <div class="kpi escuro"><small>Saídas no período (conta + cartão)</small><b class="num">${brl(r.totalSaidas)}</b></div>
+    <div class="kpi"><small>Entradas na conta</small><b class="num" style="color:var(--verde)">${brl(r.totalEntradas)}</b></div>
+    <div class="kpi"><small>Saldo do período</small><b class="num" style="color:${r.saldo >= 0 ? 'var(--texto)' : 'var(--vermelho)'}">${brl(r.saldo)}</b></div>
+    <div class="kpi"><small>Média mensal de gastos</small><b class="num">${brl(r.totalSaidas / nGastos)}</b>${renda ? `<div class="fraco" style="font-size:12px;margin-top:2px">${Math.round(r.totalSaidas / nGastos / renda * 100)}% da renda declarada</div>` : ''}</div>
+    <div class="kpi"><small>Parcelas futuras no cartão</small><b class="num">${brl(r.compromissoFuturoParcelas)}</b></div>
+  </div>
+  ${r.endividamentoCartao.emRotativo ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(r.endividamentoCartao.encargos)} de juros, mora e multa no cartão.</span></div>` : ''}
+  <div class="card" style="padding:16px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:15px">Para onde vai o dinheiro</b>
+      <div class="alterna"><button class="${E.modoMix === 'cat' ? 'on' : ''}" data-acao="mix" data-modo="cat">Categoria</button><button class="${E.modoMix === 'sub' ? 'on' : ''}" data-acao="mix" data-modo="sub">Subcategoria</button></div></div>
+    ${mix.itens.map(([k, v]) => `<div class="barra-cat"><span>${esc(k)}</span><span class="trilho"><span style="width:${Math.max(1, Math.round(Math.max(0, v) / max * 100))}%;background:${corDe(k)}"></span></span><span class="num" style="text-align:right">${brl(v)}</span><span class="pct fraco num" style="text-align:right">${mix.tot > 0 ? Math.round(v / mix.tot * 100) : 0}%</span></div>`).join('') || '<p class="fraco">Sem gastos no resumo.</p>'}
+  </div>
+  ${barraLote()}
+  ${meses.map(g => grupoMes(g, vis => {
+    const conta = vis.filter(l => l.origem === 'extrato'), cartao = vis.filter(l => l.origem === 'fatura');
+    const soma = ls => ls.filter(l => l.situacao === 'incluido').reduce((a, l) => a + (l.direcao === 'saida' ? l.valor : (l.origem === 'fatura' ? -l.valor : 0)), 0);
+    return (conta.length ? `<div class="bloco-cab conta"><span><i class="ti ti-building-bank"></i> Conta bancária</span><span>Saídas <b class="num">${brl(soma(conta))}</b></span></div>` + cabLinhas() + conta.map(linha).join('') : '')
+      + (cartao.length ? `<div class="bloco-cab cartao"><span><i class="ti ti-credit-card"></i> Cartão de crédito</span><span>Gastos <b class="num">${brl(soma(cartao))}</b></span></div>` + cabLinhas() + cartao.map(linha).join('') : '')
+      || '<div class="fraco" style="padding:14px">Nenhum lançamento encontrado.</div>';
+  })).join('')}`;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Salvar ajustes
+// ════════════════════════════════════════════════════════════════════════
+/** Estado desejado de cada lançamento → envia só o que difere do padrão (vazio = volta ao da IA). */
+async function aplicarAjustes(mudancas) {
+  const porId = new Map(lancs().map(l => [l.id, l]));
+  const corpo = mudancas.map(m => {
+    const l = porId.get(m.id);
+    const alvo = { categoria: l.categoria, subcategoria: l.subcategoria || '', observacao: l.observacao || '', situacao: l.situacao, ...m };
+    const padraoSit = l.padraoIncluido ? 'incluido' : 'excluido';
+    return {
+      id: m.id,
+      categoria: alvo.categoria !== l.categoriaIA ? alvo.categoria : null,
+      subcategoria: (alvo.subcategoria || '') !== (l.subcategoriaIA || '') || alvo.categoria !== l.categoriaIA ? (alvo.subcategoria || null) : null,
+      observacao: alvo.observacao || null,
+      situacao: alvo.situacao !== padraoSit ? alvo.situacao : null
+    };
+  });
+  // Atualização otimista: a tela muda na hora; o servidor confirma e recalcula
+  for (const m of mudancas) { const l = porId.get(m.id); Object.assign(l, m); l.incluidoNoResumo = l.situacao === 'incluido'; }
+  E.salvando++; desenharConteudo();
+  try {
+    const r = await api('PUT', `/api/app/analises/${E.cli.analise.id}/ajustes`, { ajustes: corpo });
+    E.cli.apuracao = r.apuracao; E.salvoEm = r.salvoEm;
+  } catch (e) {
+    toast('Não foi possível salvar: ' + e.message, true);
+    try { E.cli = await api('GET', '/api/app/clientes/' + E.cli.cliente.id); } catch {}
+  } finally { E.salvando--; desenharConteudo(); }
+}
+
+// ─── Editor de lançamento (categoria, subcategoria, observação, situação) ─
+function opcoesSub(cat, atual) {
+  const subs = (E.taxonomia.subcategorias[cat] || []).slice();
+  if (atual && !subs.includes(atual)) subs.unshift(atual);
+  return '<option value="">Sem subcategoria</option>' + subs.map(s => `<option ${s === atual ? 'selected' : ''}>${esc(s)}</option>`).join('');
+}
+
+function editarLancamentos(ids, foco) {
+  const lista = lancs().filter(l => ids.includes(l.id));
+  if (!lista.length) return;
+  const um = lista.length === 1 ? lista[0] : null;
+  const catAtual = um ? um.categoria : '';
+  const cats = E.taxonomia.categorias.slice();
+  if (um && !cats.includes(um.categoria)) cats.unshift(um.categoria);
+  abrirModal(`<h2>${um ? 'Editar lançamento' : `Editar ${lista.length} lançamentos`}</h2>
+    ${um ? `<p class="suave" style="margin:0 0 14px">${dataBR(um.data)} · ${esc(um.descricao)} · <b class="num">${brl(um.valor)}</b></p>` : '<p class="suave" style="margin:0 0 14px">A categoria escolhida vale para todos os selecionados.</p>'}
+    <div class="grade2">
+      <div><label class="rot" for="eCat">Categoria</label><select id="eCat">${um ? '' : '<option value="">Escolha…</option>'}${cats.map(c => `<option ${c === catAtual ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+      <div><label class="rot" for="eSub">Subcategoria</label><select id="eSub">${opcoesSub(catAtual, um?.subcategoria)}</select></div>
+    </div>
+    ${um && (um.categoria !== um.categoriaIA || (um.subcategoria || '') !== (um.subcategoriaIA || '')) ? `<p style="font-size:12px;margin:8px 0 0" class="suave">A IA sugeriu: ${esc(um.categoriaIA)}${um.subcategoriaIA ? ' › ' + esc(um.subcategoriaIA) : ''}. <button class="btn" type="button" id="eVoltar" style="padding:3px 8px;font-size:12px">Voltar ao da IA</button></p>` : ''}
+    ${um ? `<div style="margin-top:14px"><label class="rot" for="eObs">Observação do analista</label><textarea id="eObs" rows="3" maxlength="1000" placeholder="Ex: mensalidade da escola do filho, confirmado com a cliente">${esc(um.observacao || '')}</textarea><div class="fraco" style="font-size:12px;margin-top:4px">Aparece no Excel.</div></div>` : ''}
+    <div class="erro-txt" id="eErro" role="alert"></div>
+    <div class="acoes"><button class="btn" data-acao="fechar-modal">Cancelar</button><button class="btn primario" id="eSalvar">Salvar</button></div>`);
+  const sCat = $('#eCat'), sSub = $('#eSub');
+  sCat.onchange = () => { sSub.innerHTML = opcoesSub(sCat.value, ''); $('#eErro').textContent = ''; };
+  if (foco === 'obs' && $('#eObs')) $('#eObs').focus(); else sCat.focus();
+  if ($('#eVoltar')) $('#eVoltar').onclick = () => { fecharModal(); aplicarAjustes([{ id: um.id, categoria: um.categoriaIA, subcategoria: um.subcategoriaIA || '' }]); };
+  $('#eSalvar').onclick = () => {
+    if (!sCat.value) { $('#eErro').textContent = 'Escolha uma categoria.'; return; }
+    const m = { categoria: sCat.value, subcategoria: sSub.value };
+    if (um) m.observacao = $('#eObs').value.trim();
+    fecharModal();
+    aplicarAjustes(lista.map(l => ({ id: l.id, ...m })));
+    if (!um) E.sel.clear();
+  };
+}
+
+function menuSituacao(btn, id) {
+  fecharMenus();
+  const l = lancs().find(x => x.id === id); if (!l) return;
+  const m = document.createElement('div');
+  m.className = 'menu-sit';
+  m.innerHTML = [
+    ['incluido', 'ti-check', 'No resumo', 'Conta nos totais e no mix de gastos'],
+    ['excluido', 'ti-eye-off', 'Ignorar', 'Fica visível, mas fora das contas'],
+    ['entre_contas', 'ti-arrows-exchange', 'Entre contas', 'Transferência entre contas do próprio cliente']
+  ].map(([s, ic, t, d]) => `<button data-acao="sit-escolher" data-id="${id}" data-sit="${s}"><i class="ti ${ic}" style="font-size:17px;margin-top:1px"></i><span><b>${t}${l.situacao === s ? ' ✓' : ''}</b><small>${d}</small></span></button>`).join('');
+  document.body.appendChild(m);
+  const r = btn.getBoundingClientRect();
+  m.style.top = (window.scrollY + r.bottom + 6) + 'px';
+  m.style.left = Math.max(8, Math.min(window.scrollX + r.right - m.offsetWidth, window.scrollX + document.documentElement.clientWidth - m.offsetWidth - 8)) + 'px';
+}
+function fecharMenus() { document.querySelectorAll('.menu-sit,.menu-usuario').forEach(m => m.remove()); }
+
+// ─── Envio de documento ──────────────────────────────────────────────────
+function modalDocumento(tipoInicial) {
+  let tipo = tipoInicial || '';
+  abrirModal(`<h2>Enviar documento</h2><p class="suave" style="margin:0 0 16px">PDF ou foto. A leitura leva de 30 segundos a 2 minutos.</p>
+    <label class="rot">O que é este documento?</label>
+    <div class="opcoes-tipo">
+      <button type="button" class="opcao-tipo ${tipo === 'extrato' ? 'on' : ''}" data-tipo="extrato"><span class="ic conta"><i class="ti ti-building-bank"></i></span><span><b>Extrato da conta</b><br><small class="suave">Conta corrente ou poupança</small></span></button>
+      <button type="button" class="opcao-tipo ${tipo === 'fatura' ? 'on' : ''}" data-tipo="fatura"><span class="ic cartao"><i class="ti ti-credit-card"></i></span><span><b>Fatura do cartão</b><br><small class="suave">Cartão de crédito (Itaú)</small></span></button>
+    </div>
+    <div style="margin-top:14px"><label class="rot" for="dArq">Arquivo</label><input id="dArq" type="file" accept="application/pdf,image/*"></div>
+    <div id="dSenhaBox" class="oculto" style="margin-top:14px"><label class="rot" for="dSenha">Senha do PDF</label><input id="dSenha" type="password" autocomplete="off"></div>
+    <div class="progresso oculto" id="dProg"><div></div></div>
+    <div class="suave" id="dStatus" style="font-size:13px;margin-top:8px;min-height:18px"></div>
+    <div class="erro-txt" id="dErro" role="alert"></div>
+    <div class="acoes"><button class="btn" data-acao="fechar-modal" id="dCancelar">Fechar</button><button class="btn primario" id="dEnviar"><i class="ti ti-upload"></i> Enviar e analisar</button></div>`);
+  document.querySelectorAll('.opcao-tipo').forEach(b => b.onclick = () => { tipo = b.dataset.tipo; document.querySelectorAll('.opcao-tipo').forEach(x => x.classList.toggle('on', x === b)); $('#dErro').textContent = ''; });
+  $('#dArq').onchange = () => { $('#dErro').textContent = ''; };
+  $('#dEnviar').onclick = async () => {
+    const arq = $('#dArq').files[0];
+    if (!tipo) { $('#dErro').textContent = 'Escolha se é extrato da conta ou fatura do cartão.'; return; }
+    if (!arq) { $('#dErro').textContent = 'Escolha o arquivo.'; return; }
+    const fd = new FormData(); fd.append('file', arq); fd.append('tipoDocumento', tipo);
+    if ($('#dSenha').value) fd.append('password', $('#dSenha').value);
+    $('#dEnviar').disabled = true; $('#dErro').textContent = ''; $('#dProg').classList.remove('oculto');
+    const barra = p => { $('#dProg').firstElementChild.style.width = p + '%'; };
+    barra(5); $('#dStatus').textContent = 'Enviando…';
+    const inicio = Date.now();
+    try {
+      const { jobId } = await api('POST', `/api/app/clientes/${E.cli.cliente.id}/documentos`, fd);
+      for (;;) {
+        await new Promise(r => setTimeout(r, 2000));
+        const j = await api('GET', '/api/app/jobs/' + encodeURIComponent(jobId));
+        const seg = Math.round((Date.now() - inicio) / 1000);
+        if (j.status === 'processing') {
+          const p = j.progress;
+          barra(p?.chunksTotal ? 10 + 85 * p.chunksCompleted / p.chunksTotal : Math.min(85, 10 + seg));
+          $('#dStatus').textContent = `Lendo com IA… ${seg}s` + (p?.chunksTotal > 1 ? ` (parte ${p.chunksCompleted} de ${p.chunksTotal})` : '');
+          continue;
+        }
+        if (j.status === 'error') {
+          if (j.errorCode === 'PDF_PASSWORD_REQUIRED' || j.errorCode === 'PDF_PASSWORD_INCORRECT') {
+            $('#dSenhaBox').classList.remove('oculto'); $('#dSenha').focus();
+          }
+          throw new Error(j.error);
+        }
+        barra(100); $('#dStatus').textContent = 'Pronto!';
+        fecharModal();
+        if (j.result?.qualidadeRuim) toast('Documento salvo, mas a leitura ficou incompleta: confira os lançamentos.', true); else toast('Documento analisado e salvo');
+        E.aba = tipo === 'fatura' ? 'cartao' : 'conta';
+        location.hash = `#/cliente/${E.cli.cliente.id}/${E.aba}`;
+        await telaCliente(E.cli.cliente.id, true);
+        return;
+      }
+    } catch (e) {
+      $('#dErro').textContent = e.message; $('#dEnviar').disabled = false; $('#dProg').classList.add('oculto'); $('#dStatus').textContent = '';
+    }
+  };
+}
+
+// ─── Modal genérico ──────────────────────────────────────────────────────
+function abrirModal(html) {
+  fecharModal();
+  const f = document.createElement('div');
+  f.className = 'fundo-modal'; f.id = 'fundoModal';
+  f.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  f.addEventListener('mousedown', ev => { if (ev.target === f && !document.querySelector('#dEnviar:disabled')) fecharModal(); });
+  document.body.appendChild(f);
+}
+function fecharModal() { const f = $('#fundoModal'); if (f) f.remove(); }
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { fecharMenus(); if (!document.querySelector('#dEnviar:disabled')) fecharModal(); } });
+
+// ════════════════════════════════════════════════════════════════════════
+// Eventos (delegação)
+// ════════════════════════════════════════════════════════════════════════
+document.addEventListener('click', async ev => {
+  const el = ev.target.closest('[data-acao]');
+  if (!el) { if (!ev.target.closest('.menu-sit,.menu-usuario')) fecharMenus(); return; }
+  const a = el.dataset.acao, id = el.dataset.id;
+  if (!['menu-sit', 'menu-usuario'].includes(a) && !el.closest('.menu-sit,.menu-usuario')) fecharMenus();
+  switch (a) {
+    case 'ir-clientes': location.hash = '#/clientes'; break;
+    case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
+    case 'novo-cliente': modalCliente(null); break;
+    case 'editar-perfil': modalCliente(E.cli.cliente); break;
+    case 'fechar-modal': fecharModal(); break;
+    case 'menu-usuario': {
+      if (document.querySelector('.menu-usuario')) { fecharMenus(); break; }
+      const m = document.createElement('div'); m.className = 'menu-usuario';
+      m.innerHTML = `<div style="padding:8px 10px 10px;border-bottom:1px solid var(--borda2);margin-bottom:4px"><b>${esc(sessao?.usuario?.nome)}</b><div class="suave" style="font-size:12px">${esc(sessao?.usuario?.email)}</div></div><button data-acao="ir-clientes"><i class="ti ti-users"></i> Clientes</button><button data-acao="sair"><i class="ti ti-logout"></i> Sair</button>`;
+      document.body.appendChild(m); break;
+    }
+    case 'sair': salvarSessao(null); E.cli = null; E.clientes = null; location.hash = '#/login'; break;
+    case 'aba': E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
+    case 'mes': E.mesSel = el.dataset.mes || null; desenharConteudo(); break;
+    case 'mix': E.modoMix = el.dataset.modo; desenharConteudo(); break;
+    case 'filtro': E.filtroCat[el.dataset.cat] = !E.filtroCat[el.dataset.cat]; if (E.aba !== 'conta') { E.aba = 'conta'; desenharCliente(); } else desenharConteudo(); break;
+    case 'filtro-limpar': E.filtroCat = {}; desenharConteudo(); break;
+    case 'sel': ev.target.checked ? E.sel.add(id) : E.sel.delete(id); desenharConteudo(); break;
+    case 'sel-mes': {
+      const busca = (E.busca[el.dataset.mes] || '').toLowerCase();
+      const filtro = Object.keys(E.filtroCat).filter(k => E.filtroCat[k]);
+      const base = E.aba === 'conta' ? lancs().filter(l => l.origem === 'extrato') : lancs();
+      const alvo = base.filter(l => (l.data || '').slice(0, 7) === el.dataset.mes && (!busca || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(busca)) && (E.aba !== 'conta' || !filtro.length || filtro.includes(l.categoria)));
+      alvo.forEach(l => ev.target.checked ? E.sel.add(l.id) : E.sel.delete(l.id)); desenharConteudo(); break;
+    }
+    case 'sel-lista': (el.dataset.ids || '').split(',').filter(Boolean).forEach(i => ev.target.checked ? E.sel.add(i) : E.sel.delete(i)); desenharConteudo(); break;
+    case 'lote-limpar': E.sel.clear(); desenharConteudo(); break;
+    case 'lote-sit': { const ids = [...E.sel]; E.sel.clear(); aplicarAjustes(ids.map(i => ({ id: i, situacao: el.dataset.sit }))); break; }
+    case 'lote-cat': editarLancamentos([...E.sel]); break;
+    case 'editar': editarLancamentos([id], el.dataset.foco); break;
+    case 'menu-sit': ev.stopPropagation(); menuSituacao(el, id); break;
+    case 'sit-escolher': fecharMenus(); aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
+    case 'sit-rapida': aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
+    case 'ver-conf': $('#conf-' + id)?.classList.toggle('oculto'); break;
+    case 'novo-doc': modalDocumento(el.dataset.tipo); break;
+    case 'excluir-doc': {
+      const d = E.cli.documentos.find(x => x.id === id);
+      if (!confirm(`Excluir ${d.tipo === 'extrato' ? 'o extrato' : 'a fatura'} ${d.banco || ''}? Os ajustes feitos nos lançamentos dele também serão apagados.`)) break;
+      try { await api('DELETE', '/api/app/documentos/' + id); toast('Documento excluído'); await telaCliente(E.cli.cliente.id, true); } catch (e) { toast(e.message, true); }
+      break;
+    }
+    case 'excel': {
+      el.disabled = true; const txt = el.innerHTML; el.innerHTML = '<i class="ti ti-loader-2"></i> Gerando…';
+      try {
+        const r = await api('GET', `/api/app/analises/${E.cli.analise.id}/excel`, undefined, { blob: true });
+        const nome = decodeURIComponent((r.headers.get('content-disposition') || '').match(/filename\*=UTF-8''([^;]+)/)?.[1] || 'mirror.xlsx');
+        const url = URL.createObjectURL(await r.blob());
+        const a2 = document.createElement('a'); a2.href = url; a2.download = nome; document.body.appendChild(a2); a2.click(); a2.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      } catch (e) { toast(e.message, true); }
+      el.disabled = false; el.innerHTML = txt; break;
+    }
+    case 'status': {
+      try { await api('PATCH', '/api/app/analises/' + E.cli.analise.id, { status: el.dataset.status }); E.cli.analise.status = el.dataset.status; desenharCliente(); toast(el.dataset.status === 'concluida' ? 'Análise concluída' : 'Análise reaberta'); }
+      catch (e) { toast(e.message, true); }
+      break;
+    }
+  }
+});
+
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset?.acao !== 'busca-mes') return;
+  E.busca[el.dataset.mes] = el.value;
+  const pos = el.selectionStart, chave = el.dataset.mes;
+  desenharConteudo();
+  const novo = document.querySelector(`[data-acao="busca-mes"][data-mes="${chave}"]`);
+  if (novo) { novo.focus(); novo.setSelectionRange(pos, pos); }
+});
+
+rotear();
+})();
+</script>
+</body>
+</html>

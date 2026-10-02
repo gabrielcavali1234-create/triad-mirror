@@ -21,6 +21,8 @@ import { moduloExtrato } from './modules/extrato';
 import { moduloFatura } from './modules/fatura';
 import { consolidar } from './modules/consolidacao';
 import { gerarExcel } from './modules/excel';
+import rotasApp from './rotas/app';
+import { repo } from './core/repositorio';
 
 const app = express();
 const port = process.env.PORT || 3002; // 3001 é a TRIAD — assim os dois rodam na mesma VPS
@@ -55,10 +57,11 @@ app.get('/api/mirror/health', (_req, res) => {
     res.json({
         ok: true,
         servico: 'TRIAD Mirror',
-        versao: '0.1.1',
+        versao: '0.2.0',
         anthropicConfigurado: !!process.env.ANTHROPIC_API_KEY,
         supabaseConfigurado: !!supabaseAdmin,
         acessoProtegido: !!process.env.MIRROR_ACCESS_KEY,
+        bancoDaAplicacao: repo?.modo || 'indisponível',
         jobsEmMemoria: jobs.size
     });
 });
@@ -240,17 +243,23 @@ app.post('/api/mirror/save-cost', async (req, res) => {
 process.on('uncaughtException', (err) => { console.error('CRITICAL uncaughtException:', err); logErro(err); });
 process.on('unhandledRejection', (reason) => console.error('CRITICAL unhandledRejection:', reason));
 
-// ─── Frontend estático (mesmo esquema da TRIAD) ───────────────────────────
-const distPath = path.join(process.cwd(), 'dist');
-const indexPath = path.join(distPath, 'index.html');
-if (fs.existsSync(indexPath)) {
-    console.log('[Servidor] Servindo frontend de /dist');
-    app.use(express.static(distPath, { dotfiles: 'allow' }));
-    app.get(/(.*)/, (_req, res) => res.sendFile(indexPath, { dotfiles: 'allow' }));
+// ─── Aplicação dos analistas (login, clientes, apuração) ──────────────────
+app.use(rotasApp);
+
+// ─── Frontend: public/index.html (sem build — HTML + JS puro) ─────────────
+const publicPath = [path.join(process.cwd(), 'public'), path.join(__dirname, '..', 'public')].find(p => fs.existsSync(path.join(p, 'index.html')));
+if (publicPath) {
+    console.log('[Servidor] Servindo a aplicação de', publicPath);
+    app.use(express.static(publicPath, { index: 'index.html', extensions: ['html'] }));
+    // Qualquer rota que não seja API cai na aplicação (navegação interna por #)
+    app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(publicPath, 'index.html')));
 } else {
-    console.log('[Servidor] /dist não encontrado — rodando só como API');
+    console.log('[Servidor] public/index.html não encontrado — rodando só como API');
     app.get('/', (_req, res) => res.type('text/plain').send('TRIAD Mirror API no ar. Status: /api/mirror/health'));
 }
+
+// Rota de API inexistente → JSON (não HTML)
+app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error('Express error handler:', err);
