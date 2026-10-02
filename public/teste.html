@@ -106,6 +106,7 @@
     <h2 id="resultadoTitulo">2. Resultado</h2>
     <div id="resultadoCorpo"></div>
     <div class="acoes">
+      <button class="btn amarelo" id="excelDoc">Baixar Excel</button>
       <button class="btn claro" id="baixar">Baixar JSON</button>
     </div>
   </section>
@@ -113,7 +114,11 @@
   <section class="card">
     <h2>3. Visão consolidada</h2>
     <div id="listaDocs" class="docs"><span class="vazio">Nenhum documento analisado ainda. Cada análise concluída entra aqui.</span></div>
-    <button class="btn" id="consolidar" disabled>Consolidar</button>
+    <div class="acoes" style="margin-top:0">
+      <button class="btn" id="consolidar" disabled>Consolidar</button>
+      <button class="btn amarelo" id="excelConsolidado" disabled>Baixar Excel consolidado</button>
+    </div>
+    <div class="status" id="statusExcel"></div>
     <div id="consolidado"></div>
   </section>
 </main>
@@ -245,15 +250,64 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
 
+  // ─── Excel ───────────────────────────────────────────────────────────
+  const semExtensao = (n) => String(n || 'documento').replace(/\.[^.]+$/, '');
+
+  async function baixarExcel(corpo, nomeArquivo, botao, statusEl) {
+    const textoOriginal = botao.textContent;
+    botao.disabled = true; botao.textContent = 'Gerando…';
+    if (statusEl) { statusEl.textContent = ''; statusEl.className = 'status'; }
+    try {
+      const r = await fetch('/api/mirror/exportar-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-mirror-key': $('chave').value.trim() },
+        body: JSON.stringify(Object.assign({}, corpo, { nomeArquivo }))
+      });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        throw new Error(e.error || ('Erro HTTP ' + r.status));
+      }
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nomeArquivo + '.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    } catch (e) {
+      if (statusEl) { statusEl.textContent = e.message; statusEl.className = 'status erro'; }
+      else status(e.message, true);
+    } finally {
+      botao.disabled = false; botao.textContent = textoOriginal;
+    }
+  }
+
+  $('excelDoc').addEventListener('click', () => {
+    const d = documentos[documentos.length - 1];
+    if (!d) return;
+    const corpo = d.tipo === 'fatura' ? { faturas: [d.resultado], extratos: [] } : { extratos: [d.resultado], faturas: [] };
+    baixarExcel(corpo, 'mirror-' + semExtensao(d.nome), $('excelDoc'));
+  });
+
+  $('excelConsolidado').addEventListener('click', () => {
+    if (!documentos.length) return;
+    const corpo = {
+      extratos: documentos.filter(d => d.tipo === 'extrato').map(d => d.resultado),
+      faturas: documentos.filter(d => d.tipo === 'fatura').map(d => d.resultado),
+      exclusoes: [...exclusoes], inclusoes: [...inclusoes]
+    };
+    baixarExcel(corpo, 'mirror-consolidado-' + new Date().toISOString().slice(0, 10), $('excelConsolidado'), $('statusExcel'));
+  });
+
   function atualizarLista() {
     const el = $('listaDocs');
-    if (!documentos.length) { el.innerHTML = '<span class="vazio">Nenhum documento analisado ainda.</span>'; $('consolidar').disabled = true; return; }
+    if (!documentos.length) { el.innerHTML = '<span class="vazio">Nenhum documento analisado ainda.</span>'; $('consolidar').disabled = true; $('excelConsolidado').disabled = true; return; }
     el.innerHTML = documentos.map((d, i) => `<div class="doc"><span class="pill">${d.tipo}</span>${esc(d.nome)}<button title="Remover" data-i="${i}">×</button></div>`).join('');
     el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       documentos.splice(Number(b.dataset.i), 1); exclusoes.clear(); inclusoes.clear();
       $('consolidado').innerHTML = ''; atualizarLista();
     }));
     $('consolidar').disabled = false;
+    $('excelConsolidado').disabled = false;
   }
 
   async function consolidar() {

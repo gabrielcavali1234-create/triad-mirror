@@ -37,6 +37,7 @@ Todas as rotas `/api/mirror/*`, exceto `/health`, exigem o cabeçalho `x-mirror-
 
 - Página de teste: **`/teste`** (envio de documento, conferência e consolidação com incluir/excluir).
 - Saúde: **`/api/mirror/health`** (aberta).
+- Excel: **`POST /api/mirror/exportar-excel`** com o mesmo corpo do `/consolidar` → `.xlsx` com abas Resumo, Lançamentos (consolidado, com a coluna "No resumo"), uma aba por fatura (dados, conferência e lançamentos) e uma por extrato. Exemplo local: `npm run exemplo:excel`.
 
 | Método | Rota | O que faz |
 |---|---|---|

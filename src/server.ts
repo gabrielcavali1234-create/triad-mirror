@@ -20,6 +20,7 @@ import { buildUserFriendlyError, jobs, novoJobId, sanitizarResultado } from './c
 import { moduloExtrato } from './modules/extrato';
 import { moduloFatura } from './modules/fatura';
 import { consolidar } from './modules/consolidacao';
+import { gerarExcel } from './modules/excel';
 
 const app = express();
 const port = process.env.PORT || 3002; // 3001 é a TRIAD — assim os dois rodam na mesma VPS
@@ -174,6 +175,25 @@ app.post('/api/mirror/consolidar', (req, res) => {
     } catch (error: any) {
         console.error('[Consolidar] Erro:', error);
         res.status(500).json({ error: 'Falha ao consolidar.', details: error.message });
+    }
+});
+
+// ─── Exportação para Excel (sem IA, custo zero) ───────────────────────────
+app.post('/api/mirror/exportar-excel', async (req, res) => {
+    try {
+        const { extratos = [], faturas = [], exclusoes = [], inclusoes = [], nomeArquivo } = req.body || {};
+        if (!Array.isArray(extratos) || !Array.isArray(faturas) || (extratos.length === 0 && faturas.length === 0)) {
+            return res.status(400).json({ error: 'Envie ao menos um extrato ou uma fatura.' });
+        }
+        const buffer = await gerarExcel({ extratos, faturas, exclusoes, inclusoes });
+        const hoje = new Date().toISOString().slice(0, 10);
+        const nome = String(nomeArquivo || `mirror-analise-${hoje}`).replace(/[^\w\-. ]/g, '_').slice(0, 80) + '.xlsx';
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${nome}"`);
+        res.send(buffer);
+    } catch (error: any) {
+        console.error('[Excel] Erro:', error);
+        res.status(500).json({ error: 'Falha ao gerar o Excel.', details: error.message });
     }
 });
 

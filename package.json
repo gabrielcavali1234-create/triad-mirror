@@ -12,21 +12,23 @@
     "test:consolidacao": "tsx scripts/teste-consolidacao.ts",
     "test:fatura": "tsx scripts/teste-fatura-itau.ts",
     "test": "tsx scripts/teste-consolidacao.ts && tsx scripts/teste-fatura-itau.ts",
-    "extrair:fatura": "tsx scripts/extrair-fatura.ts"
+    "extrair:fatura": "tsx scripts/extrair-fatura.ts",
+    "exemplo:excel": "tsx scripts/teste-excel.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "multer": "^2.0.0",
     "pdf-lib": "^1.17.1",
-    "typescript": "^5.6.0",
-    "@types/node": "^22.0.0",
-    "@types/express": "^5.0.0",
-    "@types/cors": "^2.8.17",
-    "@types/multer": "^1.4.12"
+    "typescript": "^5.6.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0"
