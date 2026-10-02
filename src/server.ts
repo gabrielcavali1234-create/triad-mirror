@@ -48,6 +48,18 @@ const MODULOS: Record<string, ModuloDocumento<any>> = {
 const apagar = (p?: string) => { if (p) { try { fs.unlinkSync(p); } catch { /* já foi */ } } };
 const logErro = (e: any) => fs.appendFileSync('error_log.txt', new Date().toISOString() + ': ' + (e?.stack || e?.message) + '\n');
 
+// ─── Saúde — confirma que o servidor está no ar e configurado ─────────────
+app.get('/api/mirror/health', (_req, res) => {
+    res.json({
+        ok: true,
+        servico: 'TRIAD Mirror',
+        versao: '0.1.0',
+        anthropicConfigurado: !!process.env.ANTHROPIC_API_KEY,
+        supabaseConfigurado: !!supabaseAdmin,
+        jobsEmMemoria: jobs.size
+    });
+});
+
 // ─── Análise assíncrona (extrato ou fatura) ───────────────────────────────
 app.post('/api/mirror/analyze-async', upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
@@ -181,6 +193,7 @@ if (fs.existsSync(indexPath)) {
     app.get(/(.*)/, (_req, res) => res.sendFile(indexPath, { dotfiles: 'allow' }));
 } else {
     console.log('[Servidor] /dist não encontrado — rodando só como API');
+    app.get('/', (_req, res) => res.type('text/plain').send('TRIAD Mirror API no ar. Status: /api/mirror/health'));
 }
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
