@@ -53,6 +53,9 @@ export interface Lancamento {
     padraoIncluido: boolean;           // o que o sistema decidiu antes do analista mexer
     ajustadoPeloAnalista: boolean;
     parcela?: string;                  // ex: "3/10"
+    parcelaInicio?: string;            // YYYY-MM da fatura da 1ª parcela
+    parcelaFim?: string;               // YYYY-MM da fatura da última parcela
+    parcelasRestantes?: number;        // quantas ainda vão cair DEPOIS desta fatura
     alerta?: Alerta;
 }
 
@@ -84,6 +87,36 @@ function pareceMesmoTitular(descricao: string, titular?: string): boolean {
 
 const REGEX_PAGAMENTO_FATURA = /(pgto|pagto|pag|pagamento|deb\.?\s*aut|debito\s*aut).{0,20}(fatura|fat\b|cart[aã]o|itaucard|credicard)|fatura\s*cart|itaucard/i;
 const arred = (n: number) => Math.round(n * 100) / 100;
+
+/** Soma n meses a "YYYY-MM". */
+export function somarMeses(mes: string, n: number): string {
+    const [a, m] = mes.split('-').map(Number);
+    const total = a * 12 + (m - 1) + n;
+    return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`;
+}
+
+export interface ParcelamentoItem {
+    id: string;
+    descricao: string;
+    portador?: string;
+    documento: string;
+    valorParcela: number;
+    parcelaAtual: number;
+    parcelaTotal: number;
+    inicio: string;          // YYYY-MM (fatura da 1ª parcela)
+    fim: string;             // YYYY-MM (fatura da última parcela)
+    restantes: number;       // parcelas depois da fatura atual
+    valorRestante: number;
+    categoria: string;
+    financiamento: boolean;  // parcelamento de fatura / empréstimo do cartão
+}
+
+export interface MesCompromisso {
+    mes: string;             // YYYY-MM
+    valor: number;           // soma das parcelas que caem nesse mês
+    quantidade: number;
+    terminam: { descricao: string; valorParcela: number }[];   // parcelas cuja ÚLTIMA cai nesse mês
+}
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 function ehPagamentoDeFatura(descricao: string, categoria: string): boolean {
@@ -224,6 +257,12 @@ export function consolidar(entrada: EntradaConsolidacao) {
         fat.transacoes.forEach((t, i) => {
             const id = idsFat[di] ? `${idsFat[di]}:${i}` : `fatura-${di}-${i}`;
             const parcela = t.parcelaAtual && t.parcelaTotal ? `${t.parcelaAtual}/${t.parcelaTotal}` : undefined;
+            const temParcela = !!(mesFatura && t.parcelaAtual && t.parcelaTotal && t.parcelaTotal >= t.parcelaAtual);
+            const infoParcela = temParcela ? {
+                parcelaInicio: somarMeses(mesFatura!, -(t.parcelaAtual! - 1)),
+                parcelaFim: somarMeses(mesFatura!, t.parcelaTotal! - t.parcelaAtual!),
+                parcelasRestantes: t.parcelaTotal! - t.parcelaAtual!
+            } : {};
 
             if (t.tipo === 'pagamento') {
                 // Pagamento da fatura ANTERIOR, lançado dentro desta fatura. Não é gasto nem
@@ -250,7 +289,8 @@ export function consolidar(entrada: EntradaConsolidacao) {
                 direcao: TIPOS_DEBITO_FATURA.includes(t.tipo) ? 'saida' : 'entrada',
                 categoria: t.categoria, subcategoria: (t as any).subcategoria,
                 padraoIncluido: true,
-                parcela
+                parcela,
+                ...infoParcela
             }));
         });
     });
@@ -316,6 +356,55 @@ export function consolidar(entrada: EntradaConsolidacao) {
         pagamentoMinimo: arred(faturas.reduce((s, f) => s + (f.pagamentoMinimo ?? 0), 0))
     };
 
+    // ── Calendário de parcelas ─────────────────────────────────────────────
+    // Usa a fatura MAIS RECENTE de cada cartão (se houver faturas de meses
+    // seguidos, a mesma compra apareceria em todas). Respeita o analista: o que
+    // ele marcou como ignorado / entre contas fica fora da projeção.
+    const ultimaPorCartao = new Map<string, number>();
+    faturas.forEach((f, di) => {
+        if (!f.vencimento) return;
+        const chave = `${f.banco || ''}|${f.produto || ''}|${(f.cartoes || []).map(c => c.final || c.portador).join(',')}`;
+        const atual = ultimaPorCartao.get(chave);
+        if (atual === undefined || (faturas[atual].vencimento || '') < f.vencimento) ultimaPorCartao.set(chave, di);
+    });
+    const faturasProjecao = new Set(ultimaPorCartao.values());
+    const itensParcela: ParcelamentoItem[] = lancamentos
+        .filter(l => l.origem === 'fatura' && l.parcelaFim && l.direcao === 'saida' && l.situacao === 'incluido' && faturasProjecao.has(l.documentoIndice))
+        .map(l => {
+            const t = faturas[l.documentoIndice].transacoes[l.ref];
+            const restantes = l.parcelasRestantes || 0;
+            return {
+                id: l.id, descricao: t.estabelecimento, portador: t.portador, documento: l.documento,
+                valorParcela: l.valor, parcelaAtual: t.parcelaAtual!, parcelaTotal: t.parcelaTotal!,
+                inicio: l.parcelaInicio!, fim: l.parcelaFim!, restantes, valorRestante: arred(l.valor * restantes),
+                categoria: l.categoria, financiamento: t.tipo === 'financiamento'
+            };
+        })
+        .sort((a, b) => a.fim.localeCompare(b.fim) || b.valorParcela - a.valorParcela);
+    const mesesFatura = Array.from(faturasProjecao).map(di => faturas[di].vencimento!.slice(0, 7)).sort();
+    const mesAtual = mesesFatura[0];
+    const porMesParcelas: MesCompromisso[] = [];
+    if (mesAtual && itensParcela.length) {
+        const ultimo = itensParcela.reduce((m, i) => (i.fim > m ? i.fim : m), mesAtual);
+        for (let mes = mesAtual; mes <= ultimo; mes = somarMeses(mes, 1)) {
+            const caem = itensParcela.filter(i => i.inicio <= mes && mes <= i.fim);
+            porMesParcelas.push({
+                mes, valor: arred(caem.reduce((a, i) => a + i.valorParcela, 0)), quantidade: caem.length,
+                terminam: caem.filter(i => i.fim === mes).map(i => ({ descricao: i.descricao, valorParcela: i.valorParcela }))
+            });
+        }
+    }
+    const futuros = porMesParcelas.slice(1);
+    const pico = futuros.reduce<MesCompromisso | null>((m, x) => (!m || x.valor > m.valor ? x : m), null);
+    const parcelamentos = {
+        mesFaturaAtual: mesAtual || null,
+        itens: itensParcela,
+        porMes: porMesParcelas,
+        mesMaisApertado: pico?.mes || null,
+        livreDeParcelasEm: porMesParcelas.length ? somarMeses(porMesParcelas[porMesParcelas.length - 1].mes, 1) : null,
+        totalRestante: arred(itensParcela.reduce((a, i) => a + i.valorRestante, 0))
+    };
+
     const temEncargos = endividamentoCartao.emRotativo;
     const alertasDuplicidade = lancamentos.filter(l => l.alerta?.tipo === 'possivel_duplicidade_fatura');
 
@@ -333,6 +422,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
             comprometidoProximaFatura: arred(comprometidoProximaFatura),
             compromissoEstimado,
             endividamentoCartao,
+            parcelamentos,
             pagamentosDeFaturaNoExtrato: {
                 quantidade: alertasDuplicidade.length,
                 valor: soma(alertasDuplicidade),

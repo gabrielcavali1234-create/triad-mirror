@@ -189,6 +189,22 @@ main{max-width:1280px;margin:0 auto;padding:22px 20px 110px}
 /* cartão */
 .fatura-cab{padding:14px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--borda)}
 .conf{width:100%;border-collapse:collapse;font-size:13px}
+.cal{display:flex;align-items:flex-end;gap:6px;height:190px;padding:10px 4px 0;overflow-x:auto}
+.cal .col{flex:1 0 46px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;border:0;background:none;padding:0}
+.cal .val{font-size:11px;color:var(--suave);margin-bottom:4px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cal .bar{width:100%;max-width:54px;border-radius:6px 6px 0 0;background:var(--amarelo);min-height:3px}
+.cal .col.atual .bar{background:#c9c7bc}
+.cal .col.pico .bar{background:var(--preto)}
+.cal .col.on .bar{outline:3px solid var(--azul);outline-offset:1px}
+.cal .mes-l{font-size:12px;margin-top:6px;color:var(--suave);white-space:nowrap}
+.cal .col.pico .mes-l{color:var(--texto);font-weight:700}
+.cal .fim{font-size:11px;color:var(--verde);height:15px;white-space:nowrap}
+.tabela-parc{width:100%;border-collapse:collapse;font-size:13px}
+.tabela-parc th{text-align:left;font-size:12px;color:var(--suave);padding:9px 12px;border-bottom:2px solid var(--preto);white-space:nowrap;cursor:pointer;user-select:none}
+.tabela-parc td{padding:9px 12px;border-bottom:1px solid var(--borda2)}
+.tabela-parc td.n,.tabela-parc th.n{text-align:right}
+.trilho-parc{display:inline-block;width:90px;height:7px;background:var(--borda2);border-radius:4px;overflow:hidden;vertical-align:middle;margin-left:6px}
+.trilho-parc span{display:block;height:100%;background:var(--preto)}
 .conf td,.conf th{padding:7px 14px;border-top:1px solid var(--borda2);text-align:left}
 .conf th{font-size:12px;color:var(--suave)}
 .conf td.n{text-align:right}
@@ -221,7 +237,7 @@ const dataBR = iso => /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso.slice(8, 10) +
 const dataLonga = iso => { try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return ''; } };
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 const nomeMes = k => MESES[Number(k.slice(5, 7)) - 1] + ' de ' + k.slice(0, 4);
-const nomeMesCurto = k => MESES[Number(k.slice(5, 7)) - 1].slice(0, 3) + '/' + k.slice(2, 4);
+const nomeMesCurto = k => /^\d{4}-\d{2}/.test(k || '') ? MESES[Number(k.slice(5, 7)) - 1].slice(0, 3).toLowerCase() + '/' + k.slice(2, 4) : '';
 const iniciais = n => String(n || '?').trim().split(/\s+/).filter(Boolean).map(p => p[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join('').toUpperCase().slice(0, 2);
 const arred = n => Math.round(n * 100) / 100;
 const CORES = ['#111111', '#FFD23F', '#1e4a8a', '#1f8a4c', '#d85a30', '#7f77dd', '#d4537e', '#1d9e75', '#ba7517', '#888780', '#378add', '#993c1d'];
@@ -283,7 +299,8 @@ const E = {
   clientes: null, buscaClientes: '',
   cli: null,                    // { cliente, analise, documentos, apuracao }
   aba: 'conta', modoMix: 'cat', mesSel: null, filtroCat: {}, busca: {}, sel: new Set(),
-  salvando: 0, salvoEm: null
+  salvando: 0, salvoEm: null,
+  calMes: null, ordemParc: 'fim'
 };
 
 // ════════════════════════════════════════════════════════════════════════
@@ -543,7 +560,7 @@ function linha(l) {
     aviso = `<div class="aviso" style="color:var(--fraco)"><i class="ti ti-info-circle"></i><span>Pagamento da fatura anterior: fica fora do resumo.</span></div>`;
   }
   const origem = l.origem === 'extrato' ? `<i class="ti ti-building-bank"></i> Conta ${esc(l.banco || '')}`
-    : `<i class="ti ti-credit-card"></i> ${esc(l.documento)}${l.parcela ? ` · compra feita em ${dataCompleta(l.data)}` : ''}`;
+    : `<i class="ti ti-credit-card"></i> ${esc(l.documento)}${l.parcela ? ` · compra feita em ${dataCompleta(l.data)}` : ''}${l.parcelaInicio ? ` · <b style="color:var(--texto);font-weight:600">1ª parcela ${nomeMesCurto(l.parcelaInicio)} → última ${nomeMesCurto(l.parcelaFim)}</b>${l.parcelasRestantes ? ` (faltam ${l.parcelasRestantes})` : ' (última!)'}` : ''}`;
   return `<div class="r ${sel ? 'sel' : ''} ${l.situacao !== 'incluido' ? 'off' : ''}" data-id="${l.id}">
     <span class="ck"><input type="checkbox" data-acao="sel" data-id="${l.id}" ${sel ? 'checked' : ''} aria-label="Selecionar lançamento"></span>
     <span class="data suave num" title="${esc(l.data)}">${dataBR(l.data)}${anoDiferente(l.data) ? '<br><span style="font-size:11px">' + l.data.slice(0, 4) + '</span>' : ''}</span>
@@ -681,6 +698,7 @@ function abaCartao() {
     <div class="kpi"><small>Juros, mora e multa</small><b class="num" style="color:${e.encargos ? 'var(--vermelho)' : 'inherit'}">${brl(e.encargos)}</b></div>
   </div>
   ${e.emRotativo ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(e.saldoFinanciado)} da fatura anterior foram financiados, gerando ${brl(e.encargos)} de juros, mora e multa.${e.parcelasDeFinanciamento ? ` Há também ${brl(e.parcelasDeFinanciamento)} de parcelamento de fatura.` : ''}</span></div>` : ''}
+  ${secaoParcelas(r.parcelamentos)}
   ${barraLote()}`;
   for (const d of docs) {
     const itens = todos.filter(l => l.documentoId === d.id);
@@ -706,6 +724,55 @@ function abaCartao() {
   }
   return html;
 }
+
+// ─── Calendário de parcelas (quando começa, quando termina, onde aperta) ─
+function secaoParcelas(p) {
+  if (!p || !p.porMes?.length) return '';
+  const max = Math.max(...p.porMes.map(m => m.valor)) || 1;
+  const atual = p.porMes[0], prox = p.porMes[1];
+  const renda = Number(E.cli.cliente.renda_declarada) || 0;
+  const pct = v => renda ? ` <span class="fraco">(${Math.round(v / renda * 100)}% da renda)</span>` : '';
+  // primeiro mês em que o compromisso cai pela metade em relação ao próximo mês
+  const alivio = prox ? p.porMes.slice(2).find(m => m.valor <= prox.valor / 2) : null;
+  const sel = p.porMes.find(m => m.mes === E.calMes);
+  const itensSel = sel ? p.itens.filter(i => i.inicio <= sel.mes && sel.mes <= i.fim) : [];
+  const ordem = E.ordemParc;
+  const itens = p.itens.slice().sort((a, b) => ordem === 'valor' ? b.valorParcela - a.valorParcela : ordem === 'restante' ? b.valorRestante - a.valorRestante : ordem === 'inicio' ? a.inicio.localeCompare(b.inicio) : a.fim.localeCompare(b.fim) || b.valorParcela - a.valorParcela);
+  const seta = k => ordem === k ? ' <i class="ti ti-arrow-down"></i>' : '';
+  return `<div class="card" style="padding:16px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
+      <div><b style="font-size:15px">Calendário de parcelas</b><div class="suave" style="font-size:13px;margin-top:2px">Quanto das próximas faturas já está comprometido com compras parceladas que o cliente já fez.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${prox ? `<span class="pill" style="background:var(--preto);color:var(--amarelo);padding:5px 11px">Mais apertado: ${nomeMesCurto(p.mesMaisApertado)} · ${brl(p.porMes.find(m => m.mes === p.mesMaisApertado).valor)}</span>` : ''}
+        ${alivio ? `<span class="pill verde" style="padding:5px 11px">Alívio a partir de ${nomeMesCurto(alivio.mes)} (cai para ${brl(alivio.valor)})</span>` : ''}
+        ${p.livreDeParcelasEm ? `<span class="pill cinza" style="padding:5px 11px">Sem parcelas a partir de ${nomeMesCurto(p.livreDeParcelasEm)}</span>` : ''}
+      </div>
+    </div>
+    <div class="cal" role="list">${p.porMes.map((m, i) => `<button class="col ${i === 0 ? 'atual' : ''} ${m.mes === p.mesMaisApertado ? 'pico' : ''} ${m.mes === E.calMes ? 'on' : ''}" data-acao="cal-mes" data-mes="${m.mes}" role="listitem" title="${i === 0 ? 'Fatura atual (já lançada)' : 'Clique para ver o que cai neste mês'}">
+      <span class="fim">${m.terminam.length && i > 0 ? '−' + m.terminam.length + ' acaba' + (m.terminam.length > 1 ? 'm' : '') : ''}</span>
+      <span class="val">${brl(m.valor).replace('R$', '').trim()}</span>
+      <span class="bar" style="height:${Math.max(2, Math.round(m.valor / max * 130))}px"></span>
+      <span class="mes-l">${i === 0 ? 'atual' : nomeMesCurto(m.mes)}</span></button>`).join('')}</div>
+    <div class="fraco" style="font-size:12px;margin-top:8px">Barra cinza: fatura atual · preta: mês mais apertado · "acaba(m)": parcelas que terminam naquele mês. Considera só compras já feitas; compras novas aumentam esses valores.${renda ? '' : ' Preencha a renda no perfil para ver o peso de cada mês na renda.'}</div>
+    ${sel ? `<div style="margin-top:12px;border:1px solid var(--azul-borda);background:var(--azul-fundo);border-radius:10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px"><b>${nomeMes(sel.mes)}: ${brl(sel.valor)} em ${sel.quantidade} parcela(s)${pct(sel.valor)}</b><button class="btn" data-acao="cal-mes" data-mes="" style="padding:3px 9px;font-size:12px">Fechar</button></div>
+      ${itensSel.sort((a, b) => b.valorParcela - a.valorParcela).map(i => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;border-top:1px solid var(--azul-borda)"><span>${esc(i.descricao)}${i.portador ? ` <span class="fraco">· ${esc(i.portador)}</span>` : ''} <span class="fraco">· parcela ${i.parcelaAtual + monthsBetween(p.mesFaturaAtual, sel.mes)}/${i.parcelaTotal}</span>${i.fim === sel.mes ? ' <span class="pill verde">última</span>' : ''}</span><b class="num">${brl(i.valorParcela)}</b></div>`).join('')}
+    </div>` : ''}
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Compras parceladas (${p.itens.length}) · ainda a pagar ${brl(p.totalRestante)}</summary>
+      <div style="overflow-x:auto;margin-top:8px"><table class="tabela-parc"><thead><tr>
+        <th>Compra</th><th>Parcela</th><th class="n" data-acao="ordem-parc" data-ordem="valor">Valor da parcela${seta('valor')}</th>
+        <th data-acao="ordem-parc" data-ordem="inicio">Começou${seta('inicio')}</th><th data-acao="ordem-parc" data-ordem="fim">Termina${seta('fim')}</th>
+        <th class="n" data-acao="ordem-parc" data-ordem="restante">Ainda a pagar${seta('restante')}</th></tr></thead><tbody>
+        ${itens.map(i => `<tr><td><b>${esc(i.descricao)}</b>${i.financiamento ? ' <span class="pill vermelho">financiamento de fatura</span>' : ''}<div class="fraco" style="font-size:12px">${esc(i.portador || '')} · ${esc(i.categoria)}</div></td>
+          <td class="num">${i.parcelaAtual}/${i.parcelaTotal}<span class="trilho-parc"><span style="width:${Math.round(i.parcelaAtual / i.parcelaTotal * 100)}%"></span></span></td>
+          <td class="n num">${brl(i.valorParcela)}</td><td>${nomeMesCurto(i.inicio)}</td>
+          <td>${i.restantes ? nomeMesCurto(i.fim) + ` <span class="fraco">(faltam ${i.restantes})</span>` : '<span class="pill verde">termina nesta fatura</span>'}</td>
+          <td class="n num">${i.restantes ? brl(i.valorRestante) : '—'}</td></tr>`).join('')}
+      </tbody></table></div>
+    </details>
+  </div>`;
+}
+const monthsBetween = (a, b) => { const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number); return (yb - ya) * 12 + (mb - ma); };
 
 // ─── ABA TUDO JUNTO ──────────────────────────────────────────────────────
 function abaTudo() {
@@ -938,6 +1005,8 @@ document.addEventListener('click', async ev => {
     case 'sit-escolher': fecharMenus(); aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
     case 'sit-rapida': aplicarAjustes([{ id, situacao: el.dataset.sit }]); break;
     case 'ver-conf': $('#conf-' + id)?.classList.toggle('oculto'); break;
+    case 'cal-mes': E.calMes = el.dataset.mes && el.dataset.mes !== E.calMes ? el.dataset.mes : null; desenharConteudo(); break;
+    case 'ordem-parc': E.ordemParc = el.dataset.ordem; { const d = document.querySelector('.card details'); const aberto = d?.open; desenharConteudo(); if (aberto) document.querySelector('.card details').open = true; } break;
     case 'novo-doc': modalDocumento(el.dataset.tipo); break;
     case 'excluir-doc': {
       const d = E.cli.documentos.find(x => x.id === id);
