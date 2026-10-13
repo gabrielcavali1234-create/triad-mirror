@@ -40,6 +40,8 @@ label.rot{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1.5px;font-size:15px;cursor:pointer}
 .logo i.q{width:13px;height:13px;border-radius:3px;background:var(--amarelo);display:inline-block}
 .logo span{color:#8f8f86;font-weight:600}
+.logo-img{height:26px;width:auto;display:block}
+.logo-img.grande{height:40px}
 .topo .dir{display:flex;align-items:center;gap:10px}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--amarelo);color:var(--preto);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:0}
 .menu-usuario{position:absolute;right:20px;top:52px;background:var(--branco);color:var(--texto);border:1px solid var(--borda);border-radius:10px;padding:6px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:30}
@@ -353,7 +355,7 @@ function telaErro(msg) {
 // ════════════════════════════════════════════════════════════════════════
 function topo(extraDir = '') {
   return `<header class="topo">
-    <div class="logo" data-acao="ir-clientes"><i class="q"></i>TRIAD <span>MIRROR</span></div>
+    <div class="logo" data-acao="ir-clientes"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img"></div>
     <div class="dir">${extraDir}<button class="avatar" data-acao="menu-usuario" aria-label="Menu do usuário">${esc(iniciais(sessao?.usuario?.nome))}</button></div>
   </header>`;
 }
@@ -365,7 +367,7 @@ function telaLogin() {
   document.title = 'Entrar — TRIAD Mirror';
   $('#app').innerHTML = `<div class="login">
     <div class="esq">
-      <div class="logo"><i class="q"></i>TRIAD <span>MIRROR</span></div>
+      <div class="logo"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img grande"></div>
       <div><h1>Pra onde vai o dinheiro do seu cliente, <em>em minutos.</em></h1>
       <p>Extratos e faturas de cartão lidos por IA, conferidos com os totais do banco e prontos para a sua análise.</p></div>
       <div class="suave" style="display:flex;gap:18px;font-size:13px;color:#a5a59c;flex-wrap:wrap"><span><i class="ti ti-lock"></i> Dados no Brasil</span><span><i class="ti ti-shield-check"></i> Acesso por analista</span></div>
