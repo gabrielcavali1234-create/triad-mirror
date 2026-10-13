@@ -23,7 +23,7 @@ for (const v of fatura.conferencia!.verificacoes) {
     console.log(`   ${v.bateu ? 'ok ' : 'ERR'} ${v.nome.padEnd(38)} declarado ${v.declarado.toFixed(2).padStart(9)} | calculado ${v.calculado.toFixed(2).padStart(9)}`);
 }
 checar(fatura.conferencia!.bateu === true, 'todas as conferências batem com os totais da fatura');
-checar(fatura.conferencia!.verificacoes.length === 6, '6 conferências realizadas (2 cartões, lançamentos atuais, encargos, pagamentos, total)');
+checar(fatura.conferencia!.verificacoes.length === 8, '8 conferências realizadas (2 cartões, lançamentos atuais, encargos, pagamentos, total, próxima fatura, parcelas futuras)');
 
 // 2) Datas
 console.log('\n── Datas ──');

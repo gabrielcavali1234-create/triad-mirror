@@ -1,7 +1,22 @@
 // ══════════════════════════════════════════════════════════════════════════
-// Módulo FATURA DE CARTÃO — Itaú.
+// Módulo FATURA DE CARTÃO — Itaú e Bradesco (genérico para os demais).
 //
-// Calibrado em 02/10/2026 com uma fatura Itaú real (Gold, venc. 17/08/2026,
+// ── BRADESCO — calibrado em 13/10/2026 com uma fatura real (Visa Infinite
+// Prime, venc. 01/05/2026, 3 páginas, 2 cartões do MESMO titular):
+//  - Resumo: "Saldo anterior", "(-) Créditos/Pagamentos", "(+)Compras/Débitos",
+//    "(=)Total". Total = anterior − créditos/pagamentos + compras/débitos.
+//  - Cada cartão abre com "NOME  Cartão 4066 XXXX XXXX 9635" e fecha com
+//    "Total para NOME  valor". Dois cartões podem ter o MESMO nome: a conferência
+//    por cartão usa o FINAL, não o nome.
+//  - Parcela no fim da descrição, às vezes GRUDADA ("SHOPPING05/06",
+//    "TURKISH AIRL5010340003/05" → 3/5) ou numa coluna própria ("IPLACE 04/09").
+//  - Pagamento antes dos cartões: "01/04 PAGTO. POR DEB EM C/C 4.761,86 -".
+//  - Coluna da direita com quadros (limites, taxas, teto de juros, Livelo)
+//    intercalados com os lançamentos — não são lançamentos.
+//  - "Total parcelados para próximas faturas" = soma das parcelas que faltam
+//    (conferido: R$ 8.758,23 bate com as linhas).
+//
+// ── ITAÚ — calibrado em 02/10/2026 com uma fatura Itaú real (Gold, venc. 17/08/2026,
 // 3 páginas, titular + 1 adicional, rotativo + parcelamento de fatura ativos).
 // O que o PDF real mostrou e está tratado aqui:
 //  - Total da fatura = saldo anterior − pagamentos + ENCARGOS + lançamentos atuais.
@@ -109,8 +124,17 @@ const SYSTEM_PROMPT_FATURA = `Você é uma IA analista financeira especializada 
 Sua tarefa é extrair TODOS os lançamentos da fatura e os dados do resumo, e gerar um breve "Relatório Falado".
 
 LEITURA DO DOCUMENTO:
-A fatura do Itaú é diagramada em DUAS COLUNAS por página. Leia a coluna da esquerda inteira, de cima a baixo, e só depois a da direita. NUNCA junte o texto de uma coluna com o da linha vizinha na outra coluna.
-A primeira página tem o resumo e o boleto (código de barras, ficha de compensação) — do boleto, não extraia nada. Ignore também caracteres sem sentido (código de barras renderizado como texto).
+Faturas brasileiras costumam ter DUAS COLUNAS ou quadros laterais. Leia cada coluna inteira, de cima a baixo, e NUNCA junte o texto de uma coluna com o da linha vizinha na outra coluna.
+- Itaú: lançamentos nas duas colunas (esquerda inteira, depois direita).
+- Bradesco: lançamentos só à esquerda; à direita ficam quadros (Limites, Taxas mensais, Novo teto de juros, Programa de fidelidade/Livelo) que se intercalam visualmente com as compras — NUNCA são lançamentos e NUNCA fazem parte da descrição de uma compra.
+A primeira página tem o resumo e o boleto (código de barras, ficha de compensação) — do boleto, não extraia nada. Ignore também caracteres sem sentido (código de barras renderizado como texto, ex: "<Wnn WnWn...>").
+
+PARTICULARIDADES POR BANCO:
+- BRADESCO: resumo "Saldo anterior" → saldoFaturaAnterior; "(-) Créditos/Pagamentos" → pagamentosEfetuados; "(+)Compras/Débitos" → totalLancamentosAtuais; "(=)Total" / "Total da fatura" → valorTotal. "Total parcelados para próximas faturas" / "Total para as próximas faturas" → totalProximasFaturas. "Previsão de fechamento da próxima fatura" → proximoFechamento. Pagamento mínimo na caixa "Pagamento mínimo".
+  Cada cartão começa com "NOME  Cartão 4066 XXXX XXXX 9635" (final = últimos 4 dígitos) e termina com "Total para NOME  VALOR" (subtotal do bloco). O MESMO nome pode ter mais de um cartão: preencha SEMPRE "cartaoFinal" em cada transação com o final do bloco, e liste cada cartão separado em "cartoes" (final + subtotal). Não marque como adicional um cartão com o mesmo nome do titular.
+  O pagamento vem antes dos cartões, com o sinal "-" DEPOIS do valor: "01/04 PAGTO. POR DEB EM C/C 4.761,86 -" → secao "pagamentos", tipo "pagamento". Outros valores com "-" depois do número dentro dos cartões são estornos/créditos.
+  A cidade vem numa coluna ao lado da descrição ("SAO PAULO", "CAMPINAS") → cidadePais. Não há linha de ramo.
+- Outros bancos: use os mesmos conceitos (resumo, blocos por cartão com subtotal, parcelas NN/NN, pagamentos, encargos) com os nomes que o banco usar. Na dúvida, prefira omitir um total a preenchê-lo com o número errado.
 
 DADOS DO RESUMO (nível da fatura):
 - banco, bandeira (cartão iniciado em 4 = Visa, 5 = Mastercard), produto (ex: "Itaú Gold"), titular ("Titular NOME").
@@ -121,10 +145,10 @@ DADOS DO RESUMO (nível da fatura):
 Se o trecho recebido não contiver algum desses dados, omita o campo — NUNCA invente nem calcule.
 
 CARTÕES (titular + adicionais):
-Cada bloco de lançamentos começa com o NOME do portador numa linha própria (ex: "BERENICE C SILVA", "Rosemeire c s cordeiro") e termina em "Lançamentos no cartão  VALOR" — esse valor é o subtotal do bloco.
+Cada bloco de lançamentos começa com o NOME do portador (Itaú: numa linha própria, ex: "BERENICE C SILVA"; Bradesco: "NOME  Cartão XXXX XXXX XXXX 1234") e termina no subtotal do bloco (Itaú: "Lançamentos no cartão  VALOR"; Bradesco: "Total para NOME  VALOR").
 - Em cada transação, preencha "portador" com o nome do bloco. Se um bloco continuar em outra página/coluna sem repetir o nome, mantenha o último portador visto.
-- "cartaoFinal": só preencha se o final aparecer impresso (o do titular costuma aparecer em "Cartão 4100.XXXX.XXXX.1234"; adicionais geralmente não têm). NUNCA invente.
-- Em "cartoes", liste cada bloco com portador, final (se houver), adicional=true para quem não é o titular, e subtotal = "Lançamentos no cartão" daquele bloco (de "compras e saques").
+- "cartaoFinal": preencha com o final impresso no cabeçalho do bloco (ex: "Cartão 4100.XXXX.XXXX.1234" ou "Cartão 4066 XXXX XXXX 9635" → "1234"/"9635"), em TODAS as transações daquele bloco. Se o bloco não mostrar final (adicionais do Itaú), deixe vazio. NUNCA invente.
+- Em "cartoes", liste cada bloco com portador, final (se houver), adicional=true só para quem tem nome DIFERENTE do titular, e subtotal = o subtotal impresso daquele bloco.
 
 SEÇÕES — preencha "secao" em cada transação:
 - "pagamentos": quadro "Pagamentos efetuados" (ex: "18/07 PAGAMENTO -4.213,00") → tipo "pagamento".
@@ -143,8 +167,11 @@ REGRAS DE CADA LANÇAMENTO:
 1. Data: DD/MM → "YYYY-MM-DD" usando o ANO DO VENCIMENTO. Parcelas antigas mostram a data da compra original; se essa data, com o ano do vencimento, ficar DEPOIS do vencimento, ela é do ano anterior (ex: "24/10" numa fatura com vencimento 17/08/2026 → 2025-10-24).
 2. Estabelecimento: texto como aparece, SEM o indicador de parcela. Descrições quebradas em duas linhas (ex: "Mensalidade - Plano do" + "Anuidade Diferenciada") devem ser JUNTADAS numa só.
 3. Parcela: o "NN/NN" no fim da descrição é parcela atual/total ("JIM.COM GABRIE 07/12" → estabelecimento "JIM.COM GABRIE", parcelaAtual 7, parcelaTotal 12). À vista → null.
+   - Pode vir GRUDADO no nome: "DD PAULISTA SHOPPING05/06" → "DD PAULISTA SHOPPING", 5/6; "TURKISH AIRL5010340003/05" → "TURKISH AIRL50103400", 3/5 (só os ÚLTIMOS "NN/NN" são a parcela; os dígitos antes fazem parte do nome).
+   - Pode vir numa coluna própria entre a descrição e a cidade: "PETZ CONGONHAS  01/04  SAO PAULO  129,60" → parcela 1/4 (o primeiro "01/04" da linha é a DATA; o segundo é a parcela).
+   - Linhas idênticas (mesmo dia, nome e valor, ex: duas "COCO BAMBU JK 204,00") são compras DIFERENTES: extraia todas.
 4. Ramo e cidade: logo ABAIXO de cada compra pode vir uma linha menor com ramo + cidade ("supermercado JANDIRA", "vestuário Franca", "HEALTH Barueri", "GOVERNMENT SAO PAULO", "ELETRONICS CURITIBA"). Preencha "ramo" (primeira palavra) e "cidadePais" (o resto). Essa linha NUNCA é um lançamento. Nem toda compra tem essa linha.
-5. Valor: número POSITIVO em reais ("1.234,56" → 1234.56). A direção vem do "tipo".
+5. Valor: número POSITIVO em reais ("1.234,56" → 1234.56). A direção vem do "tipo". O sinal "-" pode vir antes ("-59,79") ou depois ("4.761,86 -").
 6. Tipo:
    - "compra": compras (inclusive parcelas e assinaturas) e lançamentos internacionais
    - "saque": saque no crédito
@@ -154,12 +181,12 @@ REGRAS DE CADA LANÇAMENTO:
    - "iof": "Repasse de IOF" dos internacionais (uma transação, data = data de emissão) e "IOF de financiamento"
    - "financiamento": parcela de parcelamento de fatura/empréstimo do cartão ("FINANCIAM FAT 07/12")
    - "anuidade": anuidade, "Mensalidade - Plano", "Mensalidade do Adicional"
-   - "tarifa": demais serviços cobrados pelo banco ("Itaú Avisa", seguros, avaliação emergencial de crédito)
+   - "tarifa": demais serviços cobrados pelo banco ("Itaú Avisa", seguros como "SEGURO SUPERPROTEGIDO", avaliação emergencial de crédito)
 7. Internacional: marque internacional=true. A linha principal traz o valor em R$. A linha de baixo traz "VALOR MOEDA VALOR_US$" (ex: "10,00 USD 10,00" ou "110,00 BRL 21,75") → valorMoedaOriginal, moedaOriginal (pode ser "BRL"!) e valorDolar. "Dólar de Conversão R$ 5,41" → cotacao. Nada disso é lançamento separado.
 8. Categoria — use APENAS uma destas: ${CATEGORIAS_TEXTO}
    - pagamento → "Pagamento de fatura"; encargo → "Encargos e juros"; iof → "IOF"; anuidade → "Anuidade"; tarifa → "Tarifa bancária"; financiamento → "Empréstimo e financiamento".
    - estorno → mesma categoria da compra original (ex: estorno de um serviço → mesma categoria do serviço), para abater no lugar certo.
-   - compras: use o ramo do Itaú como pista principal: supermercado → "Supermercado"; restaurante → "Alimentação"; vestuário → "Vestuário"; educacao → "Educação"; HEALTH/saúde → "Saúde"; lazer → "Lazer"; GOVERNMENT → "Impostos"; serviços/outros/ELETRONICS → decida pelo estabelecimento.
+   - compras: use o ramo impresso (Itaú) como pista principal: supermercado → "Supermercado"; restaurante → "Alimentação"; vestuário → "Vestuário"; educacao → "Educação"; HEALTH/saúde → "Saúde"; lazer → "Lazer"; GOVERNMENT → "Impostos"; serviços/outros/ELETRONICS → decida pelo estabelecimento.
      Pelo estabelecimento: APPLE.COM/BILL, assinaturas de software/IA (ANTHROPIC, CLAUDE), streaming, HOSTINGER → "Assinaturas"; academias/TOTALPASS/GYMPASS → "Lazer"; iFood/Rappi → "Delivery"; postos → "Combustível"; Uber/99/estacionamento/pedágio → "Transporte"; aéreas/hotéis → "Viagem"; ótica/farmácia → "Saúde"/"Farmácia"; salão/barbearia/estética → "Cuidados pessoais"; marketplace (SHOPEE, MAGALU, MERCADO LIVRE, AMAZON) → "Compras" salvo ramo mais específico.
    - Parcelas antigas costumam vir SEM a linha de ramo. Se o MESMO estabelecimento aparecer em outra compra desta fatura COM ramo (ex: "JIM.COM GABRIE" sem ramo e outra "JIM.COM GABRIE" com "supermercado JANDIRA"), use aquele ramo e a mesma categoria para as duas.
 
@@ -261,14 +288,30 @@ const valorAssinado = (t: TransacaoFatura) =>
     t.tipo === 'pagamento' ? 0 : TIPOS_DEBITO_FATURA.includes(t.tipo) ? t.valor : -t.valor;
 const somaAssinada = (ts: TransacaoFatura[]) => arred(ts.reduce((s, t) => s + valorAssinado(t), 0));
 
-function verificar(nome: string, declarado: number | undefined | null, calculado: number): Verificacao | null {
+/**
+ * Compara um total impresso com o calculado. "alternativas": outras formas
+ * legítimas de o banco montar o mesmo total (ex.: Bradesco põe estornos em
+ * "Créditos/Pagamentos" em vez de abater de "Compras/Débitos") — vale a que bater.
+ */
+function verificar(nome: string, declarado: number | undefined | null, calculado: number,
+    opcoes: { alternativas?: number[]; tolerancia?: number } = {}): Verificacao | null {
     if (declarado == null) return null;
-    const diferenca = arred(declarado - calculado);
-    return { nome, declarado, calculado, diferenca, bateu: Math.abs(diferenca) <= TOLERANCIA };
+    const tol = opcoes.tolerancia ?? TOLERANCIA;
+    const candidatos = [calculado, ...(opcoes.alternativas || [])];
+    const melhor = candidatos.reduce((m, c) => Math.abs(declarado - c) < Math.abs(declarado - m) ? c : m, calculado);
+    const diferenca = arred(declarado - melhor);
+    return { nome, declarado, calculado: melhor, diferenca, bateu: Math.abs(diferenca) <= tol };
+}
+
+/** Quanto ainda falta pagar das parcelas desta fatura (parcela × parcelas que restam). */
+export function parcelasRestantesDaFatura(ts: TransacaoFatura[]): number {
+    return arred(ts
+        .filter(t => (t.tipo === 'compra' || t.tipo === 'financiamento') && t.parcelaAtual && t.parcelaTotal && t.parcelaTotal > t.parcelaAtual)
+        .reduce((s, t) => s + t.valor * (t.parcelaTotal! - t.parcelaAtual!), 0));
 }
 
 /**
- * Confere a extração contra todos os totais que o próprio Itaú imprime.
+ * Confere a extração contra todos os totais que o próprio banco imprime.
  * Cada verificação que não bate aponta ONDE está o problema (qual cartão,
  * qual seção), em vez de só dizer que o total geral não fechou.
  */
@@ -279,31 +322,48 @@ export function conferirFatura(f: ResultadoFatura): ConferenciaFatura {
     const pagamentosNasLinhas = arred(ts.filter(t => t.tipo === 'pagamento').reduce((s, t) => s + t.valor, 0));
 
     const lancamentosAtuais = somaAssinada(naoEncargo);
+    // Estornos/créditos: o Itaú abate das compras; o Bradesco pode somar em "Créditos/Pagamentos".
+    const creditos = arred(naoEncargo.filter(t => valorAssinado(t) < 0).reduce((s, t) => s + t.valor, 0));
+    const lancamentosBrutos = arred(lancamentosAtuais + creditos);
     const encargosCalc = somaAssinada(encargos);
     const pagamentos = f.pagamentosEfetuados ?? pagamentosNasLinhas;
     const encargosParaTotal = f.encargosTotal ?? encargosCalc;
-    const totalCalculado = arred((f.saldoFaturaAnterior ?? 0) - pagamentos + encargosParaTotal + lancamentosAtuais);
+    const anterior = f.saldoFaturaAnterior ?? 0;
+    const totalCalculado = arred(anterior - pagamentos + encargosParaTotal + lancamentosAtuais);
+    // se os créditos já estão dentro de "pagamentos" impresso, as compras entram brutas
+    const totalAlternativo = arred(anterior - pagamentos + encargosParaTotal + lancamentosBrutos);
 
     const verificacoes: Verificacao[] = [];
     const add = (v: Verificacao | null) => { if (v) verificacoes.push(v); };
 
-    for (const c of f.cartoes || []) {
-        const doCartao = ts.filter(t => t.secao === 'compras' && (
-            (c.portador && t.portador && t.portador.toLowerCase() === c.portador.toLowerCase()) ||
-            (c.final && t.cartaoFinal === c.final)));
-        add(verificar(`Compras do cartão ${c.portador || c.final}`, c.subtotal, somaAssinada(doCartao)));
+    // Por cartão: pelo FINAL quando houver (o mesmo nome pode ter dois cartões); senão pelo nome.
+    const cartoes = f.cartoes || [];
+    const temFinalNasLinhas = ts.some(t => t.cartaoFinal);
+    const nomeRepetido = (nome?: string) => !!nome && cartoes.filter(c => (c.portador || '').toLowerCase() === nome.toLowerCase()).length > 1;
+    for (const c of cartoes) {
+        const peloFinal = c.final && temFinalNasLinhas ? ts.filter(t => t.secao === 'compras' && t.cartaoFinal === c.final) : [];
+        const doCartao = peloFinal.length ? peloFinal
+            : ts.filter(t => t.secao === 'compras' && !!c.portador && !!t.portador && t.portador.toLowerCase() === c.portador.toLowerCase()
+                && (!t.cartaoFinal || !cartoes.some(o => o !== c && o.final === t.cartaoFinal)));
+        const brutoCartao = arred(somaAssinada(doCartao) + doCartao.filter(t => valorAssinado(t) < 0).reduce((s, t) => s + t.valor, 0));
+        const rotulo = nomeRepetido(c.portador) || !c.portador ? `final ${c.final}${c.portador ? ` (${c.portador})` : ''}` : c.portador;
+        add(verificar(`Compras do cartão ${rotulo}`, c.subtotal, somaAssinada(doCartao), { alternativas: [brutoCartao] }));
     }
-    add(verificar('Total dos lançamentos atuais', f.totalLancamentosAtuais, lancamentosAtuais));
+    add(verificar('Total dos lançamentos atuais', f.totalLancamentosAtuais, lancamentosAtuais, { alternativas: [lancamentosBrutos] }));
     add(verificar('Total de encargos', f.encargosTotal, encargosCalc));
-    add(verificar('Pagamentos efetuados', f.pagamentosEfetuados, pagamentosNasLinhas));
-    const vTotal = verificar('Total desta fatura', f.valorTotal, totalCalculado);
+    add(verificar('Pagamentos efetuados', f.pagamentosEfetuados, pagamentosNasLinhas, { alternativas: [arred(pagamentosNasLinhas + creditos)] }));
+    const vTotal = verificar('Total desta fatura', f.valorTotal, totalCalculado, { alternativas: [totalAlternativo] });
     add(vTotal);
+    // Parcelas: o banco arredonda cada parcela; centavos de diferença são normais (tolerância R$ 1).
+    const futuras = ts.filter(t => (t.tipo === 'compra' || t.tipo === 'financiamento') && t.parcelaAtual && t.parcelaTotal && t.parcelaTotal > t.parcelaAtual);
+    add(verificar('Parcelas na próxima fatura', f.proximaFatura, arred(futuras.reduce((s, t) => s + t.valor, 0)), { tolerancia: 1 }));
+    add(verificar('Parcelas de todas as próximas faturas', f.totalProximasFaturas, parcelasRestantesDaFatura(ts), { tolerancia: 1 }));
 
     const falhas = verificacoes.filter(v => !v.bateu);
     const bateu = verificacoes.length === 0 ? null : falhas.length === 0;
     return {
         totalDeclarado: f.valorTotal ?? null,
-        totalCalculado,
+        totalCalculado: vTotal?.calculado ?? totalCalculado,
         diferenca: vTotal?.diferenca ?? null,
         bateu,
         verificacoes,
@@ -348,12 +408,17 @@ function juntarPedacosFatura(resultados: ResultadoFatura[]): ResultadoFatura {
     // Portador "herdado": se um pedaço começa no meio de um bloco, a IA pode não saber
     // de quem é — usa o último portador do pedaço anterior.
     let ultimoPortador: string | undefined;
+    let ultimoFinal: string | undefined;
     const transacoes: TransacaoFatura[] = [];
     for (const r of resultados) {
         for (const t of Array.isArray(r.transacoes) ? r.transacoes : []) {
-            const portador = t.portador || ((t.secao === 'compras' || t.secao === 'internacional') ? ultimoPortador : undefined);
-            if (t.portador) ultimoPortador = t.portador;
-            transacoes.push(portador ? { ...t, portador } : t);
+            const deCartao = t.secao === 'compras' || t.secao === 'internacional';
+            const portador = t.portador || (deCartao ? ultimoPortador : undefined);
+            // o final só é herdado se o portador for o mesmo do bloco anterior
+            const cartaoFinal = t.cartaoFinal || (deCartao && portador && portador === ultimoPortador ? ultimoFinal : undefined);
+            if (t.portador) { if (t.portador !== ultimoPortador) ultimoFinal = undefined; ultimoPortador = t.portador; }
+            if (t.cartaoFinal) ultimoFinal = t.cartaoFinal;
+            transacoes.push({ ...t, ...(portador ? { portador } : {}), ...(cartaoFinal ? { cartaoFinal } : {}) });
         }
     }
 
