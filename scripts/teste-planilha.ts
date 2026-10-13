@@ -26,6 +26,6 @@ async function main() {
     const ap = consolidar({ extratos: [fx.itau, fx.nubank], faturas: [fatura], idsDocumentos: ids, ajustes });
     const r = await gerarPlanilhaConsultoria(ap.lancamentos, ap.resumo.parcelamentos, { projetarParcelas: true });
     fs.writeFileSync(saida, r.buffer);
-    console.log(JSON.stringify({ meses: r.meses, projetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, agrupados: r.agrupados, avisos: r.avisos }, null, 1));
+    console.log(JSON.stringify({ meses: r.meses, projetados: r.mesesProjetados, abas: r.abasCriadas, aClassificarCartao: r.aClassificarCartao, linhas: r.linhas, aClassificar: r.aClassificar, agrupados: r.agrupados, avisos: r.avisos }, null, 1));
 }
 main().catch(e => { console.error(e); process.exit(1); });

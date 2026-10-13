@@ -6,13 +6,17 @@
 //  • O modelo NÃO é alterado: só escrevemos em células VAZIAS das áreas de
 //    lançamento. Fórmulas, cores, formatos e as demais abas ficam intactos
 //    (inclusive o que parece erro no modelo — decisão da consultoria).
-//  • Extrato: o ANALISTA classifica cada lançamento (custo fixo, custo
-//    variável, investimento, entrada ou fora da planilha). Nada é classificado
-//    sozinho; o que estiver "a classificar" não vai para a planilha.
-//  • Cartão: vai sozinho para os blocos do modelo — "Cartão parcelado"
-//    (nome, prazo, valor) e "Cartão à vista do mês" — no mês em que a fatura
-//    é PAGA (vencimento). As fórmulas do modelo levam esses totais para
-//    custo fixo e custo variável.
+//  • O ANALISTA classifica cada lançamento da conta E cada compra à vista do
+//    cartão (custo fixo, custo variável, investimento, entrada, cartão à vista
+//    do mês ou fora da planilha). Nada é classificado sozinho; o que estiver
+//    "a classificar" não vai para a planilha.
+//  • Parcelas do cartão vão SOZINHAS para "Cartão parcelado" (nome, prazo,
+//    valor) no mês em que a fatura é PAGA (vencimento), e são projetadas em
+//    todos os meses seguintes até a última parcela. As fórmulas do modelo levam
+//    esses totais para custo fixo e custo variável.
+//  • O modelo tem abas Janeiro…Dezembro sem ano: elas ficam para o ano mais
+//    recente com dado real. Meses de outros anos ganham abas novas, cópias
+//    fiéis da aba do modelo ("Janeiro 2027"…), na ordem do calendário.
 //  • Um lançamento por linha. Se não couber, a última linha livre vira
 //    "Outros (n lançamentos)" com a soma do restante.
 //  • Lançamentos ignorados ou "entre contas" não entram.
@@ -52,8 +56,10 @@ export interface ResultadoPlanilha {
     buffer: Buffer;
     meses: string[];                 // YYYY-MM preenchidos com dados reais
     mesesProjetados: string[];       // YYYY-MM com parcelas projetadas
+    abasCriadas: string[];           // abas de outros anos criadas a partir do modelo
     linhas: number;
     aClassificar: number;            // lançamentos de conta, no resumo, sem classificação
+    aClassificarCartao: number;      // compras à vista do cartão, no resumo, sem classificação
     agrupados: { aba: string; bloco: string; quantidade: number }[];
     avisos: string[];
 }
@@ -109,6 +115,12 @@ function notaDe(l: Lancamento): string {
     ].filter(Boolean).join('\n');
 }
 
+/** Nome da aba de um mês: o ano-base usa as abas do modelo ("Agosto"); os outros anos ganham abas novas ("Janeiro 2027"). */
+const nomeAbaDe = (mes: string, anoBase: string) => {
+    const nome = ABAS_MES[Number(mes.slice(5, 7)) - 1];
+    return mes.slice(0, 4) === anoBase ? nome : `${nome} ${mes.slice(0, 4)}`;
+};
+
 export async function gerarPlanilhaConsultoria(
     lancamentos: Lancamento[],
     parcelamentos: { itens: any[]; porMes: { mes: string }[]; mesFaturaAtual: string | null } | undefined,
@@ -118,89 +130,106 @@ export async function gerarPlanilhaConsultoria(
     if (!modelo) throw new Error('Modelo da planilha da consultoria não encontrado no servidor (templates/planilha-base-consultoria.xlsx).');
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.readFile(modelo);
+    // Cópia limpa do modelo: é dela que saem as abas novas dos outros anos.
+    const limpo = new ExcelJS.Workbook();
+    await limpo.xlsx.readFile(modelo);
 
-    const res: ResultadoPlanilha = { buffer: Buffer.alloc(0), meses: [], mesesProjetados: [], linhas: 0, aClassificar: 0, agrupados: [], avisos: [] };
+    const res: ResultadoPlanilha = { buffer: Buffer.alloc(0), meses: [], mesesProjetados: [], abasCriadas: [], linhas: 0, aClassificar: 0, aClassificarCartao: 0, agrupados: [], avisos: [] };
 
     const noResumo = lancamentos.filter(l => l.situacao === 'incluido');
-    res.aClassificar = noResumo.filter(l => l.origem === 'extrato' && !l.classe).length;
+    const pendentes = noResumo.filter(l => !l.parceladoAutomatico && !l.classe);
+    res.aClassificar = pendentes.filter(l => l.origem === 'extrato').length;
+    res.aClassificarCartao = pendentes.filter(l => l.origem === 'fatura').length;
 
-    // Meses com dado real. O modelo tem uma aba por mês SEM ano: se o período passar
-    // de 12 meses, o mesmo mês apareceria duas vezes — fica o ano mais recente.
-    const mesesTodos = Array.from(new Set(noResumo.map(l => l.mesReferencia).filter(m => /^\d{4}-\d{2}$/.test(m)))).sort();
-    const porAba = new Map<string, string>();
-    for (const m of mesesTodos) {
-        const aba = ABAS_MES[Number(m.slice(5, 7)) - 1];
-        const antes = porAba.get(aba);
-        if (antes && antes !== m) res.avisos.push(`${aba} aparece em ${antes.slice(0, 4)} e ${m.slice(0, 4)}: o modelo tem uma aba por mês, então ficou só ${m.slice(0, 4)}.`);
-        porAba.set(aba, m);
-    }
+    const mesesReais = Array.from(new Set(noResumo.map(l => l.mesReferencia).filter(m => /^\d{4}-\d{2}$/.test(m)))).sort();
+    const anoBase = (mesesReais[mesesReais.length - 1] || parcelamentos?.mesFaturaAtual || new Date().toISOString()).slice(0, 4);
 
-    for (const [aba, mes] of porAba) {
-        const ws = wb.getWorksheet(aba);
-        if (!ws) { res.avisos.push(`Aba "${aba}" não existe no modelo.`); continue; }
+    /** Aba do mês; se for de outro ano e ainda não existir, cria uma cópia fiel da aba do modelo. */
+    const abaDoMes = (mes: string): { ws: ExcelJS.Worksheet; nome: string } | null => {
+        const nome = nomeAbaDe(mes, anoBase);
+        const existente = wb.getWorksheet(nome);
+        if (existente) return { ws: existente, nome };
+        const origem = limpo.getWorksheet(ABAS_MES[Number(mes.slice(5, 7)) - 1]);
+        if (!origem) { res.avisos.push(`Aba "${ABAS_MES[Number(mes.slice(5, 7)) - 1]}" não existe no modelo.`); return null; }
+        const ws = wb.addWorksheet(nome);
+        const copia = structuredClone(origem.model) as any;
+        copia.views = (copia.views || []).map((v: any) => ({ ...v, tabSelected: false }));
+        ws.model = { ...copia, name: nome, id: ws.id, orderNo: (ws as any).orderNo };
+        res.abasCriadas.push(nome);
+        return { ws, nome };
+    };
+
+    // ── Meses com dado real
+    for (const mes of mesesReais) {
+        const aba = abaDoMes(mes);
+        if (!aba) continue;
+        const { ws, nome } = aba;
         const doMes = noResumo.filter(l => l.mesReferencia === mes).sort((a, b) => a.data.localeCompare(b.data));
 
-        // ── Extrato: classificado pelo analista
-        const porClasse: Record<Exclude<Classe, 'fora'>, Linha[]> = { fixo: [], variavel: [], investimento: [], entrada: [] };
+        // Extrato e compras à vista do cartão: onde o ANALISTA mandou
+        const porClasse: Record<Exclude<Classe, 'fora'>, Linha[]> = { fixo: [], variavel: [], investimento: [], entrada: [], cartao_vista: [] };
         for (const l of doMes) {
-            if (l.origem !== 'extrato' || !l.classe || l.classe === 'fora') continue;
+            if (l.parceladoAutomatico || !l.classe || l.classe === 'fora') continue;
+            // entrada soma o que entrou; os blocos de gasto somam o que saiu (estorno / devolução abate)
             const positivo = l.classe === 'entrada' ? l.direcao === 'entrada' : l.direcao === 'saida';
             porClasse[l.classe].push({ rotulo: l.descricao, valor: positivo ? l.valor : -l.valor, nota: notaDe(l) });
         }
-        escrever(ws, BLOCOS.fixo, porClasse.fixo, aba, 'Custo fixo', res);
-        escrever(ws, BLOCOS.variavel, porClasse.variavel, aba, 'Custo variável', res);
-        escrever(ws, BLOCOS.investimento, porClasse.investimento, aba, 'Investimentos', res);
-        escrever(ws, BLOCOS.entrada, porClasse.entrada, aba, 'Entrada', res);
+        escrever(ws, BLOCOS.fixo, porClasse.fixo, nome, 'Custo fixo', res);
+        escrever(ws, BLOCOS.variavel, porClasse.variavel, nome, 'Custo variável', res);
+        escrever(ws, BLOCOS.investimento, porClasse.investimento, nome, 'Investimentos', res);
+        escrever(ws, BLOCOS.entrada, porClasse.entrada, nome, 'Entrada', res);
+        escrever(ws, BLOCOS.cartaoVista, porClasse.cartao_vista, nome, 'Cartão à vista do mês', res);
 
-        // ── Cartão: fatura paga neste mês
-        const cartao = doMes.filter(l => l.origem === 'fatura');
-        const parcelado = cartao.filter(l => l.parcelaFim && l.direcao === 'saida');
-        const vista = cartao.filter(l => !(l.parcelaFim && l.direcao === 'saida'));
-        escrever(ws, BLOCOS.cartaoParcelado, parcelado.map(l => ({
+        // Parcelas da fatura paga neste mês: automático
+        escrever(ws, BLOCOS.cartaoParcelado, doMes.filter(l => l.parceladoAutomatico).map(l => ({
             rotulo: l.descricao,
             prazo: `${l.parcela} · até ${mesCurto(l.parcelaFim!)}`,
             valor: l.valor,
             nota: notaDe(l) + `\n1ª parcela: ${mesCurto(l.parcelaInicio!)} · última: ${mesCurto(l.parcelaFim!)}`
-        })), aba, 'Cartão parcelado', res);
-        escrever(ws, BLOCOS.cartaoVista, vista.map(l => ({
-            rotulo: l.descricao,
-            valor: l.direcao === 'saida' ? l.valor : -l.valor,   // estorno abate
-            nota: notaDe(l)
-        })), aba, 'Cartão à vista do mês', res);
+        })), nome, 'Cartão parcelado', res);
 
         res.meses.push(mes);
     }
 
-    // ── Projeção: parcelas já compradas que vão cair nos meses seguintes
-    if (opcoes.projetarParcelas && parcelamentos?.mesFaturaAtual && parcelamentos.itens?.length) {
-        const mesAtual: string = parcelamentos.mesFaturaAtual;
-        const usadas = new Set(porAba.keys());
-        const ultimoReal = res.meses.slice().sort().pop() || mesAtual;
-        for (let i = 1; i <= 11; i++) {
-            const mes = somarMeses(mesAtual, i);
-            if (mes <= ultimoReal) continue;
-            // O modelo é de UM ano (abas sem ano): não projeta além de dezembro,
-            // senão parcelas do ano seguinte cairiam em janeiro, fevereiro… do mesmo arquivo.
-            if (mes.slice(0, 4) !== ultimoReal.slice(0, 4)) {
-                res.avisos.push(`Projeção parou em dezembro/${ultimoReal.slice(0, 4)}: as parcelas de ${mes.slice(0, 4)} em diante não cabem neste modelo anual.`);
-                break;
+    // ── Projeção: cada parcela já comprada vai para TODOS os meses seguintes até a
+    // última — criando as abas dos anos seguintes quando passar de dezembro.
+    if (opcoes.projetarParcelas !== false && parcelamentos?.itens?.length) {
+        const porMes = new Map<string, Linha[]>();
+        for (const p of parcelamentos.itens) {
+            const mesDaFatura = somarMeses(p.inicio, p.parcelaAtual - 1);   // fatura de onde a parcela foi lida
+            for (let k = 1; ; k++) {
+                const mes = somarMeses(mesDaFatura, k);
+                if (mes > p.fim || k > 600) break;
+                if (!porMes.has(mes)) porMes.set(mes, []);
+                porMes.get(mes)!.push({
+                    rotulo: p.descricao,
+                    prazo: `${p.parcelaAtual + k}/${p.parcelaTotal} · até ${mesCurto(p.fim)}`,
+                    valor: p.valorParcela,
+                    nota: `Projeção: parcela de compra já feita (lida na fatura de ${mesCurto(mesDaFatura)}).\n1ª parcela: ${mesCurto(p.inicio)} · última: ${mesCurto(p.fim)}`
+                });
             }
-            const aba = ABAS_MES[Number(mes.slice(5, 7)) - 1];
-            if (usadas.has(aba)) break;                         // daria a volta no ano
-            const caem = parcelamentos.itens.filter((p: any) => p.inicio <= mes && mes <= p.fim);
-            if (!caem.length) break;
-            const ws = wb.getWorksheet(aba);
-            if (!ws) continue;
-            const desloc = i;
-            escrever(ws, BLOCOS.cartaoParcelado, caem.map((p: any) => ({
-                rotulo: p.descricao,
-                prazo: `${p.parcelaAtual + desloc}/${p.parcelaTotal} · até ${mesCurto(p.fim)}`,
-                valor: p.valorParcela,
-                nota: `Projeção: parcela de compra já feita (fatura de ${mesCurto(mesAtual)}).`
-            })), aba, 'Cartão parcelado (projeção)', res);
-            usadas.add(aba);
+        }
+        for (const mes of Array.from(porMes.keys()).sort()) {
+            const aba = abaDoMes(mes);
+            if (!aba) continue;
+            escrever(aba.ws, BLOCOS.cartaoParcelado, porMes.get(mes)!, aba.nome, 'Cartão parcelado (projeção)', res);
             res.mesesProjetados.push(mes);
         }
+    }
+
+    // ── Ordem das abas: as do modelo que não são de mês ficam na frente; depois os
+    // meses em ordem cronológica (ex.: … Dezembro, Janeiro 2027, Fevereiro 2027).
+    if (res.abasCriadas.length) {
+        const chave = (nome: string): number | null => {
+            const m = nome.match(/^(\S+)(?: (\d{4}))?$/);
+            const i = m ? ABAS_MES.indexOf(m[1]) : -1;
+            return i < 0 ? null : Number(m![2] || anoBase) * 12 + i;
+        };
+        const todas = wb.worksheets.slice();
+        const fixas = todas.filter(ws => chave(ws.name) === null);
+        const meses = todas.filter(ws => chave(ws.name) !== null).sort((a, b) => chave(a.name)! - chave(b.name)!);
+        [...fixas, ...meses].forEach((ws, i) => { (ws as any).orderNo = i; });
+        res.avisos.push(`Abas novas criadas a partir do modelo: ${res.abasCriadas.join(', ')}. A aba "Balanço Anual" continua somando só as 12 abas originais.`);
     }
 
     if (!res.meses.length) res.avisos.push('Nenhum lançamento no resumo para levar à planilha.');

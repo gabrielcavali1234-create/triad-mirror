@@ -58,7 +58,7 @@ export interface Ajuste {
     subcategoria?: string | null;
     observacao?: string | null;
     situacao?: 'incluido' | 'excluido' | 'entre_contas' | null;
-    classe?: 'fixo' | 'variavel' | 'investimento' | 'entrada' | 'fora' | null;
+    classe?: 'fixo' | 'variavel' | 'investimento' | 'entrada' | 'cartao_vista' | 'fora' | null;
     atualizado_por?: string | null;
     atualizado_por_id?: string | null;
 }

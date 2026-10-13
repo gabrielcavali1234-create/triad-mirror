@@ -228,7 +228,7 @@ router.delete('/api/app/documentos/:id', rota(async (req, res) => {
 
 // ─── Ajustes do analista ─────────────────────────────────────────────────
 const SITUACOES = new Set(['incluido', 'excluido', 'entre_contas']);
-const CLASSES = new Set(['fixo', 'variavel', 'investimento', 'entrada', 'fora']);
+const CLASSES = new Set(['fixo', 'variavel', 'investimento', 'entrada', 'cartao_vista', 'fora']);
 
 router.put('/api/app/analises/:id/ajustes', rota(async (req, res) => {
     if (!repo) return semRepo(res);
@@ -301,14 +301,14 @@ router.get('/api/app/analises/:id/planilha', rota(async (req, res) => {
     const { docs, apuracao } = await montarApuracao(analise.id);
     if (!docs.length) return res.status(400).json({ error: 'Esta análise ainda não tem documentos.' });
     const r = await gerarPlanilhaConsultoria(apuracao.lancamentos, apuracao.resumo.parcelamentos, {
-        projetarParcelas: req.query.projetar === '1', cliente: cliente?.nome
+        projetarParcelas: req.query.projetar !== '0', cliente: cliente?.nome
     });
     const nome = `Consultoria - ${(cliente?.nome || 'cliente').replace(/[^\p{L}\p{N}\- ]/gu, '').trim()} - ${new Date().toISOString().slice(0, 10)}.xlsx`;
     const nomeAscii = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '_');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nome)}`);
     res.setHeader('X-Mirror-Resumo', encodeURIComponent(JSON.stringify({
-        meses: r.meses, mesesProjetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, agrupados: r.agrupados, avisos: r.avisos
+        meses: r.meses, mesesProjetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, aClassificarCartao: r.aClassificarCartao, abasCriadas: r.abasCriadas, agrupados: r.agrupados, avisos: r.avisos
     })));
     res.setHeader('Access-Control-Expose-Headers', 'X-Mirror-Resumo, Content-Disposition');
     res.send(r.buffer);

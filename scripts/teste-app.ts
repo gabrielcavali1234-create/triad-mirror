@@ -115,10 +115,20 @@ async function main() {
         const cl = await api('PUT', `/api/app/analises/${aid}/ajustes`, { ajustes: [{ id: sal.id, classe: 'entrada' }, { id: esc.id, classe: 'fixo' }] }, T);
         ok(cl.status === 200 && cl.corpo.apuracao.lancamentos.find((l: any) => l.id === esc.id).classe === 'fixo', 'classificação salva');
         ok((await api('PUT', `/api/app/analises/${aid}/ajustes`, { ajustes: [{ id: esc.id, classe: 'luxo' }] }, T)).status === 400, 'classificação inválida é recusada');
-        const pl = await api('GET', `/api/app/analises/${aid}/planilha?projetar=1`, undefined, T);
+        // Cartão: à vista começa "a classificar"; parcela vai sozinha
+        const vistaC = L3.filter((l: any) => l.origem === 'fatura' && l.situacao === 'incluido' && !l.parceladoAutomatico);
+        const parcC = L3.filter((l: any) => l.parceladoAutomatico);
+        ok(vistaC.length > 0 && vistaC.every((l: any) => l.classe === null), `compras à vista do cartão começam "a classificar" (${vistaC.length})`);
+        ok(parcC.length > 0 && parcC.every((l: any) => l.origem === 'fatura' && l.parcelaFim), `parcelas do cartão marcadas como automáticas (${parcC.length})`);
+        const clC = await api('PUT', `/api/app/analises/${aid}/ajustes`, { ajustes: [{ id: vistaC[0].id, classe: 'cartao_vista' }, { id: vistaC[1].id, classe: 'fixo' }, { id: parcC[0].id, classe: 'variavel' }] }, T);
+        const LC = clC.corpo.apuracao.lancamentos as any[];
+        ok(clC.status === 200 && LC.find((l: any) => l.id === vistaC[0].id).classe === 'cartao_vista' && LC.find((l: any) => l.id === vistaC[1].id).classe === 'fixo', 'compra do cartão classificada pelo analista (à vista do mês / custo fixo)');
+        ok(LC.find((l: any) => l.id === parcC[0].id).classe === null, 'parcela continua automática mesmo se mandarem classe');
+        const pl = await api('GET', `/api/app/analises/${aid}/planilha`, undefined, T);
         const resumoPl = JSON.parse(decodeURIComponent(pl.headers.get('x-mirror-resumo') || '{}'));
         ok(pl.status === 200 && (pl.corpo as ArrayBuffer).byteLength > 20000, `planilha da consultoria gerada (${((pl.corpo as ArrayBuffer).byteLength / 1024).toFixed(0)} KB)`);
-        ok(resumoPl.meses?.includes('2026-08') && resumoPl.aClassificar > 0, `resumo da planilha: meses ${resumoPl.meses}, ${resumoPl.aClassificar} a classificar`);
+        ok(resumoPl.meses?.includes('2026-08') && resumoPl.aClassificar > 0 && resumoPl.aClassificarCartao === vistaC.length - 2, `resumo da planilha: meses ${resumoPl.meses}, ${resumoPl.aClassificar} da conta e ${resumoPl.aClassificarCartao} do cartão a classificar`);
+        ok(resumoPl.mesesProjetados?.at(-1) === '2027-05' && resumoPl.abasCriadas?.includes('Maio 2027'), `parcelas projetadas até a última (${resumoPl.mesesProjetados?.at(-1)}), abas novas: ${resumoPl.abasCriadas?.join(', ')}`);
         if (process.argv[3]) fs.writeFileSync(process.argv[3], Buffer.from(pl.corpo as ArrayBuffer));
 
         // Concluir análise
