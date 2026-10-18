@@ -16,7 +16,7 @@ import { moduloExtrato } from '../modules/extrato';
 import { finalizarFatura, moduloFatura } from '../modules/fatura';
 import { AjusteLancamento, consolidar } from '../modules/consolidacao';
 import { gerarExcel } from '../modules/excel';
-import { gerarPlanilhaConsultoria } from '../modules/planilha';
+import { gerarPlanilhaConsultoria, listarGrupos } from '../modules/planilha';
 import { CATEGORIAS, SUBCATEGORIAS } from '../modules/categorias';
 
 const router = express.Router();
@@ -293,6 +293,15 @@ router.get('/api/app/analises/:id/excel', rota(async (req, res) => {
 }));
 
 // ─── Planilha da consultoria (modelo do cliente preenchido) ─────────────
+// Lançamentos com o mesmo nome que podem virar uma linha só (o analista escolhe)
+router.get('/api/app/analises/:id/planilha/grupos', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
+    if (!analise) return res.status(404).json({ error: 'Análise não encontrada.' });
+    const { apuracao } = await montarApuracao(analise.id);
+    res.json({ grupos: listarGrupos(apuracao.lancamentos) });
+}));
+
 router.get('/api/app/analises/:id/planilha', rota(async (req, res) => {
     if (!repo) return semRepo(res);
     const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
@@ -301,14 +310,16 @@ router.get('/api/app/analises/:id/planilha', rota(async (req, res) => {
     const { docs, apuracao } = await montarApuracao(analise.id);
     if (!docs.length) return res.status(400).json({ error: 'Esta análise ainda não tem documentos.' });
     const r = await gerarPlanilhaConsultoria(apuracao.lancamentos, apuracao.resumo.parcelamentos, {
-        projetarParcelas: req.query.projetar !== '0', cliente: cliente?.nome
+        projetarParcelas: req.query.projetar !== '0', cliente: cliente?.nome,
+        juntar: req.query.juntar === '1',
+        naoJuntar: String(req.query.separar || '').split('|').map(x => x.trim()).filter(Boolean)
     });
     const nome = `Consultoria - ${(cliente?.nome || 'cliente').replace(/[^\p{L}\p{N}\- ]/gu, '').trim()} - ${new Date().toISOString().slice(0, 10)}.xlsx`;
     const nomeAscii = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7e]/g, '_');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${nomeAscii}"; filename*=UTF-8''${encodeURIComponent(nome)}`);
     res.setHeader('X-Mirror-Resumo', encodeURIComponent(JSON.stringify({
-        meses: r.meses, mesesProjetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, aClassificarCartao: r.aClassificarCartao, abasCriadas: r.abasCriadas, agrupados: r.agrupados, avisos: r.avisos
+        meses: r.meses, mesesProjetados: r.mesesProjetados, linhas: r.linhas, aClassificar: r.aClassificar, aClassificarCartao: r.aClassificarCartao, abasCriadas: r.abasCriadas, linhasExtras: r.linhasExtras, juntados: r.juntados.length, agrupados: r.agrupados, avisos: r.avisos
     })));
     res.setHeader('Access-Control-Expose-Headers', 'X-Mirror-Resumo, Content-Disposition');
     res.send(r.buffer);
