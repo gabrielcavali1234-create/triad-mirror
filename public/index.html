@@ -230,6 +230,17 @@ main > .card:has(.perfil){border:0;border-radius:0;border-bottom:2px solid var(-
 .cls.entrada{color:var(--verde)}
 .cls.fora{color:var(--fraco)}
 .cls.cartao_vista{color:var(--cartao-vista)}
+.juntar{border:1px solid var(--borda);border-radius:var(--r-painel);padding:10px 12px;background:var(--branco)}
+.juntar-cab{display:flex;gap:9px;align-items:flex-start;color:var(--texto);cursor:pointer}
+.juntar-cab input{margin-top:3px}
+.juntar-lista{margin-top:8px;max-height:190px;overflow:auto;border-top:1px solid var(--borda2);padding-top:6px}
+.juntar-item{display:grid;grid-template-columns:18px minmax(0,1fr) 34px 92px 64px;gap:8px;align-items:center;padding:4px 2px;font-size:13px;color:var(--texto);cursor:pointer;border-radius:3px}
+.juntar-item:hover{background:var(--linha-hover)}
+.juntar-item .nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.juntar-item .qtd{font-weight:700;color:var(--marrom)}
+.juntar-item .num{text-align:right}
+.juntar-item .meses{font-size:12px;text-align:right;margin:0;align-self:center;display:block;overflow:visible;border:0}
+.juntar.off .juntar-lista{opacity:.4;pointer-events:none}
 .cls.auto{background:none;color:var(--fraco);font-weight:400;cursor:default;padding:3px 8px}
 .cls.auto:hover{background:none}
 .progresso-cls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--branco);border:1px solid var(--borda);border-radius:var(--r-painel);padding:12px 16px;margin-bottom:14px;font-size:13px}
@@ -1169,11 +1180,12 @@ function modalExportar() {
   abrirModal(`<h2>Exportar para Excel</h2><p class="suave" style="margin:0 0 16px">Escolha o formato.</p>
     <div style="border:2px solid var(--preto);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;gap:12px;align-items:flex-start"><span class="ic cartao"><i class="ti ti-table"></i></span>
-        <div style="flex:1"><b>Planilha da consultoria</b><div class="suave" style="font-size:13px;margin:2px 0 8px">O modelo da consultoria preenchido: custo fixo, custo variável, investimentos, entradas, cartão parcelado e cartão à vista, em cada mês. Nada do modelo é alterado.</div>
+        <div style="flex:1"><b>Planilha da consultoria</b><div class="suave" style="font-size:13px;margin:2px 0 8px">O modelo da consultoria preenchido: custo fixo, custo variável, investimentos, entradas, cartão parcelado e cartão à vista, em cada mês. Todos os lançamentos entram; se faltar linha num bloco, a aba ganha linhas (fórmulas ajustadas).</div>
           ${pendConta ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendConta} lançamento(s) da <b>conta</b> ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="conta" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
           ${pendCartao ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendCartao} compra(s) à vista do <b>cartão</b> ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="cartao" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
           ${!pendConta && !pendCartao && cl.length ? '<div class="pill verde" style="margin-bottom:8px"><i class="ti ti-check"></i> Tudo classificado</div>' : ''}
           ${temParcelas ? `<div class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-calendar-repeat"></i> As parcelas do cartão entram sozinhas em <b>todos os meses até a última</b> (${nomeMesCurto(pm[pm.length - 1].mes)}). Meses de outro ano ganham abas novas copiadas do modelo.</div>` : ''}
+          <div id="xGrupos" class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-loader-2"></i> Procurando lançamentos com o mesmo nome…</div>
           <button class="btn primario" data-acao="baixar" data-tipo="consultoria"><i class="ti ti-download"></i> Baixar planilha da consultoria</button></div></div>
       <div id="xResultado"></div>
     </div>
@@ -1183,6 +1195,28 @@ function modalExportar() {
           <button class="btn" data-acao="baixar" data-tipo="mirror"><i class="ti ti-download"></i> Baixar Excel detalhado</button></div></div>
     </div>
     <div class="acoes"><button class="btn" data-acao="fechar-modal">Fechar</button></div>`);
+  carregarGrupos();
+}
+
+// Lançamentos com o mesmo nome (mesmo mês e bloco) que podem virar uma linha só
+async function carregarGrupos() {
+  const el = $('#xGrupos'); if (!el) return;
+  let grupos = [];
+  try { grupos = (await api('GET', `/api/app/analises/${E.cli.analise.id}/planilha/grupos`)).grupos || []; } catch { el.innerHTML = ''; return; }
+  E.grupos = grupos;
+  if (!grupos.length) { el.innerHTML = '<i class="ti ti-list-details"></i> Todos os lançamentos entram um por linha (não há nomes repetidos no mesmo mês).'; return; }
+  const tot = grupos.reduce((a, g) => a + g.quantidade, 0);
+  el.innerHTML = `<div class="juntar">
+    <label class="juntar-cab"><input type="checkbox" id="xJuntar" checked data-acao="juntar-todos"> <span><b>Juntar lançamentos com o mesmo nome</b><br>
+      <span class="fraco">${grupos.length} nome(s) se repetem: ${tot} lançamentos viram ${grupos.length} linha(s), com a soma. A etiqueta (comentário) da célula lista cada um.</span></span></label>
+    <div class="juntar-lista">${grupos.map(g => `<label class="juntar-item" title="${esc(g.itens.map(i => dataBR(i.data) + '  ' + brl(i.valor)).join('\n'))}">
+      <input type="checkbox" class="xGrupo" value="${esc(g.chave)}" checked>
+      <span class="nome">${esc(g.nome)}</span>
+      <span class="qtd">${g.quantidade}x</span>
+      <span class="num">${brl(g.total)}</span>
+      <span class="fraco meses">${g.meses.map(nomeMesCurto).join(', ')}</span></label>`).join('')}</div>
+    <div class="fraco" style="font-size:12px;margin-top:6px">Desmarque o que deve continuar separado. Tudo aparece na planilha: se um bloco não couber, a aba ganha linhas.</div>
+  </div>`;
 }
 
 // ─── Modal genérico ──────────────────────────────────────────────────────
@@ -1261,6 +1295,7 @@ document.addEventListener('click', async ev => {
       aplicarAjustes(ids.map(i => ({ id: i, classe: el.dataset.cls || null })));
       break;
     }
+    case 'juntar-todos': el.closest('.juntar')?.classList.toggle('off', !el.checked); break;
     case 'so-pendentes': E.soPendentes = !E.soPendentes; desenharConteudo(); break;
     case 'ir-pendentes': { fecharModal(); E.soPendentes = true; E.mesSel = null;
       const destino = el.dataset.aba || 'conta';
@@ -1279,7 +1314,12 @@ document.addEventListener('click', async ev => {
       el.disabled = true; const txt = el.innerHTML; el.innerHTML = '<i class="ti ti-loader-2"></i> Gerando…';
       try {
         const consultoria = el.dataset.tipo === 'consultoria';
-        const rota = consultoria ? `/api/app/analises/${E.cli.analise.id}/planilha` : `/api/app/analises/${E.cli.analise.id}/excel`;
+        let q = '';
+        if (consultoria && $('#xJuntar')?.checked) {
+          const separar = [...document.querySelectorAll('.xGrupo')].filter(c => !c.checked).map(c => c.value);
+          q = '?juntar=1' + (separar.length ? '&separar=' + encodeURIComponent(separar.join('|')) : '');
+        }
+        const rota = consultoria ? `/api/app/analises/${E.cli.analise.id}/planilha${q}` : `/api/app/analises/${E.cli.analise.id}/excel`;
         const r = await api('GET', rota, undefined, { blob: true });
         const nome = decodeURIComponent((r.headers.get('content-disposition') || '').match(/filename\*=UTF-8''([^;]+)/)?.[1] || 'mirror.xlsx');
         const url = URL.createObjectURL(await r.blob());
@@ -1290,6 +1330,8 @@ document.addEventListener('click', async ev => {
           const linhas = [`<p style="margin:0 0 8px"><b>${info.linhas || 0}</b> linha(s) preenchidas em: ${(info.meses || []).map(nomeMesCurto).join(', ') || '—'}${info.mesesProjetados?.length ? ` · parcelas projetadas em ${info.mesesProjetados.map(nomeMesCurto).join(', ')}` : ''}.</p>`];
           if (info.aClassificar) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificar} lançamento(s) da conta ainda "a classificar" ficaram fora.</p>`);
           if (info.aClassificarCartao) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificarCartao} compra(s) à vista do cartão ainda "a classificar" ficaram fora.</p>`);
+          (info.linhasExtras || []).forEach(x => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(x.aba)}: ganhou ${x.quantidade} linha(s) para caber todos os lançamentos.</p>`));
+          if (info.juntados) linhas.push(`<p style="margin:0 0 8px" class="suave">${info.juntados} linha(s) com nomes repetidos somados (detalhe no comentário de cada célula).</p>`);
           (info.agrupados || []).forEach(g => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(g.aba)} · ${esc(g.bloco)}: não coube tudo; ${g.quantidade} lançamento(s) foram somados na linha "Outros" (a lista está no comentário da célula).</p>`));
           (info.avisos || []).forEach(a => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(a)}</p>`));
           $('#xResultado').innerHTML = `<div class="alerta azul" style="display:block;margin-top:14px">${linhas.join('')}</div>`;
