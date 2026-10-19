@@ -16,9 +16,12 @@ export type Origem = 'extrato' | 'fatura';
 export type Situacao = 'incluido' | 'excluido' | 'entre_contas';
 /** Onde o lançamento entra na planilha da consultoria (decisão do analista). */
 export type Classe = 'fixo' | 'variavel' | 'investimento' | 'entrada' | 'cartao_vista' | 'fora';
+/** Classes que uma parcela de cartão aceita. */
+export const CLASSES_PARCELA: ReadonlySet<Classe> = new Set<Classe>(['fixo', 'variavel']);
 
 /** Parcela de cartão: vai SOZINHA para o bloco "Cartão parcelado" da planilha (sem classificação). */
-export const ehParceladoAutomatico = (l: Pick<Lancamento, 'origem' | 'parcelaFim' | 'direcao'>) =>
+/** Parcela de compra no cartão: o analista diz se é custo fixo ou variável. */
+export const ehParcelaCartao = (l: Pick<Lancamento, 'origem' | 'parcelaFim' | 'direcao'>) =>
     l.origem === 'fatura' && !!l.parcelaFim && l.direcao === 'saida';
 
 export interface AjusteLancamento {
@@ -57,8 +60,8 @@ export interface Lancamento {
     observacao?: string;
     situacao: Situacao;
     classe: Classe | null;             // null = "a classificar"
-    /** true = parcela de cartão; entra sozinha na planilha (bloco Cartão parcelado). */
-    parceladoAutomatico: boolean;
+    /** true = parcela de cartão; só aceita classe fixo ou variável (ver CLASSES_PARCELA). */
+    parcelaCartao: boolean;
     incluidoNoResumo: boolean;         // = situacao === 'incluido'
     padraoIncluido: boolean;           // o que o sistema decidiu antes do analista mexer
     ajustadoPeloAnalista: boolean;
@@ -189,7 +192,7 @@ export function consolidar(entrada: EntradaConsolidacao) {
     };
 
     /** Monta o lançamento aplicando os ajustes do analista por cima do que a IA leu. */
-    const montar = (base: Omit<Lancamento, 'situacao' | 'classe' | 'parceladoAutomatico' | 'incluidoNoResumo' | 'ajustadoPeloAnalista' | 'categoriaIA' | 'subcategoriaIA' | 'observacao'>): Lancamento => {
+    const montar = (base: Omit<Lancamento, 'situacao' | 'classe' | 'parcelaCartao' | 'incluidoNoResumo' | 'ajustadoPeloAnalista' | 'categoriaIA' | 'subcategoriaIA' | 'observacao'>): Lancamento => {
         const aj = ajustes[base.id] || {};
         const situacao = situacaoDe(base.id, base.padraoIncluido);
         return {
@@ -200,9 +203,9 @@ export function consolidar(entrada: EntradaConsolidacao) {
             subcategoria: aj.subcategoria || base.subcategoria,
             observacao: aj.observacao || undefined,
             situacao,
-            // parcela de cartão não se classifica: vai sozinha para "Cartão parcelado"
-            classe: ehParceladoAutomatico(base) ? null : (aj.classe || null),
-            parceladoAutomatico: ehParceladoAutomatico(base),
+            // parcela de cartão: só custo fixo ou variável (o resto volta para "a classificar")
+            classe: ehParcelaCartao(base) ? (aj.classe && CLASSES_PARCELA.has(aj.classe) ? aj.classe : null) : (aj.classe || null),
+            parcelaCartao: ehParcelaCartao(base),
             incluidoNoResumo: situacao === 'incluido',
             ajustadoPeloAnalista: !!(aj.categoria || aj.subcategoria || aj.observacao || aj.situacao || aj.classe)
         };

@@ -399,7 +399,12 @@ const CLASSES = [
 ];
 const NOME_CLASSE = Object.fromEntries(CLASSES.map(c => [c[0], c[2]]));
 /** Entra na contagem "a classificar": no resumo e não é parcela de cartão (essa vai sozinha). */
-const classificavel = l => l.situacao === 'incluido' && !l.parceladoAutomatico;
+const classificavel = l => l.situacao === 'incluido';
+/** Parcela de compra no cartão: o analista escolhe só entre custo fixo e custo variável. */
+const CLASSES_PARCELA = [
+  ['fixo', 'ti-lock', 'Custo fixo', 'Vai para "Cartão parcelado" (soma no custo fixo), neste mês e nos seguintes até a última parcela'],
+  ['variavel', 'ti-shopping-cart', 'Custo variável', 'Vai para "Cartão à vista do mês" (soma no custo variável), neste mês e nos seguintes até a última parcela']
+];
 
 // ════════════════════════════════════════════════════════════════════════
 // Tema claro / escuro (sem escolha salva, segue o sistema operacional)
@@ -752,8 +757,7 @@ function linha(l) {
       ${l.observacao ? `<div class="nota"><i class="ti ti-note"></i> ${esc(l.observacao)}</div>` : ''}${aviso}</div>
     <div class="cat-col"><button class="cat ${mudouCat ? 'mudou' : ''}" data-acao="editar" data-id="${l.id}" title="${mudouCat ? 'Alterado pelo analista. A IA tinha sugerido: ' + esc(l.categoriaIA + (l.subcategoriaIA ? ' › ' + l.subcategoriaIA : '')) : 'Clique para mudar'}">
       <span class="ponto" style="background:${corDe(l.categoria)}"></span><b>${esc(l.categoria)}</b> <i class="ti ti-chevron-down"></i><br><span class="sub">${esc(l.subcategoria || 'Sem subcategoria')}</span></button>
-      ${l.parceladoAutomatico && l.situacao === 'incluido' ? `<span class="cls auto" title="Parcela de cartão: vai sozinha para o bloco Cartão parcelado da planilha, neste mês e nos meses seguintes até a última parcela"><span><i class="ti ti-table"></i> Cartão parcelado · automático</span></span>` : ''}
-      ${classificavel(l) ? `<button class="cls ${l.classe || ''}" data-acao="menu-cls" data-id="${l.id}" title="Onde este lançamento entra na planilha da consultoria"><span><i class="ti ti-table"></i> ${l.classe ? NOME_CLASSE[l.classe] : 'A classificar'}</span><i class="ti ti-chevron-down"></i></button>` : ''}</div>
+      ${classificavel(l) ? `<button class="cls ${l.classe || ''}" data-acao="menu-cls" data-id="${l.id}" title="${l.parcelaCartao ? 'Parcela do cartão: diga se é custo fixo ou variável' : 'Onde este lançamento entra na planilha da consultoria'}"><span><i class="ti ti-table"></i> ${l.classe ? NOME_CLASSE[l.classe] : l.parcelaCartao ? 'Parcela: fixo ou variável?' : 'A classificar'}</span><i class="ti ti-chevron-down"></i></button>` : ''}</div>
     <span class="valor num ${l.direcao === 'entrada' ? 'entrada' : 'saida'}">${l.direcao === 'entrada' ? '+ ' : '− '}${brl(l.valor)}</span>
     <div class="acoes-linha"><button class="sit ${l.situacao}" data-acao="menu-sit" data-id="${l.id}">${NOME_SIT[l.situacao]} <i class="ti ti-chevron-down"></i></button>
       <button class="icone-btn ${l.observacao ? 'tem' : ''}" data-acao="editar" data-id="${l.id}" data-foco="obs" title="Observação" aria-label="Observação"><i class="ti ti-message-2"></i></button></div>
@@ -894,8 +898,8 @@ function abaCartao() {
   </div>
   ${e.emRotativo ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(e.saldoFinanciado)} da fatura anterior foram financiados, gerando ${brl(e.encargos)} de juros, mora e multa.${e.parcelasDeFinanciamento ? ` Há também ${brl(e.parcelasDeFinanciamento)} de parcelamento de fatura.` : ''}</span></div>` : ''}
   ${secaoParcelas(r.parcelamentos)}
-  ${(() => { const cl = todos.filter(classificavel), f = cl.filter(l => l.classe).length, np = todos.filter(l => l.parceladoAutomatico && l.situacao === 'incluido').length;
-    return progressoCls(f, cl.length, cl.length - f, np ? ` <span class="fraco">· ${np} parcela(s) vão sozinhas para "Cartão parcelado"</span>` : ''); })()}
+  ${(() => { const cl = todos.filter(classificavel), f = cl.filter(l => l.classe).length, np = cl.filter(l => l.parcelaCartao && !l.classe).length;
+    return progressoCls(f, cl.length, cl.length - f, np ? ` <span class="fraco">· ${np} parcela(s) esperando fixo ou variável</span>` : ''); })()}
   ${barraLote()}`;
   for (const d of docs) {
     const itens = todos.filter(l => l.documentoId === d.id);
@@ -1100,9 +1104,11 @@ function menuClasse(btn, ids) {
     return '';
   };
   const temCartao = lista.some(l => l.origem === 'fatura');
-  const opcoes = CLASSES.filter(([c]) => c !== 'cartao_vista' || temCartao || atual === c);
-  if (temCartao) opcoes.sort((a, b) => (b[0] === 'cartao_vista') - (a[0] === 'cartao_vista'));
-  m.innerHTML = `<div class="fraco" style="font-size:12px;padding:6px 9px 4px">${lista.length > 1 ? lista.length + ' lançamentos · ' : ''}Onde entra na planilha da consultoria</div>` + opcoes.map(([c, ic, t, d]) => `<button data-acao="cls-escolher" data-ids="${ids.join(',')}" data-cls="${c}"><i class="ti ${ic}" style="font-size:17px;margin-top:1px"></i><span><b>${t}${atual === c ? ' ✓' : ''}</b><small>${d}</small>${aviso(c)}</span></button>`).join('')
+  const temParcela = lista.some(l => l.parcelaCartao), soParcelas = lista.every(l => l.parcelaCartao);
+  // parcela só aceita fixo ou variável; num lote misturado, ficam só as opções que valem para todos
+  let opcoes = soParcelas ? CLASSES_PARCELA : temParcela ? CLASSES.filter(([c]) => c === 'fixo' || c === 'variavel') : CLASSES.filter(([c]) => c !== 'cartao_vista' || temCartao || atual === c);
+  if (temCartao && !temParcela) opcoes.sort((a, b) => (b[0] === 'cartao_vista') - (a[0] === 'cartao_vista'));
+  m.innerHTML = `<div class="fraco" style="font-size:12px;padding:6px 9px 4px">${lista.length > 1 ? lista.length + ' lançamentos · ' : ''}${soParcelas ? 'Parcela do cartão: é custo fixo ou variável?' : temParcela ? 'Inclui parcelas do cartão: só fixo ou variável' : 'Onde entra na planilha da consultoria'}</div>` + opcoes.map(([c, ic, t, d]) => `<button data-acao="cls-escolher" data-ids="${ids.join(',')}" data-cls="${c}"><i class="ti ${ic}" style="font-size:17px;margin-top:1px"></i><span><b>${t}${atual === c ? ' ✓' : ''}</b><small>${d}</small>${aviso(c)}</span></button>`).join('')
     + (lista.some(l => l.classe) ? `<button data-acao="cls-escolher" data-ids="${ids.join(',')}" data-cls=""><i class="ti ti-eraser" style="font-size:17px;margin-top:1px"></i><span><b>Voltar para "a classificar"</b></span></button>` : '');
   document.body.appendChild(m);
   const r = btn.getBoundingClientRect();
@@ -1182,9 +1188,9 @@ function modalExportar() {
       <div style="display:flex;gap:12px;align-items:flex-start"><span class="ic cartao"><i class="ti ti-table"></i></span>
         <div style="flex:1"><b>Planilha da consultoria</b><div class="suave" style="font-size:13px;margin:2px 0 8px">O modelo da consultoria preenchido: custo fixo, custo variável, investimentos, entradas, cartão parcelado e cartão à vista, em cada mês. Todos os lançamentos entram; se faltar linha num bloco, a aba ganha linhas (fórmulas ajustadas).</div>
           ${pendConta ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendConta} lançamento(s) da <b>conta</b> ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="conta" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
-          ${pendCartao ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendCartao} compra(s) à vista do <b>cartão</b> ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="cartao" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
+          ${pendCartao ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendCartao} compra(s) do <b>cartão</b> (à vista ou parcelas) ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="cartao" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
           ${!pendConta && !pendCartao && cl.length ? '<div class="pill verde" style="margin-bottom:8px"><i class="ti ti-check"></i> Tudo classificado</div>' : ''}
-          ${temParcelas ? `<div class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-calendar-repeat"></i> As parcelas do cartão entram sozinhas em <b>todos os meses até a última</b> (${nomeMesCurto(pm[pm.length - 1].mes)}). Meses de outro ano ganham abas novas copiadas do modelo.</div>` : ''}
+          ${temParcelas ? `<div class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-calendar-repeat"></i> As parcelas do cartão entram em <b>todos os meses até a última</b> (${nomeMesCurto(pm[pm.length - 1].mes)}), no bloco que o analista escolheu: custo fixo vai para "Cartão parcelado", custo variável para "Cartão à vista do mês". Meses de outro ano ganham abas novas copiadas do modelo.</div>` : ''}
           <div id="xGrupos" class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-loader-2"></i> Procurando lançamentos com o mesmo nome…</div>
           <button class="btn primario" data-acao="baixar" data-tipo="consultoria"><i class="ti ti-download"></i> Baixar planilha da consultoria</button></div></div>
       <div id="xResultado"></div>
@@ -1329,7 +1335,7 @@ document.addEventListener('click', async ev => {
           let info = {}; try { info = JSON.parse(decodeURIComponent(r.headers.get('x-mirror-resumo') || '%7B%7D')); } catch {}
           const linhas = [`<p style="margin:0 0 8px"><b>${info.linhas || 0}</b> linha(s) preenchidas em: ${(info.meses || []).map(nomeMesCurto).join(', ') || '—'}${info.mesesProjetados?.length ? ` · parcelas projetadas em ${info.mesesProjetados.map(nomeMesCurto).join(', ')}` : ''}.</p>`];
           if (info.aClassificar) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificar} lançamento(s) da conta ainda "a classificar" ficaram fora.</p>`);
-          if (info.aClassificarCartao) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificarCartao} compra(s) à vista do cartão ainda "a classificar" ficaram fora.</p>`);
+          if (info.aClassificarCartao) linhas.push(`<p style="margin:0 0 8px;color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> ${info.aClassificarCartao} compra(s) do cartão (à vista ou parcelas) ainda "a classificar" ficaram fora.</p>`);
           (info.linhasExtras || []).forEach(x => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(x.aba)}: ganhou ${x.quantidade} linha(s) para caber todos os lançamentos.</p>`));
           if (info.juntados) linhas.push(`<p style="margin:0 0 8px" class="suave">${info.juntados} linha(s) com nomes repetidos somados (detalhe no comentário de cada célula).</p>`);
           (info.agrupados || []).forEach(g => linhas.push(`<p style="margin:0 0 8px" class="suave">${esc(g.aba)} · ${esc(g.bloco)}: não coube tudo; ${g.quantidade} lançamento(s) foram somados na linha "Outros" (a lista está no comentário da célula).</p>`));
