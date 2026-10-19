@@ -23,6 +23,9 @@ async function main() {
         if (r) ajustes[`${ids.extratos[di]}:${i}`] = { classe: r[1] };
         if (/MARIA/.test(t.descricao)) ajustes[`${ids.extratos[di]}:${i}`] = { situacao: 'entre_contas' };
     }));
+    // Parcelas do cartão: o analista diz se são custo fixo ou variável (aqui: a 1ª variável, o resto fixo)
+    const parcelas = consolidar({ extratos: [], faturas: [fatura], idsDocumentos: { extratos: [], faturas: ids.faturas } }).lancamentos.filter(l => l.parcelaCartao);
+    parcelas.forEach((l, i) => { ajustes[l.id] = { classe: i === 0 ? 'variavel' : 'fixo' }; });
     const ap = consolidar({ extratos: [fx.itau, fx.nubank], faturas: [fatura], idsDocumentos: ids, ajustes });
     const r = await gerarPlanilhaConsultoria(ap.lancamentos, ap.resumo.parcelamentos, { projetarParcelas: true });
     fs.writeFileSync(saida, r.buffer);

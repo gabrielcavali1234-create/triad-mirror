@@ -10,10 +10,14 @@
 //    cartão (custo fixo, custo variável, investimento, entrada, cartão à vista
 //    do mês ou fora da planilha). Nada é classificado sozinho; o que estiver
 //    "a classificar" não vai para a planilha.
-//  • Parcelas do cartão vão SOZINHAS para "Cartão parcelado" (nome, prazo,
-//    valor) no mês em que a fatura é PAGA (vencimento), e são projetadas em
-//    todos os meses seguintes até a última parcela. As fórmulas do modelo levam
-//    esses totais para custo fixo e custo variável.
+//  • Parcelas do cartão: o ANALISTA diz se são custo FIXO ou VARIÁVEL.
+//    Fixo → "Cartão parcelado" (nome, prazo, valor), que o modelo soma em
+//    "Cart. Cred. Fixo". Variável → "Cartão à vista do mês" (nome com a
+//    parcela), que o modelo soma em "Cart. Cred. A vista" (custo variável);
+//    assim a "Fatura paga" do mês continua completa. Entram no mês em que a
+//    fatura é PAGA (vencimento) e são projetadas, no mesmo bloco, em todos os
+//    meses seguintes até a última parcela. Sem escolha: ficam "a classificar"
+//    e não entram (nem na projeção).
 //  • O modelo tem abas Janeiro…Dezembro sem ano: elas ficam para o ano mais
 //    recente com dado real. Meses de outros anos ganham abas novas, cópias
 //    fiéis da aba do modelo ("Janeiro 2027"…), na ordem do calendário.
@@ -70,7 +74,7 @@ export interface ResultadoPlanilha {
     abasCriadas: string[];           // abas de outros anos criadas a partir do modelo
     linhas: number;
     aClassificar: number;            // lançamentos de conta, no resumo, sem classificação
-    aClassificarCartao: number;      // compras à vista do cartão, no resumo, sem classificação
+    aClassificarCartao: number;      // compras do cartão (à vista e parcelas), no resumo, sem classificação
     linhasExtras: { aba: string; quantidade: number }[];               // abas que ganharam linhas
     juntados: { aba: string; bloco: string; rotulo: string; quantidade: number; total: number }[];
     agrupados: { aba: string; bloco: string; quantidade: number }[];  // "Outros" (só se algo falhar)
@@ -166,9 +170,20 @@ export function chaveDeGrupo(nome: string): string {
 /** Bloco da planilha onde o lançamento entra (null = não entra). */
 function blocoDe(l: Lancamento): ChaveBloco | null {
     if (l.situacao !== 'incluido') return null;
-    if (l.parceladoAutomatico) return 'cartaoParcelado';
     if (!l.classe || l.classe === 'fora') return null;
+    if (l.parcelaCartao) return l.classe === 'fixo' || l.classe === 'variavel' ? blocoDaParcela(l.classe) : null;
     return BLOCO_DA_CLASSE[l.classe];
+}
+
+/** Parcela de cartão: fixo → "Cartão parcelado" (custo fixo); variável → "Cartão à vista do mês" (custo variável). */
+const blocoDaParcela = (classe: 'fixo' | 'variavel'): ChaveBloco => classe === 'fixo' ? 'cartaoParcelado' : 'cartaoVista';
+
+/** Linha de uma parcela: no bloco parcelado o prazo tem coluna própria; no à vista vai junto do nome. */
+function linhaDeParcela(bloco: ChaveBloco, nome: string, parcela: string, fim: string, valor: number, nota: string): Linha {
+    const prazo = `${parcela} · até ${mesCurto(fim)}`;
+    return bloco === 'cartaoParcelado'
+        ? { rotulo: nome, prazo, valor, nota }
+        : { rotulo: `${nome} (${parcela})`, valor, nota: nota + '\nParcela classificada como custo variável.' };
 }
 
 function linhaDe(l: Lancamento): Linha {
@@ -223,7 +238,7 @@ export function listarGrupos(lancamentos: Lancamento[]): GrupoPlanilha[] {
     const porChave = new Map<string, Lancamento[]>();
     for (const l of lancamentos) {
         const b = blocoDe(l);
-        if (!b || b === 'cartaoParcelado') continue;
+        if (!b || b === 'cartaoParcelado' || l.parcelaCartao) continue;   // parcela: sempre uma linha, com o prazo
         const chave = chaveDeGrupo(nomeDoLancamento(l));
         if (!chave) continue;
         const k = `${chave}|${l.mesReferencia}|${b}`;
@@ -271,7 +286,7 @@ export async function gerarPlanilhaConsultoria(
     };
 
     const noResumo = lancamentos.filter(l => l.situacao === 'incluido');
-    const pendentes = noResumo.filter(l => !l.parceladoAutomatico && !l.classe);
+    const pendentes = noResumo.filter(l => !l.classe);
     res.aClassificar = pendentes.filter(l => l.origem === 'extrato').length;
     res.aClassificarCartao = pendentes.filter(l => l.origem === 'fatura').length;
 
@@ -311,12 +326,8 @@ export async function gerarPlanilhaConsultoria(
         for (const l of doMes) {
             const b = blocoDe(l);
             if (!b) continue;
-            const linha: Linha = b === 'cartaoParcelado' ? {
-                rotulo: nomeDoLancamento(l),
-                prazo: `${l.parcela} · até ${mesCurto(l.parcelaFim!)}`,
-                valor: l.valor,
-                nota: notaDe(l) + `\n1ª parcela: ${mesCurto(l.parcelaInicio!)} · última: ${mesCurto(l.parcelaFim!)}`
-            } : linhaDe(l);
+            const linha: Linha = l.parcelaCartao ? linhaDeParcela(b, nomeDoLancamento(l), l.parcela!, l.parcelaFim!, l.valor,
+                notaDe(l) + `\n1ª parcela: ${mesCurto(l.parcelaInicio!)} · última: ${mesCurto(l.parcelaFim!)}`) : linhaDe(l);
             (porBloco[b] ||= []).push(linha);
         }
         for (const [b, ls] of Object.entries(porBloco)) enfileirar(mes, b as ChaveBloco, ls!);
@@ -324,24 +335,26 @@ export async function gerarPlanilhaConsultoria(
     }
 
     // Projeção: cada parcela já comprada vai para TODOS os meses seguintes até a última.
+    // Vai para o mesmo bloco que o analista escolheu (fixo ou variável); sem escolha, não projeta.
     if (opcoes.projetarParcelas !== false && parcelamentos?.itens?.length) {
-        const porMes = new Map<string, Linha[]>();
+        const classeDe = new Map(lancamentos.map(l => [l.id, l.classe]));
+        const porMes = new Map<string, Partial<Record<ChaveBloco, Linha[]>>>();
         for (const p of parcelamentos.itens) {
+            const classe = classeDe.get(p.id);
+            if (classe !== 'fixo' && classe !== 'variavel') continue;
+            const bloco = blocoDaParcela(classe);
             const mesDaFatura = somarMeses(p.inicio, p.parcelaAtual - 1);   // fatura de onde a parcela foi lida
             for (let k = 1; ; k++) {
                 const mes = somarMeses(mesDaFatura, k);
                 if (mes > p.fim || k > 600) break;
-                if (!porMes.has(mes)) porMes.set(mes, []);
-                porMes.get(mes)!.push({
-                    rotulo: p.descricao,
-                    prazo: `${p.parcelaAtual + k}/${p.parcelaTotal} · até ${mesCurto(p.fim)}`,
-                    valor: p.valorParcela,
-                    nota: `Projeção: parcela de compra já feita (lida na fatura de ${mesCurto(mesDaFatura)}).\n1ª parcela: ${mesCurto(p.inicio)} · última: ${mesCurto(p.fim)}`
-                });
+                const doMes = porMes.get(mes) || {};
+                porMes.set(mes, doMes);
+                (doMes[bloco] ||= []).push(linhaDeParcela(bloco, p.descricao, `${p.parcelaAtual + k}/${p.parcelaTotal}`, p.fim, p.valorParcela,
+                    `Projeção: parcela de compra já feita (lida na fatura de ${mesCurto(mesDaFatura)}).\n1ª parcela: ${mesCurto(p.inicio)} · última: ${mesCurto(p.fim)}`));
             }
         }
         for (const mes of Array.from(porMes.keys()).sort()) {
-            enfileirar(mes, 'cartaoParcelado', porMes.get(mes)!);
+            for (const [b, ls] of Object.entries(porMes.get(mes)!)) enfileirar(mes, b as ChaveBloco, ls!);
             res.mesesProjetados.push(mes);
         }
     }

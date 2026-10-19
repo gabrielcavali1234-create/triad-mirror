@@ -46,7 +46,7 @@ checar(r.resumo.compromissoFuturoParcelas === 8758.23, `compromisso futuro = R$ 
 const pm = r.resumo.parcelamentos;
 console.log('   Calendário:', pm.porMes.map((m: any) => `${m.mes} R$${m.valor}`).join(' | '));
 checar(pm.porMes[0].mes === '2026-05' && pm.porMes.at(-1)!.mes === '2027-02', `parcelas de mai/26 até fev/27 (MMOPTICS 3/12 termina em fev/27)`);
-checar(r.lancamentos.filter(l => l.parceladoAutomatico).length === 13, '13 parcelas vão sozinhas para "Cartão parcelado"');
+checar(r.lancamentos.filter(l => l.parcelaCartao).length === 13 && r.lancamentos.filter(l => l.parcelaCartao).every(l => l.classe === null), '13 parcelas, todas "a classificar" (fixo ou variável)');
 
 console.log(falhas.length ? `\n❌ ${falhas.length} falha(s)` : '\n✅ Todos os checks passaram');
 process.exit(falhas.length ? 1 : 0);
