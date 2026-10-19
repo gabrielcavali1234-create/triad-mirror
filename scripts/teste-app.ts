@@ -154,6 +154,28 @@ async function main() {
         ok(!coluna(wsP, 'P').includes(pend) && !coluna(wsP, 'M').some(v => v.startsWith(pend + ' (')), `parcela "a classificar" fica fora da planilha (${pend})`);
         if (process.argv[3]) fs.writeFileSync(process.argv[3], Buffer.from(pl.corpo as ArrayBuffer));
 
+        // Plano do cliente (simulação "e se você mudar?")
+        const cp = await api('GET', `/api/app/clientes/${cid}`, undefined, T);
+        const PB = cp.corpo.plano?.base, PC = cp.corpo.plano?.config;
+        ok(PB && PB.emRotativo && Math.abs(PB.jurosMensal - 485.16) < 0.01 && Math.abs(PB.saldoRotativo - 1924.31) < 0.01, `base do plano: juros ${PB?.jurosMensal}/mês, rotativo ${PB?.saldoRotativo}`);
+        ok(PB.rendaMensal > 0 && PB.custoVidaEstimado > 0 && PB.mediaPorCategoria.every((c: any, k: number, a: any[]) => !k || a[k - 1].valor >= c.valor), `renda média ${PB.rendaMensal} e custo de vida ${PB.custoVidaEstimado}, categorias da maior para a menor`);
+        ok(cp.corpo.plano.salvo === false && PC.sairRotativo && PC.cortes.length === 2 && PC.cortes.every((c: any) => c.percentual === 30), `plano sugerido: sair do rotativo + ${PC.cortes.map((c: any) => c.categoria).join(', ')}`);
+        const aidP = cp.corpo.analise.id;
+        ok((await api('PATCH', `/api/app/analises/${aidP}`, {}, T)).status === 400, 'atualizar análise sem nada é recusado');
+        const sp = await api('PATCH', `/api/app/analises/${aidP}`, { plano: { taxaAno: 99, reservaAtual: -5, mesesReserva: 6, sairRotativo: true,
+            cortes: [{ categoria: 'Assinaturas', percentual: 150, titulo: '' }, { categoria: 'Inventada', percentual: 10 }, { categoria: 'Assinaturas', percentual: 10 }] } }, T);
+        const SP = sp.corpo.plano;
+        ok(sp.status === 200 && SP.taxaAno === 30 && SP.reservaAtual === 0 && SP.cortes.length === 1 && SP.cortes[0].percentual === 100 && SP.cortes[0].titulo === 'Revisar as assinaturas',
+            'plano salvo e validado (limites, categoria inexistente e repetida descartadas, título padrão)');
+        const si = await api('GET', `/api/app/analises/${aidP}/simulacao?meses=120`, undefined, T);
+        const SI = si.corpo.simulacao, assin = PB.mediaPorCategoria.find((c: any) => c.categoria === 'Assinaturas').valor;
+        ok(si.status === 200 && si.corpo.salvo === true && SI.pontos.length === 121 && Math.abs(SI.economiaMensal - (485.16 + assin)) < 0.02, `simulação: ${SI.economiaMensal}/mês (juros + 100% das assinaturas)`);
+        ok(SI.mesQuitaRotativo === Math.ceil(1924.31 / SI.economiaMensal) && SI.pontos[120].comMudancas > 0 && SI.pontos[120].jurosPagos === Math.round(485.16 * 120 * 100) / 100, `rotativo quitado no mês ${SI.mesQuitaRotativo}; juros em 10 anos sem mudar: ${SI.pontos[120].jurosPagos}`);
+        const vf = SI.pontos[120].comMudancas, i = Math.pow(1.3, 1 / 12) - 1;
+        ok(SI.pontos[2].comMudancas < SI.pontos[3].comMudancas && vf < SI.economiaMensal * (Math.pow(1 + i, 120) - 1) / i, 'investimento cresce mês a mês e fica abaixo de investir desde o 1º mês (rotativo vem antes)');
+        const zp = await api('PATCH', `/api/app/analises/${aidP}`, { plano: null }, T);
+        ok(zp.status === 200 && (await api('GET', `/api/app/clientes/${cid}`, undefined, T)).corpo.plano.salvo === false, 'plano volta ao sugerido');
+
         // Concluir análise
         ok((await api('PATCH', `/api/app/analises/${aid}`, { status: 'concluida' }, T)).status === 200, 'análise concluída');
 
