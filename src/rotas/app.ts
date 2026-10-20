@@ -7,7 +7,7 @@ import path from 'path';
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import { chaveAdminConfere, criarAnalista, entrar, ErroLogin, exigirLogin, renovar } from '../core/auth';
-import { Ajuste, Analise, Documento, MODO_DEV, repo } from '../core/repositorio';
+import { Ajuste, Analise, Cliente, Documento, MODO_DEV, repo } from '../core/repositorio';
 import { buildUserFriendlyError, jobs, novoJobId } from '../core/jobs';
 import { analisarDocumento, ModuloDocumento } from '../core/pipeline';
 import { novoUsageTotal } from '../core/ia';
@@ -114,9 +114,9 @@ async function montarApuracao(analiseId: string) {
 }
 
 /** Base da análise + plano salvo pelo analista (ou o sugerido, se ainda não salvou). */
-function planoDaAnalise(analise: Analise, apuracao: ReturnType<typeof consolidar>) {
+function planoDaAnalise(analise: Analise, apuracao: ReturnType<typeof consolidar>, cliente?: Cliente | null) {
     const base = basePlano(apuracao.lancamentos, apuracao.resumo);
-    return { base, config: analise.plano ? normalizarPlano(analise.plano) : planoPadrao(base), salvo: !!analise.plano };
+    return { base, config: analise.plano ? normalizarPlano(analise.plano) : planoPadrao(base, cliente?.ficha?.reservaAtual), salvo: !!analise.plano };
 }
 
 const resumoDocumento = (d: Documento) => {
@@ -142,7 +142,7 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
     if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
     const analise = await repo.analiseAtual(cliente.id, req.usuario!);
     const { docs, apuracao } = await montarApuracao(analise.id);
-    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao) });
+    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao, cliente) });
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────
@@ -271,7 +271,7 @@ router.put('/api/app/analises/:id/ajustes', rota(async (req, res) => {
     }
     await repo.salvarAjustes(salvar, remover);
     const { apuracao } = await montarApuracao(analise.id);
-    res.json({ apuracao, plano: planoDaAnalise(analise, apuracao), salvoEm: new Date().toISOString() });
+    res.json({ apuracao, plano: planoDaAnalise(analise, apuracao, await repo.obterCliente(analise.cliente_id)), salvoEm: new Date().toISOString() });
 }));
 
 router.patch('/api/app/analises/:id', rota(async (req, res) => {
@@ -294,7 +294,7 @@ router.get('/api/app/analises/:id/simulacao', rota(async (req, res) => {
     const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
     if (!analise) return res.status(404).json({ error: 'Análise não encontrada.' });
     const { apuracao } = await montarApuracao(analise.id);
-    const plano = planoDaAnalise(analise, apuracao);
+    const plano = planoDaAnalise(analise, apuracao, await repo.obterCliente(analise.cliente_id));
     const meses = Math.round(Math.min(480, Math.max(12, Number(req.query.meses) || 240)));
     res.json({ ...plano, simulacao: simular(plano.base, plano.config, meses) });
 }));

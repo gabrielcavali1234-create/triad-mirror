@@ -51,7 +51,7 @@ Abrir o endereço do site → **login** → **clientes** → **perfil do cliente
 - **Excel:** leva as abas Resumo (com gastos por subcategoria), Lançamentos (com situação e observação) e uma aba por documento.
 
 ### Banco (Supabase do Mirror)
-Rodar no SQL Editor, nesta ordem: `supabase/schema.sql`, `supabase/002_clientes.sql`, `003_classificacao.sql`, `004_cartao_vista.sql` e `005_plano.sql` (plano do cliente).
+Rodar no SQL Editor, nesta ordem: `supabase/schema.sql`, `supabase/002_clientes.sql`, `003_classificacao.sql`, `004_cartao_vista.sql`, `005_plano.sql` (plano do cliente) e `006_ficha.sql` (ficha do cliente).
 
 ### Desenvolvimento local, sem Supabase e sem IA
 ```bash

@@ -112,11 +112,14 @@ export function basePlano(lancamentos: Lancamento[], resumo: ResumoParaPlano): B
     };
 }
 
-/** Plano sugerido enquanto o analista não salva um: sair do rotativo + as 2 categorias ajustáveis mais caras, com 30%. */
-export function planoPadrao(base: BasePlano): PlanoConfig {
+/**
+ * Plano sugerido enquanto o analista não salva um: sair do rotativo + as 2
+ * categorias ajustáveis mais caras, com 30%. A reserva vem da ficha do cliente.
+ */
+export function planoPadrao(base: BasePlano, reservaDaFicha?: number | null): PlanoConfig {
     const sugeridas = base.mediaPorCategoria.filter(c => AJUSTAVEIS.includes(c.categoria)).slice(0, 2);
     return {
-        taxaAno: 10, reservaAtual: 0, mesesReserva: 6, custoVidaMensal: null,
+        taxaAno: 10, reservaAtual: reservaDaFicha && reservaDaFicha > 0 ? arred(reservaDaFicha) : 0, mesesReserva: 6, custoVidaMensal: null,
         sairRotativo: base.emRotativo,
         tituloRotativo: 'Sair do rotativo',
         textoRotativo: 'Pagar a fatura inteira todo mês. O que já está na próxima fatura vem antes de qualquer compra nova.',

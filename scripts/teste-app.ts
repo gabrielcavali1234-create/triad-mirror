@@ -154,6 +154,22 @@ async function main() {
         ok(!coluna(wsP, 'P').includes(pend) && !coluna(wsP, 'M').some(v => v.startsWith(pend + ' (')), `parcela "a classificar" fica fora da planilha (${pend})`);
         if (process.argv[3]) fs.writeFileSync(process.argv[3], Buffer.from(pl.corpo as ArrayBuffer));
 
+        // Ficha do cliente (entrevista guiada): só o nome é obrigatório
+        const fNova = await api('POST', '/api/app/clientes', { nome: 'Cliente Só Nome' }, T);
+        ok(fNova.status === 201 && fNova.corpo.cliente.ficha == null, 'cliente com só o nome é aceito');
+        const fc = await api('POST', '/api/app/clientes', { nome: 'Roberto Nunes', renda_declarada: 12500, ficha: {
+            nascimento: '1979-08-21', profissao: 'Engenheiro', formaRenda: 'empresario', dependentes: 2, reservaAtual: '8.000,50',
+            dividas: [{ tipo: 'veiculo', saldo: 32000, parcela: 1450, parcelasRestantes: 26 }, { tipo: 'agiota', saldo: 1 }],
+            objetivos: [{ tipo: 'reserva', descricao: 'Reserva', valor: 60000, prazo: '2029-12' }, { tipo: 'viagem', valor: -5, prazo: '2027-13' },
+                { tipo: 'carro' }, { tipo: 'casa' }], lgpd: true } }, T);
+        const FI = fc.corpo.cliente?.ficha;
+        ok(fc.status === 201 && FI.reservaAtual === 8000.5 && FI.formaRenda === 'empresario' && FI.dependentes === 2 && FI.nascimento === '1979-08-21', 'ficha salva (reserva em formato brasileiro, forma de renda, dependentes, nascimento)');
+        ok(FI.dividas.length === 1 && FI.objetivos.length === 3 && FI.objetivos[1].valor === null && FI.objetivos[1].prazo === null && FI.lgpd && !!FI.lgpdEm, 'ficha validada: tipo inválido descartado, no máximo 3 objetivos, valor/prazo inválidos viram vazio, data da autorização LGPD');
+        const fe = await api('PATCH', `/api/app/clientes/${fc.corpo.cliente.id}`, { ficha: { ...FI, nascimento: '2999-01-01', semDividas: true, dividas: [] } }, T);
+        ok(fe.status === 200 && fe.corpo.cliente.ficha.nascimento === null && fe.corpo.cliente.ficha.semDividas === true && fe.corpo.cliente.nome === 'Roberto Nunes', 'ficha editada (nascimento no futuro recusado, "nenhuma dívida")');
+        const fp = await api('GET', `/api/app/clientes/${fc.corpo.cliente.id}`, undefined, T);
+        ok(fp.corpo.plano.config.reservaAtual === 8000.5, 'reserva da ficha entra no plano sugerido');
+
         // Plano do cliente (simulação "e se você mudar?")
         const cp = await api('GET', `/api/app/clientes/${cid}`, undefined, T);
         const PB = cp.corpo.plano?.base, PC = cp.corpo.plano?.config;

@@ -55,7 +55,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.01em}
 .btn.escuro{background:var(--tinta);border-color:var(--tinta);color:#fff}
 .btn.perigo{color:var(--vermelho)}
 .btn:disabled{opacity:.5;cursor:default}
-input[type=text],input[type=email],input[type=password],input[type=number],input[type=search],select,textarea{width:100%;border:1px solid var(--borda-forte);border-radius:var(--r-ctrl);padding:9px 11px;background:var(--branco);transition:border-color .15s}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=search],input[type=tel],input[type=date],input[type=month],select,textarea{width:100%;border:1px solid var(--borda-forte);border-radius:var(--r-ctrl);padding:9px 11px;background:var(--branco);transition:border-color .15s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primaria);box-shadow:var(--foco)}
 input[type=checkbox]{accent-color:var(--primaria);width:15px;height:15px}
 label.rot{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
@@ -485,6 +485,61 @@ main > div > .card[style*="padding:16px"]{border:0;border-top:2px solid var(--te
   .ap-cab h2{font-size:28px}.ap-topo .so-tela-larga{display:none}
 }
 @media print{.ap-topo .dir{display:none}.ap-sec{break-inside:avoid}.ap-prazos{display:none}}
+
+/* ── Ficha do cliente: entrevista guiada ── */
+.ficha-tela{min-height:100vh;background:var(--fundo);color:var(--texto)}
+.fc-topo{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 32px;border-bottom:1px solid var(--borda);background:var(--branco)}
+.fc-topo .dir{display:flex;align-items:center;gap:12px}
+.fc-quem{font-size:13px;color:var(--fraco)}
+.fc-passos{display:flex;max-width:880px;margin:28px auto 0;padding:0 24px;list-style:none;gap:0}
+.fc-passos li{flex:1}
+.fc-passos button{width:100%;text-align:left;border:0;border-top:3px solid var(--borda);background:none;padding:10px 8px 0 0;font-size:13px;color:var(--fraco);cursor:pointer;border-radius:0}
+.fc-passos button b{display:block;font-size:12px;font-weight:600;color:var(--fraco)}
+.fc-passos button.feito{border-top-color:var(--primaria);color:var(--suave)}
+.fc-passos button.atual{border-top-color:var(--primaria);color:var(--texto);font-weight:700}
+.fc-palco{max-width:880px;margin:0 auto;padding:44px 24px 150px}
+.fc-pergunta{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.1;max-width:22ch;margin:0}
+.fc-apoio{font-size:17px;color:var(--suave);margin:12px 0 30px;max-width:56ch}
+.fc-grande{max-width:340px}
+.fc-grande .fc-pre span{font-size:24px;left:0}
+.fc-grande input{font-size:28px!important;font-family:var(--serif);padding:10px 0 10px 44px!important;border:0!important;border-bottom:2px solid var(--texto)!important;border-radius:0!important;background:none!important}
+.fc-grande input:focus{box-shadow:none!important;border-bottom-color:var(--primaria)!important}
+.fc-pre{position:relative}.fc-pre > span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--fraco);pointer-events:none}.fc-pre > input{padding-left:34px}
+.fc-rot{display:block;font-weight:600;font-size:14px;margin:30px 0 10px}
+.fc-chips{display:flex;gap:10px;flex-wrap:wrap}
+.fc-chip{border:1px solid var(--borda-forte);border-radius:99px;padding:10px 18px;background:var(--branco);font-weight:600;color:var(--texto)}
+.fc-chip:hover{border-color:var(--texto)}
+.fc-chip[aria-pressed="true"]{background:var(--primaria);border-color:var(--primaria);color:#fff}
+.fc-g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fc-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fc-dica{font-size:12px;color:var(--fraco);margin-top:4px;min-height:16px}
+.fc-erro{font-size:13px;color:var(--vermelho);margin-top:6px;font-weight:600}
+.fc-divida{margin-top:18px;max-width:680px}
+.fc-divida h3{font-family:"Public Sans",sans-serif;font-size:14px;font-weight:700;margin:0 0 8px}
+.fc-objs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fc-objc{border:1px solid var(--borda-forte);border-radius:4px;padding:16px;text-align:left;background:var(--branco);color:var(--texto)}
+.fc-objc:hover:not(:disabled){border-color:var(--texto)}
+.fc-objc b{display:block;font-size:16px}
+.fc-objc span{font-size:13px;color:var(--fraco)}
+.fc-objc[aria-pressed="true"]{border:2px solid var(--primaria);padding:15px;background:var(--verde-fundo)}
+.fc-objc:disabled{opacity:.45;cursor:not-allowed}
+.fc-detalhe{margin-top:26px;border-top:2px solid var(--texto);padding-top:18px}
+.fc-detalhe h2{font-size:24px;margin:0 0 12px}
+.fc-resultado{margin:16px 0 0;font-family:var(--serif);font-size:23px;line-height:1.4}
+.fc-resultado b{font-weight:500;color:var(--primaria-texto)}
+.fc-rodape{position:fixed;left:0;right:0;bottom:0;background:var(--branco);border-top:1px solid var(--borda);padding:14px 24px;z-index:20}
+.fc-rodape .in{max-width:880px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.fc-lgpd{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--suave);cursor:pointer}
+.fc-lgpd input{margin-top:3px}
+.fc-link{border:0;background:none;color:var(--primaria-texto);font-weight:600;padding:8px 4px}
+@media (max-width:700px){
+  .fc-topo{padding:12px 16px}.fc-quem{display:none}
+  .fc-pergunta{font-size:31px}.fc-apoio{font-size:16px}
+  .fc-passos button{font-size:0}.fc-passos button b{font-size:11px}
+  .fc-palco{padding:28px 16px 190px}
+  .fc-g2,.fc-g3{grid-template-columns:1fr}.fc-objs{grid-template-columns:1fr 1fr}
+  .fc-rodape .in{gap:8px}.fc-lgpd{order:-1;width:100%}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -622,10 +677,12 @@ async function rotear() {
   if (!sessao) { if (h !== '#/login') { location.hash = '#/login'; return; } return telaLogin(); }
   if (h === '#/login') { location.hash = '#/clientes'; return; }
   if (!E.taxonomia) { try { E.taxonomia = await api('GET', '/api/app/categorias'); } catch (e) { return telaErro(e.message); } }
-  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(conta|cartao|tudo|plano|apresentacao))?$/i);
+  if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
     if (m[2] === 'apresentacao') return telaApresentacao(m[1]);
+    if (m[2] === 'ficha') { E.ap = null; return telaFicha(m[1]); }
     E.ap = null;
     if (m[2]) E.aba = m[2];
     return telaCliente(m[1]);
@@ -747,36 +804,6 @@ function desenharClientes() {
   if (b) { b.oninput = () => { E.buscaClientes = b.value; const p = b.selectionStart; desenharClientes(); const n = $('#bCli'); n.focus(); n.setSelectionRange(p, p); }; }
 }
 
-function modalCliente(c) {
-  const v = k => esc(c?.[k] ?? '');
-  abrirModal(`<h2>${c ? 'Editar perfil' : 'Novo cliente'}</h2><p class="suave" style="margin:0 0 16px">Só o nome é obrigatório. O resto ajuda na análise e no relatório.</p>
-    <form id="fCli" novalidate>
-      <div style="margin-bottom:14px"><label class="rot" for="cNome">Nome completo *</label><input id="cNome" type="text" value="${v('nome')}" maxlength="200" required></div>
-      <div class="grade2">
-        <div><label class="rot" for="cCpf">CPF</label><input id="cCpf" type="text" value="${v('cpf')}" placeholder="000.000.000-00" maxlength="20"></div>
-        <div><label class="rot" for="cTel">Telefone</label><input id="cTel" type="text" value="${v('telefone')}" placeholder="(11) 90000-0000" maxlength="30"></div>
-        <div><label class="rot" for="cEmail">E-mail</label><input id="cEmail" type="email" value="${v('email')}" maxlength="200"></div>
-        <div><label class="rot" for="cRenda">Renda declarada (R$ por mês)</label><input id="cRenda" type="number" min="0" step="0.01" value="${v('renda_declarada')}"></div>
-      </div>
-      <div style="margin-top:14px"><label class="rot" for="cObj">Objetivo da consultoria</label><input id="cObj" type="text" value="${v('objetivo')}" placeholder="Sair do rotativo, montar reserva de emergência…" maxlength="2000"></div>
-      <div style="margin-top:14px"><label class="rot" for="cObs">Observações</label><textarea id="cObs" rows="3" maxlength="2000">${v('observacao')}</textarea></div>
-      <div class="erro-txt" id="cErro" role="alert"></div>
-      <div class="acoes"><button type="button" class="btn" data-acao="fechar-modal">Cancelar</button><button class="btn primario" type="submit" id="cBtn">${c ? 'Salvar' : 'Criar cliente'}</button></div>
-    </form>`);
-  $('#cNome').focus();
-  $('#cNome').oninput = () => { $('#cErro').textContent = ''; };
-  $('#fCli').onsubmit = async ev => {
-    ev.preventDefault();
-    const dados = { nome: $('#cNome').value.trim(), cpf: $('#cCpf').value, telefone: $('#cTel').value, email: $('#cEmail').value, renda_declarada: $('#cRenda').value, objetivo: $('#cObj').value, observacao: $('#cObs').value };
-    if (!dados.nome) { $('#cErro').textContent = 'Informe o nome do cliente.'; $('#cNome').focus(); return; }
-    if (dados.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email)) { $('#cErro').textContent = 'E-mail inválido.'; return; }
-    $('#cBtn').disabled = true;
-    try {
-      if (c) { const r = await api('PATCH', '/api/app/clientes/' + c.id, dados); E.cli.cliente = r.cliente; fecharModal(); desenharCliente(); toast('Perfil salvo'); }
-      else { const r = await api('POST', '/api/app/clientes', dados); fecharModal(); location.hash = '#/cliente/' + r.cliente.id + '/conta'; }
-    } catch (e) { $('#cErro').textContent = e.message; $('#cBtn').disabled = false; }
-  };
-}
 
 // ════════════════════════════════════════════════════════════════════════
 // CLIENTE — apuração
@@ -807,7 +834,10 @@ function desenharCliente() {
   const cartoes = fat.map(d => d.produto || ('Cartão ' + (d.banco || ''))).filter((v, i, a) => a.indexOf(v) === i);
   if (!ext.length && fat.length && E.aba === 'conta') E.aba = 'cartao';
   const concluida = analise.status === 'concluida';
-  const info = [cliente.cpf ? 'CPF ' + esc(cliente.cpf) : '', cliente.telefone ? esc(cliente.telefone) : '', cliente.renda_declarada ? 'Renda declarada ' + brl(cliente.renda_declarada) : '', cliente.objetivo ? 'Objetivo: ' + esc(cliente.objetivo) : ''].filter(Boolean).join(' · ');
+  const fi = cliente.ficha || {}, idade = idadeDe(fi.nascimento);
+  const objs = (fi.objetivos || []).map(o => o.descricao).filter(Boolean);
+  const info = [cliente.cpf ? 'CPF ' + esc(cliente.cpf) : '', idade != null ? idade + ' anos' : '', fi.profissao ? esc(fi.profissao) : '', cliente.telefone ? esc(cliente.telefone) : '', cliente.renda_declarada ? 'Renda declarada ' + brl(cliente.renda_declarada) : '',
+    objs.length ? (objs.length > 1 ? 'Objetivos: ' : 'Objetivo: ') + esc(objs.join(', ')) : cliente.objetivo ? 'Objetivo: ' + esc(cliente.objetivo) : ''].filter(Boolean).join(' · ');
 
   const chipsDocs = documentos.map(d => {
     const conta = d.tipo === 'extrato';
@@ -826,7 +856,7 @@ function desenharCliente() {
           <div style="min-width:0"><h1>${esc(cliente.nome)}</h1><div class="suave" style="font-size:13px;margin-top:3px">${info || 'Perfil sem dados complementares'}</div></div></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           ${concluida ? '<span class="pill verde"><i class="ti ti-check"></i> Análise concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}
-          <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Perfil</button>
+          <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha</button>
         </div>
       </div>
       ${documentos.length ? `<div class="docs">${chipsDocs}<button class="btn" data-acao="novo-doc" style="padding:6px 11px;font-size:13px"><i class="ti ti-plus"></i> Documento</button></div>` : ''}
@@ -844,7 +874,7 @@ function desenharCliente() {
   ${documentos.length ? `<div class="barra-acoes">
     <button data-acao="novo-doc"><i class="ti ti-file-plus"></i> Documento</button>
     <button data-acao="excel"><i class="ti ti-table-export"></i> Excel</button>
-    <button data-acao="editar-perfil"><i class="ti ti-user"></i> Perfil</button>
+    <button data-acao="editar-perfil"><i class="ti ti-user"></i> Ficha</button>
     ${concluida ? '<button data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="destaque" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>'}
   </div>` : ''}`;
   if (documentos.length) desenharConteudo();
@@ -1569,6 +1599,217 @@ function graficoSimulacao(s, n, anos) {
 }
 window.addEventListener('resize', () => { if (E.ap && $('#apSvg')) { clearTimeout(E.apRz); E.apRz = setTimeout(atualizarSimulacao, 120); } });
 
+// ════════════════════════════════════════════════════════════════════════
+// FICHA DO CLIENTE — entrevista guiada em 4 passos. Só o nome é obrigatório.
+// Campos básicos vão nas colunas do cliente; o resto em "ficha" (modules/ficha.ts).
+// ════════════════════════════════════════════════════════════════════════
+const FC_PASSOS = ['Quem é', 'Renda e família', 'Dinheiro hoje', 'Objetivos'];
+const FC_RENDA = [['clt', 'CLT'], ['autonomo', 'Autônomo'], ['empresario', 'Empresário'], ['aposentado', 'Aposentado'], ['outro', 'Outro']];
+const FC_DEPEND = [[0, 'Nenhuma'], [1, '1'], [2, '2'], [3, '3 ou mais']];
+const FC_DIVIDAS = [['emprestimo', 'Empréstimo pessoal'], ['veiculo', 'Financiamento de veículo'], ['imobiliario', 'Financiamento imobiliário'], ['consignado', 'Consignado'], ['cheque_especial', 'Cheque especial'], ['outro', 'Outra dívida']];
+const FC_OBJ = [['reserva', 'Reserva de emergência', 'Para imprevistos'], ['dividas', 'Sair das dívidas', 'Rotativo, empréstimos'], ['viagem', 'Viagem', 'Férias, intercâmbio'],
+  ['carro', 'Carro', 'Troca ou primeiro carro'], ['casa', 'Casa própria', 'Entrada ou quitação'], ['aposentadoria', 'Aposentadoria', 'Viver de renda']];
+const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null });
+const paraNumero = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : null; };
+const fmtValor = n => n == null ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const mascaraCpf = v => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
+const mascaraFone = v => { const d = v.replace(/\D/g, '').slice(0, 11); return d.length <= 2 ? d.replace(/(\d+)/, '($1') : d.length <= 6 ? d.replace(/(\d{2})(\d+)/, '($1) $2') : d.length <= 10 ? d.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3') : d.replace(/(\d{2})(\d{5})(\d+)/, '($1) $2-$3'); };
+const idadeDe = iso => { if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return null; const h = new Date(), n = new Date(iso + 'T12:00:00'); let a = h.getFullYear() - n.getFullYear(); if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) a--; return a >= 0 && a < 130 ? a : null; };
+const mesesAte = prazo => { if (!/^\d{4}-\d{2}$/.test(prazo || '')) return null; const h = new Date(); return (Number(prazo.slice(0, 4)) * 12 + Number(prazo.slice(5, 7)) - 1) - (h.getFullYear() * 12 + h.getMonth()); };
+
+async function telaFicha(id) {
+  let c = null;
+  if (id) {
+    if (!E.cli || E.cli.cliente.id !== id) {
+      $('#app').innerHTML = `<div class="carregando">Abrindo a ficha…</div>`;
+      try { E.cli = await api('GET', '/api/app/clientes/' + id); } catch (e) { return telaErro(e.message); }
+    }
+    c = E.cli.cliente;
+  }
+  E.ficha = {
+    id: c?.id || null, passo: 0, erro: '',
+    dados: { nome: c?.nome || '', cpf: c?.cpf || '', telefone: c?.telefone || '', email: c?.email || '', renda_declarada: c?.renda_declarada ?? null, observacao: c?.observacao || '' },
+    f: { ...fichaVazia(), ...(c?.ficha || {}) }
+  };
+  // ficha antiga (só o texto "objetivo"): vira um objetivo "outro" para não perder
+  if (c?.objetivo && !E.ficha.f.objetivos.length) E.ficha.f.objetivos = [{ tipo: 'outro', descricao: c.objetivo.slice(0, 120), valor: null, prazo: null }];
+  document.title = (c ? 'Ficha de ' + c.nome : 'Novo cliente') + ' — TRIAD Mirror';
+  desenharFicha();
+}
+
+function guardarParaMes(o) {
+  const n = mesesAte(o.prazo);
+  if (o.valor == null || n == null) return null;
+  if (n < 1) return { erro: 'Escolha uma data a partir do mês que vem.' };
+  const taxa = (E.cli?.plano?.config?.taxaAno ?? 10) / 100, i = Math.pow(1 + taxa, 1 / 12) - 1;
+  const ja = o.tipo === 'reserva' ? (E.ficha.f.reservaAtual || 0) * Math.pow(1 + i, n) : 0;
+  const falta = Math.max(0, o.valor - ja);
+  const fator = i > 0 ? (Math.pow(1 + i, n) - 1) / i : n;
+  return { mensal: falta / fator, taxa: taxa * 100, n, contaReserva: o.tipo === 'reserva' && ja > 0 };
+}
+
+function textoGuardar(o) {
+  const g = guardarParaMes(o);
+  if (!g) return '<span class="fraco" style="font-family:\'Public Sans\',sans-serif;font-size:14px">Informe quanto custa e quando, e a gente mostra quanto guardar por mês.</span>';
+  if (g.erro) return `<span style="font-family:'Public Sans',sans-serif;font-size:14px;color:var(--vermelho)">${g.erro}</span>`;
+  if (g.mensal <= 0.5) return 'Com o que você já tem guardado, <b>esse objetivo já está garantido</b>.';
+  return `Para chegar lá, guarde <b>${brl0(Math.ceil(g.mensal))} por mês</b> a partir de ${MESES[(new Date().getMonth() + 1) % 12].toLowerCase()}.`
+    + `<span class="fraco" style="display:block;font-family:'Public Sans',sans-serif;font-size:13px;margin-top:4px">${g.n} meses, com rendimento simulado de ${fmtValor(g.taxa)}% ao ano${g.contaReserva ? ', contando o que você já tem guardado' : ''}.</span>`;
+}
+
+function desenharFicha() {
+  const F = E.ficha, d = F.dados, f = F.f, p = F.passo;
+  const chip = (campo, valor, rotulo, on) => `<button type="button" class="fc-chip" data-acao="fc-chip" data-campo="${campo}" data-valor="${esc(String(valor))}" aria-pressed="${on}">${esc(rotulo)}</button>`;
+  const dinheiroIn = (id, campo, valor, grande, rotulo) => `<div class="${grande ? 'fc-grande' : ''}"><div class="fc-pre"><span>R$</span><input id="${id}" type="text" inputmode="decimal" data-fc="${campo}" data-tipo="dinheiro" value="${esc(fmtValor(valor))}" ${rotulo ? `aria-label="${esc(rotulo)}"` : ''} placeholder="0"></div></div>`;
+  const idade = idadeDe(f.nascimento);
+  const passos = [
+    `<h1 class="fc-pergunta">${F.id ? 'Vamos revisar: quem é você?' : 'Vamos começar: quem é você?'}</h1>
+     <p class="fc-apoio">Só o nome é obrigatório. O resto ajuda a gente a falar com você do jeito certo.</p>
+     <div style="margin-bottom:16px"><label class="rot" for="fcNome">Nome completo *</label><input id="fcNome" type="text" data-fc="nome" value="${esc(d.nome)}" maxlength="200" autocomplete="off" ${F.erro ? 'aria-invalid="true" aria-describedby="fcErro"' : ''}>${F.erro ? `<div class="fc-erro" id="fcErro" role="alert">${esc(F.erro)}</div>` : ''}</div>
+     <div class="fc-g3">
+       <div><label class="rot" for="fcNasc">Data de nascimento</label><input id="fcNasc" type="date" data-fc="f.nascimento" value="${esc(f.nascimento || '')}" max="${new Date().toISOString().slice(0, 10)}"><div class="fc-dica" id="fcIdade">${idade != null ? idade + ' anos' : ''}</div></div>
+       <div><label class="rot" for="fcTel">WhatsApp</label><input id="fcTel" type="tel" data-fc="telefone" data-mascara="fone" value="${esc(d.telefone)}" placeholder="(11) 90000-0000" autocomplete="off"></div>
+       <div><label class="rot" for="fcCpf">CPF</label><input id="fcCpf" type="text" inputmode="numeric" data-fc="cpf" data-mascara="cpf" value="${esc(d.cpf)}" placeholder="000.000.000-00" autocomplete="off"></div>
+     </div>
+     <div class="fc-g2" style="margin-top:16px">
+       <div><label class="rot" for="fcEmail">E-mail</label><input id="fcEmail" type="email" data-fc="email" value="${esc(d.email)}" maxlength="200" autocomplete="off" spellcheck="false"></div>
+       <div><label class="rot" for="fcProf">Profissão</label><input id="fcProf" type="text" data-fc="f.profissao" value="${esc(f.profissao)}" maxlength="120"></div>
+     </div>
+     <div style="margin-top:16px"><label class="rot" for="fcObs">Observações <span class="fraco" style="font-weight:400">(opcional)</span></label><textarea id="fcObs" rows="2" data-fc="observacao" maxlength="2000" placeholder="Ex: prefere contato por WhatsApp à noite…">${esc(d.observacao)}</textarea></div>`,
+
+    `<h1 class="fc-pergunta">Quanto entra na sua conta por mês?</h1>
+     <p class="fc-apoio">O valor líquido, que cai na conta. Se varia, uma média dos últimos meses.</p>
+     ${dinheiroIn('fcRenda', 'renda_declarada', d.renda_declarada, true, 'Renda líquida por mês')}
+     <div style="max-width:340px;margin-top:18px"><label class="rot" for="fcOutras">Outras rendas por mês <span class="fraco" style="font-weight:400">(aluguel, pensão, bicos)</span></label>${dinheiroIn('fcOutras', 'f.outrasRendas', f.outrasRendas, false)}</div>
+     <span class="fc-rot" id="rFr">Você recebe como</span>
+     <div class="fc-chips" role="group" aria-labelledby="rFr">${FC_RENDA.map(([v, t]) => chip('formaRenda', v, t, f.formaRenda === v)).join('')}</div>
+     <span class="fc-rot" id="rDp">Quantas pessoas dependem dessa renda além de você?</span>
+     <div class="fc-chips" role="group" aria-labelledby="rDp">${FC_DEPEND.map(([v, t]) => chip('dependentes', v, t, f.dependentes === v)).join('')}</div>`,
+
+    `<h1 class="fc-pergunta">Se a renda parasse hoje, quanto você tem guardado?</h1>
+     <p class="fc-apoio">Poupança, investimentos, dinheiro em conta separado. É o ponto de partida da sua reserva de emergência.</p>
+     ${dinheiroIn('fcReserva', 'f.reservaAtual', f.reservaAtual, true, 'Quanto tem guardado')}
+     <span class="fc-rot" id="rDv">Você tem alguma dessas dívidas fora do cartão?</span>
+     <div class="fc-chips" role="group" aria-labelledby="rDv">${FC_DIVIDAS.map(([v, t]) => chip('divida', v, t, f.dividas.some(x => x.tipo === v))).join('')}${chip('semDividas', 1, 'Nenhuma', f.semDividas)}</div>
+     ${f.dividas.map((x, k) => `<div class="fc-divida"><h3>${esc(FC_DIVIDAS.find(t => t[0] === x.tipo)?.[1] || 'Dívida')}</h3><div class="fc-g3">
+        <div><label class="rot" for="dvS${k}">Quanto falta pagar</label>${dinheiroIn('dvS' + k, `div.${k}.saldo`, x.saldo, false)}</div>
+        <div><label class="rot" for="dvP${k}">Parcela</label>${dinheiroIn('dvP' + k, `div.${k}.parcela`, x.parcela, false)}</div>
+        <div><label class="rot" for="dvR${k}">Parcelas restantes</label><input id="dvR${k}" type="number" min="0" max="600" inputmode="numeric" data-fc="div.${k}.parcelasRestantes" value="${x.parcelasRestantes ?? ''}"></div>
+      </div></div>`).join('')}`,
+
+    `<h1 class="fc-pergunta">O que você quer conquistar?</h1>
+     <p class="fc-apoio">Escolha até três. Com valor e prazo, a gente mostra quanto guardar por mês.</p>
+     <div class="fc-objs">${FC_OBJ.map(([v, t, s]) => { const on = f.objetivos.some(o => o.tipo === v); return `<button type="button" class="fc-objc" data-acao="fc-obj" data-tipo="${v}" aria-pressed="${on}" ${!on && f.objetivos.length >= 3 ? 'disabled' : ''}><b>${t}</b><span>${s}</span></button>`; }).join('')}</div>
+     ${f.objetivos.length >= 3 ? '<p class="fraco" style="font-size:13px;margin:10px 0 0">Três objetivos escolhidos. Para trocar, desmarque um.</p>' : ''}
+     ${f.objetivos.map((o, k) => `<div class="fc-detalhe"><h2>${esc(FC_OBJ.find(t => t[0] === o.tipo)?.[1] || 'Objetivo')}</h2><div class="fc-g3" style="max-width:680px">
+        <div><label class="rot" for="obD${k}">Para quê</label><input id="obD${k}" type="text" data-fc="obj.${k}.descricao" value="${esc(o.descricao)}" maxlength="120"></div>
+        <div><label class="rot" for="obV${k}">Quanto custa</label>${dinheiroIn('obV' + k, `obj.${k}.valor`, o.valor, false)}</div>
+        <div><label class="rot" for="obP${k}">Quando</label><input id="obP${k}" type="month" data-fc="obj.${k}.prazo" value="${esc(o.prazo || '')}"></div>
+      </div><p class="fc-resultado" id="obR${k}">${textoGuardar(o)}</p></div>`).join('')}`
+  ];
+  const nomeTopo = d.nome.trim() ? 'Ficha de ' + esc(d.nome.trim()) : 'Novo cliente';
+  const analista = sessao?.usuario?.nome || '';
+  $('#app').innerHTML = `<div class="ficha-tela">
+    <header class="fc-topo">
+      <div class="logo"><img src="/img/logo-dees-destaque.png" alt="Dees" class="logo-img logo-tema-claro"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img logo-tema-escuro"></div>
+      <div class="dir"><span class="fc-quem">${nomeTopo}${analista ? ' · com ' + esc(analista) : ''}</span>${botaoTema()}
+        ${F.id ? '<button class="btn" type="button" data-acao="fc-concluir" data-sair="1">Salvar e sair</button>' : ''}
+        <a class="btn" href="${F.id ? '#/cliente/' + F.id + '/' + (E.aba || 'conta') : '#/clientes'}" style="text-decoration:none">${F.id ? 'Fechar' : 'Cancelar'}</a></div>
+    </header>
+    <ol class="fc-passos">${FC_PASSOS.map((t, k) => `<li><button type="button" data-acao="fc-passo" data-p="${k}" class="${k < p ? 'feito' : k === p ? 'atual' : ''}" ${k === p ? 'aria-current="step"' : ''}><b>Passo ${k + 1}</b>${t}</button></li>`).join('')}</ol>
+    <div class="fc-palco" id="fcPalco">${passos[p]}</div>
+    <div class="fc-rodape"><div class="in">
+      <button class="btn" type="button" data-acao="fc-voltar" style="visibility:${p ? 'visible' : 'hidden'}">Voltar</button>
+      ${p === 3 ? `<label class="fc-lgpd"><input type="checkbox" data-fc="f.lgpd" ${f.lgpd ? 'checked' : ''}> Autorizo o uso dos meus dados e documentos para a análise financeira (LGPD).</label>` : ''}
+      <div style="display:flex;gap:10px;align-items:center">${p < 3 ? '<button class="fc-link" type="button" data-acao="fc-seguir" data-pular="1">Pular esta etapa</button>' : ''}
+        <button class="btn primario" type="button" data-acao="${p < 3 ? 'fc-seguir' : 'fc-concluir'}">${p < 3 ? 'Continuar' : F.id ? 'Salvar ficha' : 'Concluir ficha'}</button></div>
+    </div></div>
+  </div>`;
+  const palco = $('#fcPalco');
+  palco.oninput = ev => atualizarCampoFicha(ev.target, false);
+  palco.onchange = ev => atualizarCampoFicha(ev.target, true);
+  const rodape = document.querySelector('.fc-rodape');
+  rodape.onchange = ev => atualizarCampoFicha(ev.target, true);
+  const foco = p === 0 && (F.erro || !d.nome) ? $('#fcNome') : null;
+  if (foco) foco.focus();
+}
+
+function atualizarCampoFicha(t, final) {
+  const campo = t.dataset?.fc; if (!campo) return;
+  const F = E.ficha, f = F.f;
+  if (t.dataset.mascara === 'cpf') t.value = mascaraCpf(t.value);
+  if (t.dataset.mascara === 'fone') t.value = mascaraFone(t.value);
+  let v = t.type === 'checkbox' ? t.checked : t.dataset.tipo === 'dinheiro' ? paraNumero(t.value) : t.type === 'number' ? (t.value === '' ? null : Math.max(0, Math.round(Number(t.value)))) : t.value;
+  if (t.dataset.tipo === 'dinheiro' && final && v != null) t.value = fmtValor(v);
+  const partes = campo.split('.');
+  if (partes[0] === 'f') { f[partes[1]] = partes[1] === 'nascimento' || partes[1] === 'prazo' ? (v || null) : v; if (partes[1] === 'lgpd') f.lgpdEm = v ? new Date().toISOString() : null; }
+  else if (partes[0] === 'div') f.dividas[+partes[1]][partes[2]] = v;
+  else if (partes[0] === 'obj') f.objetivos[+partes[1]][partes[2]] = partes[2] === 'prazo' ? (v || null) : v;
+  else F.dados[campo] = v;
+  if (campo === 'nome' && F.erro && String(v).trim()) { F.erro = ''; t.removeAttribute('aria-invalid'); $('#fcErro')?.remove(); }
+  if (campo === 'f.nascimento') { const a = idadeDe(v); $('#fcIdade').textContent = a != null ? a + ' anos' : ''; }
+  if (partes[0] === 'obj') { const r = $('#obR' + partes[1]); if (r) r.innerHTML = textoGuardar(f.objetivos[+partes[1]]); }
+}
+
+function fichaClique(a, el) {
+  const F = E.ficha, f = F.f;
+  if (a === 'fc-chip') {
+    const campo = el.dataset.campo, raw = el.dataset.valor;
+    if (campo === 'formaRenda') f.formaRenda = f.formaRenda === raw ? null : raw;
+    else if (campo === 'dependentes') f.dependentes = f.dependentes === Number(raw) ? null : Number(raw);
+    else if (campo === 'semDividas') { f.semDividas = !f.semDividas; if (f.semDividas) f.dividas = []; }
+    else if (campo === 'divida') {
+      const k = f.dividas.findIndex(x => x.tipo === raw);
+      if (k >= 0) f.dividas.splice(k, 1); else { f.dividas.push({ tipo: raw, saldo: null, parcela: null, parcelasRestantes: null }); f.semDividas = false; }
+    }
+    desenharFicha(); return;
+  }
+  if (a === 'fc-obj') {
+    const tipo = el.dataset.tipo, k = f.objetivos.findIndex(o => o.tipo === tipo);
+    if (k >= 0) f.objetivos.splice(k, 1);
+    else if (f.objetivos.length < 3) f.objetivos.push({ tipo, descricao: FC_OBJ.find(t => t[0] === tipo)[1], valor: null, prazo: null });
+    desenharFicha(); return;
+  }
+  if (a === 'fc-passo') { irPassoFicha(+el.dataset.p); return; }
+  if (a === 'fc-voltar') { irPassoFicha(F.passo - 1); return; }
+  if (a === 'fc-seguir') { irPassoFicha(F.passo + 1); return; }
+  if (a === 'fc-concluir') { salvarFicha(!!el.dataset.sair); return; }
+}
+
+function irPassoFicha(n) {
+  const F = E.ficha;
+  if (n > 0 && F.passo === 0 && !F.dados.nome.trim()) { F.erro = 'Informe o nome do cliente para continuar.'; desenharFicha(); return; }
+  F.passo = Math.max(0, Math.min(3, n)); F.erro = '';
+  desenharFicha(); window.scrollTo(0, 0);
+}
+
+async function salvarFicha(sair) {
+  const F = E.ficha, d = F.dados;
+  if (!d.nome.trim()) { F.passo = 0; F.erro = 'Informe o nome do cliente.'; desenharFicha(); return; }
+  if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) { F.passo = 0; desenharFicha(); toast('E-mail inválido. Confira no passo 1.', true); $('#fcEmail')?.focus(); return; }
+  const objetivosTxt = F.f.objetivos.map(o => o.descricao || FC_OBJ.find(t => t[0] === o.tipo)?.[1]).filter(Boolean).join(', ');
+  const corpo = { ...d, nome: d.nome.trim(), objetivo: objetivosTxt || null, ficha: F.f };
+  document.querySelectorAll('[data-acao="fc-concluir"]').forEach(b => { b.disabled = true; });
+  try {
+    if (F.id) {
+      const r = await api('PATCH', '/api/app/clientes/' + F.id, corpo);
+      if (E.cli?.cliente?.id === F.id) E.cli.cliente = r.cliente;
+      E.planoEdit = null;
+      toast('Ficha salva');
+      location.hash = '#/cliente/' + F.id + '/' + (E.aba || 'conta');
+      if (sair) return;
+    } else {
+      const r = await api('POST', '/api/app/clientes', corpo);
+      E.clientes = null;
+      toast('Cliente cadastrado');
+      location.hash = '#/cliente/' + r.cliente.id + '/conta';
+    }
+  } catch (e) {
+    toast(e.message, true);
+    document.querySelectorAll('[data-acao="fc-concluir"]').forEach(b => { b.disabled = false; });
+  }
+}
+
 // ─── Envio de documento ──────────────────────────────────────────────────
 function modalDocumento(tipoInicial) {
   let tipo = tipoInicial || '';
@@ -1706,8 +1947,9 @@ document.addEventListener('click', async ev => {
   switch (a) {
     case 'ir-clientes': location.hash = '#/clientes'; break;
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
-    case 'novo-cliente': modalCliente(null); break;
-    case 'editar-perfil': modalCliente(E.cli.cliente); break;
+    case 'novo-cliente': location.hash = '#/cliente/novo'; break;
+    case 'editar-perfil': location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
+    case 'fc-chip': case 'fc-obj': case 'fc-passo': case 'fc-voltar': case 'fc-seguir': case 'fc-concluir': fichaClique(a, el); break;
     case 'fechar-modal': fecharModal(); break;
     case 'menu-usuario': {
       if (document.querySelector('.menu-usuario')) { fecharMenus(); break; }
