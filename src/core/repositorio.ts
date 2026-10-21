@@ -35,6 +35,7 @@ export interface Analise {
     cliente_id: string;
     status: 'aberta' | 'concluida' | 'arquivada';
     analista?: string | null;
+    plano?: Record<string, unknown> | null;   // plano do cliente (ver modules/plano.ts)
     criado_em: string;
     atualizado_em: string;
 }
@@ -101,7 +102,7 @@ export interface Repositorio {
     atualizarCliente(id: string, dados: DadosCliente): Promise<Cliente | null>;
     analiseAtual(clienteId: string, por: Usuario): Promise<Analise>;
     obterAnalise(id: string): Promise<Analise | null>;
-    atualizarAnalise(id: string, dados: { status: Analise['status'] }): Promise<void>;
+    atualizarAnalise(id: string, dados: { status?: Analise['status']; plano?: Analise['plano'] }): Promise<void>;
     listarDocumentos(analiseId: string): Promise<Documento[]>;
     obterDocumento(id: string): Promise<Documento | null>;
     inserirDocumento(d: NovoDocumento): Promise<Documento>;
@@ -209,8 +210,11 @@ class RepoSupabase implements Repositorio {
         return data as Analise | null;
     }
 
-    async atualizarAnalise(id: string, dados: { status: Analise['status'] }): Promise<void> {
-        const { error } = await this.db.from('mirror_analises').update({ status: dados.status, atualizado_em: new Date().toISOString() }).eq('id', id);
+    async atualizarAnalise(id: string, dados: { status?: Analise['status']; plano?: Analise['plano'] }): Promise<void> {
+        const mudar: Record<string, unknown> = { atualizado_em: new Date().toISOString() };
+        if (dados.status) mudar.status = dados.status;
+        if (dados.plano !== undefined) mudar.plano = dados.plano;
+        const { error } = await this.db.from('mirror_analises').update(mudar).eq('id', id);
         if (error) this.falhar(error, 'atualizar análise');
     }
 
@@ -307,8 +311,11 @@ class RepoMemoria implements Repositorio {
         this.analises.set(nova.id, nova); this.tocarCliente(clienteId); return nova;
     }
     async obterAnalise(id: string) { return this.analises.get(id) || null; }
-    async atualizarAnalise(id: string, dados: { status: Analise['status'] }) {
-        const a = this.analises.get(id); if (a) { a.status = dados.status; a.atualizado_em = this.agora(); this.tocarCliente(a.cliente_id); }
+    async atualizarAnalise(id: string, dados: { status?: Analise['status']; plano?: Analise['plano'] }) {
+        const a = this.analises.get(id); if (!a) return;
+        if (dados.status) a.status = dados.status;
+        if (dados.plano !== undefined) a.plano = dados.plano;
+        a.atualizado_em = this.agora(); this.tocarCliente(a.cliente_id);
     }
     async listarDocumentos(analiseId: string) {
         return Array.from(this.documentos.values()).filter(d => d.analise_id === analiseId).sort((a, b) => a.criado_em.localeCompare(b.criado_em));

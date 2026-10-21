@@ -7,7 +7,7 @@ import path from 'path';
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import { chaveAdminConfere, criarAnalista, entrar, ErroLogin, exigirLogin, renovar } from '../core/auth';
-import { Ajuste, Documento, MODO_DEV, repo } from '../core/repositorio';
+import { Ajuste, Analise, Documento, MODO_DEV, repo } from '../core/repositorio';
 import { buildUserFriendlyError, jobs, novoJobId } from '../core/jobs';
 import { analisarDocumento, ModuloDocumento } from '../core/pipeline';
 import { novoUsageTotal } from '../core/ia';
@@ -18,6 +18,7 @@ import { AjusteLancamento, consolidar } from '../modules/consolidacao';
 import { gerarExcel } from '../modules/excel';
 import { gerarPlanilhaConsultoria, listarGrupos } from '../modules/planilha';
 import { CATEGORIAS, SUBCATEGORIAS } from '../modules/categorias';
+import { basePlano, normalizarPlano, planoPadrao, simular } from '../modules/plano';
 
 const router = express.Router();
 
@@ -112,6 +113,12 @@ async function montarApuracao(analiseId: string) {
     return { docs, entrada, apuracao: consolidar(entrada) };
 }
 
+/** Base da análise + plano salvo pelo analista (ou o sugerido, se ainda não salvou). */
+function planoDaAnalise(analise: Analise, apuracao: ReturnType<typeof consolidar>) {
+    const base = basePlano(apuracao.lancamentos, apuracao.resumo);
+    return { base, config: analise.plano ? normalizarPlano(analise.plano) : planoPadrao(base), salvo: !!analise.plano };
+}
+
 const resumoDocumento = (d: Documento) => {
     const r = d.resultado || {};
     return {
@@ -135,7 +142,7 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
     if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
     const analise = await repo.analiseAtual(cliente.id, req.usuario!);
     const { docs, apuracao } = await montarApuracao(analise.id);
-    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao });
+    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao) });
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────
@@ -264,17 +271,32 @@ router.put('/api/app/analises/:id/ajustes', rota(async (req, res) => {
     }
     await repo.salvarAjustes(salvar, remover);
     const { apuracao } = await montarApuracao(analise.id);
-    res.json({ apuracao, salvoEm: new Date().toISOString() });
+    res.json({ apuracao, plano: planoDaAnalise(analise, apuracao), salvoEm: new Date().toISOString() });
 }));
 
 router.patch('/api/app/analises/:id', rota(async (req, res) => {
     if (!repo) return semRepo(res);
+    const temStatus = req.body?.status !== undefined, temPlano = req.body?.plano !== undefined;
     const status = String(req.body?.status || '');
-    if (!['aberta', 'concluida'].includes(status)) return res.status(400).json({ error: 'Situação da análise inválida.' });
+    if (!temStatus && !temPlano) return res.status(400).json({ error: 'Nada para atualizar.' });
+    if (temStatus && !['aberta', 'concluida'].includes(status)) return res.status(400).json({ error: 'Situação da análise inválida.' });
     const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
     if (!analise) return res.status(404).json({ error: 'Análise não encontrada.' });
-    await repo.atualizarAnalise(analise.id, { status: status as any });
-    res.json({ ok: true, status });
+    // plano: null volta para o sugerido; senão é validado campo a campo
+    const plano = temPlano ? (req.body.plano === null ? null : normalizarPlano(req.body.plano)) : undefined;
+    await repo.atualizarAnalise(analise.id, { status: temStatus ? status as any : undefined, plano: plano as any });
+    res.json({ ok: true, status: temStatus ? status : analise.status, plano });
+}));
+
+// ─── Plano do cliente: base + plano + simulação (para outros aplicativos) ─
+router.get('/api/app/analises/:id/simulacao', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const analise = UUID.test(pid(req)) ? await repo.obterAnalise(pid(req)) : null;
+    if (!analise) return res.status(404).json({ error: 'Análise não encontrada.' });
+    const { apuracao } = await montarApuracao(analise.id);
+    const plano = planoDaAnalise(analise, apuracao);
+    const meses = Math.round(Math.min(480, Math.max(12, Number(req.query.meses) || 240)));
+    res.json({ ...plano, simulacao: simular(plano.base, plano.config, meses) });
 }));
 
 router.get('/api/app/analises/:id/excel', rota(async (req, res) => {
