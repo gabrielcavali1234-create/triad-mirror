@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════
 import crypto from 'crypto';
 import { supabaseAdmin } from './supabase';
+import { Ficha, normalizarFicha } from '../modules/ficha';
 
 export interface Usuario {
     id: string | null;
@@ -24,6 +25,7 @@ export interface Cliente {
     renda_declarada?: number | null;
     objetivo?: string | null;
     observacao?: string | null;
+    ficha?: Ficha | null;               // entrevista guiada (ver modules/ficha.ts)
     criado_por?: string | null;
     criado_por_nome?: string | null;
     criado_em: string;
@@ -77,7 +79,7 @@ export interface ClienteResumo extends Cliente {
     documentos: DocumentoResumo[];
 }
 
-export type DadosCliente = Partial<Pick<Cliente, 'nome' | 'cpf' | 'telefone' | 'email' | 'renda_declarada' | 'objetivo' | 'observacao'>>;
+export type DadosCliente = Partial<Pick<Cliente, 'nome' | 'cpf' | 'telefone' | 'email' | 'renda_declarada' | 'objetivo' | 'observacao' | 'ficha'>>;
 
 export interface NovoDocumento {
     analise_id: string;
@@ -111,14 +113,16 @@ export interface Repositorio {
     salvarAjustes(salvar: Ajuste[], remover: { documento_id: string; lancamento_ref: number }[]): Promise<void>;
 }
 
-const CAMPOS_CLIENTE = ['nome', 'cpf', 'telefone', 'email', 'renda_declarada', 'objetivo', 'observacao'] as const;
+const CAMPOS_CLIENTE = ['nome', 'cpf', 'telefone', 'email', 'renda_declarada', 'objetivo', 'observacao', 'ficha'] as const;
 
 function limparDadosCliente(d: DadosCliente): DadosCliente {
     const out: any = {};
     for (const c of CAMPOS_CLIENTE) {
         if (!(c in d)) continue;
         const v = (d as any)[c];
-        if (c === 'renda_declarada') {
+        if (c === 'ficha') {
+            out[c] = v == null ? null : normalizarFicha(v);
+        } else if (c === 'renda_declarada') {
             const n = v === '' || v == null ? null : Number(v);
             out[c] = n == null || Number.isNaN(n) ? null : n;
         } else {
