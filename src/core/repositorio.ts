@@ -134,7 +134,7 @@ function limparDadosCliente(d: DadosCliente): DadosCliente {
 }
 
 const emRotativo = (resultado: any) => !!resultado && (Number(resultado.saldoFinanciado) > 0 ||
-    (Array.isArray(resultado.transacoes) && resultado.transacoes.some((t: any) => t.tipo === 'encargo')));
+    (Array.isArray(resultado.transacoes) && resultado.transacoes.some((t: any) => t.tipo === 'encargo' && Number(t.valor) > 0)));
 
 // ─── Supabase ────────────────────────────────────────────────────────────
 class RepoSupabase implements Repositorio {

@@ -368,7 +368,8 @@ export function consolidar(entrada: EntradaConsolidacao) {
         encargos: arred(faturas.reduce((s, f) =>
             s + f.transacoes.filter(t => t.secao === 'encargos' || t.tipo === 'encargo').reduce((a, t) => a + t.valor, 0), 0)),
         parcelasDeFinanciamento: somaTipo(['financiamento']),
-        emRotativo: faturas.some(f => (f.saldoFinanciado ?? 0) > 0 || f.transacoes.some(t => t.tipo === 'encargo')),
+        // só conta rotativo com valor de verdade (a IA às vezes devolve linha de encargo zerada)
+        emRotativo: faturas.some(f => (f.saldoFinanciado ?? 0) > 0 || f.transacoes.some(t => t.tipo === 'encargo' && t.valor > 0)),
         pagamentoMinimo: arred(faturas.reduce((s, f) => s + (f.pagamentoMinimo ?? 0), 0))
     };
 

@@ -112,6 +112,29 @@ main{max-width:1320px;margin:0 auto;padding:32px 32px 120px}
 .ev-d{display:block;font-size:11px;font-weight:600}
 .ev-barra{display:block;height:8px;background:var(--borda2);border-radius:2px;margin-top:5px}
 .ev-barra span{display:block;height:100%;background:var(--primaria);border-radius:2px}
+.g-grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px;margin-bottom:14px}
+@media (max-width:1000px){.g-grade{grid-template-columns:1fr}}
+.g-card{padding:16px 18px}
+body{--g-claro:color-mix(in srgb,var(--primaria) 45%,var(--branco));--g-fundo:color-mix(in srgb,var(--primaria) 12%,var(--branco))}
+.g-tit{font-family:var(--serif);font-size:24px;font-weight:500}
+.g-lead{margin:4px 0 12px;color:var(--suave);font-size:14px}
+.g-stack{display:flex;gap:2px;height:28px;margin-bottom:10px}.g-stack span{display:block;height:100%}
+.g-stack span:first-child{border-radius:4px 0 0 4px}.g-stack span:last-child{border-radius:0 4px 4px 0}
+.g-leg div{display:grid;grid-template-columns:14px minmax(0,1fr) auto 38px;gap:8px;align-items:center;font-size:13px;margin:4px 0}
+.g-leg i{width:12px;height:12px;border-radius:2px;display:block}.g-leg em{font-style:normal;color:var(--fraco);text-align:right}
+.g-leg.h{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:4px}.g-leg.h div{display:flex;gap:7px}
+.g-leg i.hach{background:repeating-linear-gradient(45deg,var(--g-claro) 0 3px,var(--g-fundo) 3px 6px)}
+.g-sub{font-size:12px;font-weight:600;color:var(--fraco);margin:14px 0 4px}
+.g-bar{display:grid;grid-template-columns:170px minmax(0,1fr) 100px 38px;gap:10px;align-items:center;font-size:13px;width:100%;background:none;border:0;padding:4px 6px;margin:0 -6px;border-radius:4px;text-align:left;color:var(--texto);cursor:pointer;font:inherit;font-size:13px}
+.g-bar:hover:not([disabled]),.g-bar.on{background:var(--linha-hover)}.g-bar[disabled]{cursor:default}
+.g-bar.mini{grid-template-columns:150px minmax(0,1fr) 92px;cursor:default;padding:3px 0;margin:0}
+.g-bar .rot{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.g-bar .num{text-align:right}.g-bar .pct{text-align:right;color:var(--fraco);font-size:12px}
+.g-bar .trilho{height:12px;background:var(--borda2);border-radius:2px;overflow:hidden}.g-bar .trilho span{display:block;height:100%;background:var(--primaria);border-radius:0 4px 4px 0}
+.g-bar.on .trilho span{background:var(--texto)}
+.g-svg{width:100%;height:auto;display:block;overflow:visible}
+.g-linha{max-width:1200px;margin-top:10px}
+.g-svg .g-grid{stroke:var(--borda);stroke-width:1}.g-svg .g-eixo{font-size:11px;fill:var(--fraco)}.g-svg .g-eixo.forte{fill:var(--texto);font-weight:700}
+.g-svg .g-val{font-size:11px;font-weight:600;fill:var(--texto)}
 .prod{padding:16px 18px}
 .prod-cab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
 .prod-cab b{font-family:var(--serif);font-weight:500;font-size:20px}
@@ -379,6 +402,8 @@ main > div > .card[style*="padding:16px"]{border:0;border-top:2px solid var(--te
 }}
 /* logo: versão escura no tema claro, versão clara no tema escuro */
 .logo-tema-escuro{display:none!important}
+@media (prefers-color-scheme:dark){:root:not([data-tema="claro"]) body{--g-claro:color-mix(in srgb,var(--primaria) 50%,#ffffff);--g-fundo:color-mix(in srgb,var(--primaria) 22%,var(--branco))}}
+:root[data-tema="escuro"] body{--g-claro:color-mix(in srgb,var(--primaria) 50%,#ffffff);--g-fundo:color-mix(in srgb,var(--primaria) 22%,var(--branco))}
 :root[data-tema="escuro"] .logo-tema-claro{display:none!important}
 :root[data-tema="escuro"] .logo-tema-escuro{display:block!important}
 @media (prefers-color-scheme:dark){:root:not([data-tema="claro"]) .logo-tema-claro{display:none!important}:root:not([data-tema="claro"]) .logo-tema-escuro{display:block!important}}
@@ -870,6 +895,7 @@ function desenharClientes() {
 // CLIENTE — apuração
 // ════════════════════════════════════════════════════════════════════════
 async function telaCliente(id, silencioso) {
+  if (!silencioso) { E.catCartao = null; E.calMes = null; }
   if (!silencioso) $('#app').innerHTML = topo() + `<main><div class="carregando">Abrindo análise…</div></main>`;
   try { E.cli = await api('GET', '/api/app/clientes/' + id); }
   catch (e) { return telaErro(e.message); }
@@ -1112,7 +1138,8 @@ function abaCartao() {
     <div class="kpi"><small>Parcelas futuras (todas)</small><b class="num">${brl(r.compromissoFuturoParcelas)}</b></div>
     <div class="kpi"><small>Juros, mora e multa</small><b class="num" style="color:${e.encargos ? 'var(--vermelho)' : 'inherit'}">${brl(e.encargos)}</b></div>
   </div>
-  ${e.emRotativo ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(e.saldoFinanciado)} da fatura anterior foram financiados, gerando ${brl(e.encargos)} de juros, mora e multa.${e.parcelasDeFinanciamento ? ` Há também ${brl(e.parcelasDeFinanciamento)} de parcelamento de fatura.` : ''}</span></div>` : ''}
+  ${e.emRotativo && (e.saldoFinanciado > 0 || e.encargos > 0) ? `<div class="alerta"><i class="ti ti-alert-triangle"></i><span><b>Cliente no rotativo:</b> ${brl(e.saldoFinanciado)} da fatura anterior foram financiados, gerando ${brl(e.encargos)} de juros, mora e multa.${e.parcelasDeFinanciamento ? ` Há também ${brl(e.parcelasDeFinanciamento)} de parcelamento de fatura.` : ''}</span></div>` : ''}
+  ${(() => { const d = dadosCartao(todos); return `<div class="g-grade">${graficoComposicao(d)}${graficoProjecao(d, r.parcelamentos)}</div>${graficoCategorias(d)}`; })()}
   ${secaoParcelas(r.parcelamentos)}
   ${(() => { const cl = todos.filter(classificavel), f = cl.filter(l => l.classe).length, np = cl.filter(l => l.parcelaCartao && !l.classe).length;
     return progressoCls(f, cl.length, cl.length - f, np ? ` <span class="fraco">· ${np} parcela(s) esperando fixo ou variável</span>` : ''); })()}
@@ -1120,7 +1147,7 @@ function abaCartao() {
   for (const d of docs) {
     const itens = todos.filter(l => l.documentoId === d.id);
     const c = d.conferencia;
-    const visiveis = itens.filter(l => { const b = (E.busca[d.id] || '').toLowerCase(); return (!E.soPendentes || (classificavel(l) && !l.classe)) && (!b || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(b)); });
+    const visiveis = itens.filter(l => { const b = (E.busca[d.id] || '').toLowerCase(); return (!E.catCartao || l.categoria === E.catCartao) && (!E.soPendentes || (classificavel(l) && !l.classe)) && (!b || (l.descricao + ' ' + l.categoria + ' ' + (l.subcategoria || '')).toLowerCase().includes(b)); });
     const todosSel = visiveis.length && visiveis.every(l => E.sel.has(l.id));
     html += `<section class="mes">
       <div class="fatura-cab" style="background:var(--amarelo-fundo)">
@@ -1143,6 +1170,121 @@ function abaCartao() {
 }
 
 // ─── Calendário de parcelas (quando começa, quando termina, onde aperta) ─
+// ─── Gráficos da aba Cartão (A: categorias · B: composição · C: projeção · D: linha das parcelas) ──
+const ENCARGO_RE = /Encargos|IOF|Anuidade|Tarifa/i;
+const sinalCartao = l => l.direcao === 'saida' ? l.valor : -l.valor;
+const brlK = v => (Math.round(v / 100) / 10).toLocaleString('pt-BR') + ' mil';
+
+/** Números da fatura mais recente (todas as faturas que vencem no mesmo mês) + média do à vista. */
+function dadosCartao(todos) {
+  const inc = todos.filter(l => l.situacao === 'incluido');
+  const meses = [...new Set(inc.map(l => l.mesReferencia).filter(Boolean))].sort();
+  const partes = m => {
+    const ls = inc.filter(l => l.mesReferencia === m);
+    const total = ls.reduce((a, l) => a + sinalCartao(l), 0);
+    const parcelas = ls.filter(l => l.parcelaCartao).reduce((a, l) => a + l.valor, 0);
+    const encargos = ls.filter(l => ENCARGO_RE.test(l.categoria)).reduce((a, l) => a + sinalCartao(l), 0);
+    return { mes: m, ls, total, parcelas, encargos, vista: total - parcelas - encargos };
+  };
+  const todasPartes = meses.map(partes);
+  const atual = todasPartes[todasPartes.length - 1];
+  if (!atual) return null;
+  const porCat = {}, porLoja = {};
+  for (const l of atual.ls) {
+    porCat[l.categoria] = (porCat[l.categoria] || 0) + sinalCartao(l);
+    const n = l.descricao.replace(/\s+—\s+[^—]+$/, '');
+    porLoja[n] = (porLoja[n] || 0) + sinalCartao(l);
+  }
+  const mediaVista = todasPartes.reduce((a, p) => a + Math.max(0, p.vista), 0) / todasPartes.length;
+  return { ...atual, mediaVista, nFaturas: todasPartes.length,
+    porCat: Object.entries(porCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]),
+    porLoja: Object.entries(porLoja).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]) };
+}
+
+function graficoComposicao(d) {
+  if (!d || d.total <= 0) return '';
+  const partes = [['Parcelas de compras antigas', d.parcelas, 'var(--primaria)'], ['Compras à vista do mês', Math.max(0, d.vista), 'var(--g-claro)'], ['Juros, IOF, anuidade e tarifas', Math.max(0, d.encargos), 'var(--vermelho)']].filter(p => p[1] > 0.004);
+  const tot = partes.reduce((a, p) => a + p[1], 0) || 1;
+  const maior = partes.slice().sort((a, b) => b[1] - a[1])[0];
+  const topo = d.porLoja.slice(0, 5), maxL = topo[0]?.[1] || 1;
+  return `<div class="card g-card"><b class="g-tit">Do que é feita a fatura</b>
+    <p class="g-lead"><b>${Math.round(maior[1] / tot * 100)}%</b> da fatura de ${nomeMesCurto(d.mes)} (${brl(d.total)}) ${maior[0] === 'Parcelas de compras antigas' ? 'são parcelas de compras de meses anteriores' : maior[0] === 'Compras à vista do mês' ? 'são compras à vista do mês' : 'são juros e tarifas'}.</p>
+    <div class="g-stack">${partes.map(([k, v, c]) => `<span style="width:${v / tot * 100}%;background:${c}" title="${esc(k)}: ${brl(v)} (${Math.round(v / tot * 100)}%)"></span>`).join('')}</div>
+    <div class="g-leg">${partes.map(([k, v, c]) => `<div><i style="background:${c}"></i><span>${k}</span><b class="num">${brl(v)}</b><em>${Math.round(v / tot * 100)}%</em></div>`).join('')}</div>
+    <div class="g-sub">Onde mais gastou</div>
+    ${topo.map(([k, v]) => `<div class="g-bar mini" title="${esc(k)}: ${brl(v)}"><span class="rot">${esc(k)}</span><span class="trilho"><span style="width:${v / maxL * 100}%"></span></span><span class="num">${brl(v)}</span></div>`).join('')}
+  </div>`;
+}
+
+function graficoProjecao(d, p) {
+  if (!d || !p?.porMes?.length) return '';
+  const meses = p.porMes.slice(0, 8);
+  const vista = d.mediaVista;
+  const col = meses.map((m, i) => { const real = i === 0 && m.mes === d.mes; const extra = real ? Math.max(0, d.total - m.valor) : vista; return { ...m, real, extra, total: m.valor + extra }; });
+  const maxV = Math.max(...col.map(c => c.total), 1);
+  const passo = maxV > 16000 ? 5000 : maxV > 8000 ? 2000 : maxV > 4000 ? 1000 : 500;
+  const topoY = Math.ceil(maxV * 1.12 / passo) * passo;
+  const W = 640, H = 250, pl = 46, pb = 30, pt = 18, area = W - pl - 8, bw = Math.min(54, area / col.length * 0.62);
+  const y = v => pt + (H - pt - pb) * (1 - v / topoY), x = i => pl + area / col.length * (i + 0.5) - bw / 2;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="g-svg" role="img" aria-label="Projeção das próximas faturas"><defs><pattern id="g-hach" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--g-fundo)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--g-claro)" stroke-width="3"/></pattern></defs>`;
+  for (let v = 0; v <= topoY; v += passo) s += `<line x1="${pl}" x2="${W - 4}" y1="${y(v)}" y2="${y(v)}" class="g-grid"/><text x="${pl - 6}" y="${y(v) + 4}" text-anchor="end" class="g-eixo">${v ? (v / 1000).toLocaleString('pt-BR') + ' mil' : '0'}</text>`;
+  col.forEach((c, i) => {
+    const xi = x(i);
+    s += `<g data-acao="cal-mes" data-mes="${c.mes}" style="cursor:pointer"><title>${nomeMes(c.mes)}: ${brl(c.valor)} em parcelas já compradas${c.real ? ` + ${brl(c.extra)} do resto da fatura (real)` : ` + ${brl(c.extra)} de à vista estimado`}</title>
+      <rect x="${xi - 6}" y="${pt}" width="${bw + 12}" height="${H - pt - pb}" fill="transparent"/>
+      <rect x="${xi}" y="${y(c.valor)}" width="${bw}" height="${Math.max(0, y(0) - y(c.valor))}" rx="2" fill="var(--primaria)"/>
+      ${c.extra > 0 ? `<rect x="${xi}" y="${y(c.total)}" width="${bw}" height="${Math.max(0, y(c.valor) - y(c.total) - 2)}" rx="2" fill="${c.real ? 'var(--g-claro)' : 'url(#g-hach)'}"/>` : ''}
+      <text x="${xi + bw / 2}" y="${y(c.total) - 6}" text-anchor="middle" class="g-val">${brlK(c.total)}</text>
+      <text x="${xi + bw / 2}" y="${H - 10}" text-anchor="middle" class="g-eixo${c.real ? ' forte' : ''}">${nomeMesCurto(c.mes)}${c.real ? ' (atual)' : ''}</text></g>`;
+  });
+  s += '</svg>';
+  const prox = col[1];
+  return `<div class="card g-card"><b class="g-tit">Projeção das próximas faturas</b>
+    <p class="g-lead">${prox ? `Só com o que já foi comprado, a fatura de ${nomeMesCurto(prox.mes)} começa em <b>${brl(prox.valor)}</b>; com o à vista de costume, deve chegar a <b>${brl(prox.total)}</b>.` : 'Sem parcelas para os próximos meses.'}</p>
+    <div class="g-leg h"><div><i style="background:var(--primaria)"></i><span>Parcelas já compradas (certo)</span></div><div><i class="hach"></i><span>À vista pela média${d.nFaturas > 1 ? ` de ${d.nFaturas} faturas` : ' da fatura atual'} (estimado: ${brl(vista)}/mês)</span></div></div>
+    ${s}
+    <div class="fraco" style="font-size:12px">Clique numa coluna para ver as parcelas daquele mês.</div>
+  </div>`;
+}
+
+function graficoCategorias(d) {
+  if (!d || !d.porCat.length) return '';
+  const tot = d.porCat.reduce((a, c) => a + c[1], 0) || 1;
+  let lista = d.porCat.slice(0, 8);
+  if (d.porCat.length > 8) lista = [...d.porCat.slice(0, 7), [`Outras ${d.porCat.length - 7} categorias`, d.porCat.slice(7).reduce((a, c) => a + c[1], 0), true]];
+  const max = Math.max(...lista.map(c => c[1]));
+  return `<div class="card g-card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><b class="g-tit">Com o que gasta no cartão</b>
+      ${E.catCartao ? `<button class="fc on" data-acao="cat-cartao" data-cat="">Filtrando: ${esc(E.catCartao)} <i class="ti ti-x"></i> limpar</button>` : '<span class="fraco" style="font-size:12px">Clique numa categoria para ver só os lançamentos dela</span>'}</div>
+    <p class="g-lead">${esc(lista[0][0])} leva <b>${Math.round(lista[0][1] / tot * 100)}%</b> da fatura de ${nomeMesCurto(d.mes)} (${brl(lista[0][1])}).</p>
+    ${lista.map(([k, v, outras]) => `<button class="g-bar ${E.catCartao === k ? 'on' : ''}" ${outras ? 'disabled' : `data-acao="cat-cartao" data-cat="${esc(k)}"`} title="${esc(k)}: ${brl(v)} (${Math.round(v / tot * 100)}%)"><span class="rot">${esc(k)}</span><span class="trilho"><span style="width:${v / max * 100}%"></span></span><span class="num">${brl(v)}</span><span class="pct">${Math.round(v / tot * 100)}%</span></button>`).join('')}
+  </div>`;
+}
+
+/** D: linha do valor de parcelas em cada fatura; cada ponto abre o detalhe do mês. */
+function graficoLinhaParcelas(p) {
+  const pm = p.porMes;
+  if (pm.length < 2) return '';
+  const W = 1200, H = 220, pl = 30, pr = 30, pt = 34, pb = 30;
+  const maxV = Math.max(...pm.map(m => m.valor)) * 1.1 || 1;
+  const x = i => pl + (W - pl - pr) * (i / (pm.length - 1)), y = v => pt + (H - pt - pb) * (1 - v / maxV);
+  const pts = pm.map((m, i) => `${x(i)},${y(m.valor)}`).join(' L');
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="g-svg g-linha" role="img" aria-label="Valor das parcelas por fatura">
+    <path d="M${pts} L${x(pm.length - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="var(--g-fundo)"/>
+    <line x1="${pl}" x2="${W - pr}" y1="${y(0)}" y2="${y(0)}" class="g-grid"/>
+    <path d="M${pts}" fill="none" stroke="var(--primaria)" stroke-width="2"/>`;
+  pm.forEach((m, i) => {
+    const pico = m.mes === p.mesMaisApertado, on = m.mes === E.calMes;
+    s += `<g data-acao="cal-mes" data-mes="${m.mes}" style="cursor:pointer"><title>${nomeMes(m.mes)}: ${brl(m.valor)} em ${m.quantidade} parcela(s)${m.terminam.length ? ` · ${m.terminam.length} termina(m)` : ''}</title>
+      <rect x="${x(i) - 22}" y="${pt - 18}" width="44" height="${H - pt}" fill="transparent"/>
+      <circle cx="${x(i)}" cy="${y(m.valor)}" r="${on || pico ? 6 : 4.5}" fill="${on ? 'var(--texto)' : pico ? 'var(--amarelo)' : 'var(--primaria)'}" stroke="var(--branco)" stroke-width="2"/>
+      ${m.terminam.length && i > 0 && i < pm.length - 1 ? `<text x="${x(i)}" y="${y(m.valor) - 11}" text-anchor="middle" class="g-eixo">−${m.terminam.length}</text>` : ''}
+      <text x="${x(i)}" y="${H - 9}" text-anchor="middle" class="g-eixo${i === 0 ? ' forte' : ''}">${i === 0 ? 'atual' : nomeMesCurto(m.mes)}</text></g>`;
+  });
+  s += `<text x="${x(0)}" y="${y(pm[0].valor) - 22}" text-anchor="start" class="g-val">${brl(pm[0].valor)}</text>
+    <text x="${x(pm.length - 1) - 4}" y="${y(pm[pm.length - 1].valor) - 10}" text-anchor="end" class="g-val">${brl(pm[pm.length - 1].valor)}</text></svg>`;
+  return s;
+}
+
 function secaoParcelas(p) {
   if (!p || !p.porMes?.length) return '';
   const max = Math.max(...p.porMes.map(m => m.valor)) || 1;
@@ -1158,19 +1300,19 @@ function secaoParcelas(p) {
   const seta = k => ordem === k ? ' <i class="ti ti-arrow-down"></i>' : '';
   return `<div class="card" style="padding:16px;margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
-      <div><b style="font-family:var(--serif);font-size:26px;font-weight:500">Calendário de parcelas</b><div class="suave" style="font-size:13px;margin-top:2px">Quanto das próximas faturas já está comprometido com compras parceladas que o cliente já fez.</div></div>
+      <div><b style="font-family:var(--serif);font-size:26px;font-weight:500">Quando as parcelas acabam</b><div class="suave" style="font-size:13px;margin-top:2px">Quanto das próximas faturas já está comprometido com compras parceladas que o cliente já fez.</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         ${prox ? `<span class="pill" style="background:var(--marca);color:var(--texto);padding:5px 11px">Mais apertado: ${nomeMesCurto(p.mesMaisApertado)} · ${brl(p.porMes.find(m => m.mes === p.mesMaisApertado).valor)}</span>` : ''}
         ${alivio ? `<span class="pill verde" style="padding:5px 11px">Alívio a partir de ${nomeMesCurto(alivio.mes)} (cai para ${brl(alivio.valor)})</span>` : ''}
         ${p.livreDeParcelasEm ? `<span class="pill cinza" style="padding:5px 11px">Sem parcelas a partir de ${nomeMesCurto(p.livreDeParcelasEm)}</span>` : ''}
       </div>
     </div>
-    <div class="cal" role="list">${p.porMes.map((m, i) => `<button class="col ${i === 0 ? 'atual' : ''} ${m.mes === p.mesMaisApertado ? 'pico' : ''} ${m.mes === E.calMes ? 'on' : ''}" data-acao="cal-mes" data-mes="${m.mes}" role="listitem" title="${i === 0 ? 'Fatura atual (já lançada)' : 'Clique para ver o que cai neste mês'}">
+    ${p.porMes.length > 1 ? graficoLinhaParcelas(p) : `<div class="cal" role="list">${p.porMes.map((m, i) => `<button class="col ${i === 0 ? 'atual' : ''} ${m.mes === p.mesMaisApertado ? 'pico' : ''} ${m.mes === E.calMes ? 'on' : ''}" data-acao="cal-mes" data-mes="${m.mes}" role="listitem" title="${i === 0 ? 'Fatura atual (já lançada)' : 'Clique para ver o que cai neste mês'}">
       <span class="fim">${m.terminam.length && i > 0 ? '−' + m.terminam.length + ' acaba' + (m.terminam.length > 1 ? 'm' : '') : ''}</span>
       <span class="val">${brl(m.valor).replace('R$', '').trim()}</span>
       <span class="bar" style="height:${Math.max(2, Math.round(m.valor / max * 130))}px"></span>
-      <span class="mes-l">${i === 0 ? 'atual' : nomeMesCurto(m.mes)}</span></button>`).join('')}</div>
-    <div class="fraco" style="font-size:12px;margin-top:8px">Barra cinza: fatura atual · preta: mês mais apertado · "acaba(m)": parcelas que terminam naquele mês. Considera só compras já feitas; compras novas aumentam esses valores.${renda ? '' : ' Preencha a renda no perfil para ver o peso de cada mês na renda.'}</div>
+      <span class="mes-l">${i === 0 ? 'atual' : nomeMesCurto(m.mes)}</span></button>`).join('')}</div>`}
+    <div class="fraco" style="font-size:12px;margin-top:8px">Linha: quanto de parcelas cai em cada fatura · ponto amarelo: mês mais apertado · "−n": parcelas que terminam naquele mês · clique num ponto para ver as parcelas. Considera só compras já feitas; compras novas aumentam esses valores.${renda ? '' : ' Preencha a renda no perfil para ver o peso de cada mês na renda.'}</div>
     ${sel ? `<div style="margin-top:12px;border:1px solid var(--azul-borda);background:var(--azul-fundo);border-radius:10px;padding:12px">
       <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px"><b>${nomeMes(sel.mes)}: ${brl(sel.valor)} em ${sel.quantidade} parcela(s)${pct(sel.valor)}</b><button class="btn" data-acao="cal-mes" data-mes="" style="padding:3px 9px;font-size:12px">Fechar</button></div>
       ${itensSel.sort((a, b) => b.valorParcela - a.valorParcela).map(i => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;border-top:1px solid var(--azul-borda)"><span>${esc(i.descricao)}${i.portador ? ` <span class="fraco">· ${esc(i.portador)}</span>` : ''} <span class="fraco">· parcela ${i.parcelaAtual + monthsBetween(p.mesFaturaAtual, sel.mes)}/${i.parcelaTotal}</span>${i.fim === sel.mes ? ' <span class="pill verde">última</span>' : ''}</span><b class="num">${brl(i.valorParcela)}</b></div>`).join('')}
@@ -2055,6 +2197,7 @@ document.addEventListener('click', async ev => {
   if (!['menu-sit', 'menu-usuario', 'menu-cls', 'menu-cls-lote'].includes(a) && !el.closest('.menu-sit,.menu-usuario')) fecharMenus();
   switch (a) {
     case 'ir-clientes': location.hash = '#/clientes'; break;
+    case 'cat-cartao': E.catCartao = el.dataset.cat || null; desenharConteudo(); if (E.catCartao) document.querySelector('.fatura-cab')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
     case 'filtro-carteira': E.filtroCarteira = el.dataset.f; desenharClientes(); break;
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;
