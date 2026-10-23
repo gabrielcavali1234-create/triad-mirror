@@ -170,20 +170,19 @@ export function chaveDeGrupo(nome: string): string {
 /** Bloco da planilha onde o lançamento entra (null = não entra). */
 function blocoDe(l: Lancamento): ChaveBloco | null {
     if (l.situacao !== 'incluido') return null;
+    // Compra parcelada vai SEMPRE para "Cartão parcelado" (decisão da consultoria),
+    // classificada ou não; a classificação fixo/variável fica registrada no comentário.
+    if (l.parcelaCartao) return 'cartaoParcelado';
     if (!l.classe || l.classe === 'fora') return null;
-    if (l.parcelaCartao) return l.classe === 'fixo' || l.classe === 'variavel' ? blocoDaParcela(l.classe) : null;
     return BLOCO_DA_CLASSE[l.classe];
 }
 
-/** Parcela de cartão: fixo → "Cartão parcelado" (custo fixo); variável → "Cartão à vista do mês" (custo variável). */
-const blocoDaParcela = (classe: 'fixo' | 'variavel'): ChaveBloco => classe === 'fixo' ? 'cartaoParcelado' : 'cartaoVista';
+const NOME_CLASSE_PARCELA: Record<string, string> = { fixo: 'custo fixo', variavel: 'custo variável' };
 
-/** Linha de uma parcela: no bloco parcelado o prazo tem coluna própria; no à vista vai junto do nome. */
-function linhaDeParcela(bloco: ChaveBloco, nome: string, parcela: string, fim: string, valor: number, nota: string): Linha {
-    const prazo = `${parcela} · até ${mesCurto(fim)}`;
-    return bloco === 'cartaoParcelado'
-        ? { rotulo: nome, prazo, valor, nota }
-        : { rotulo: `${nome} (${parcela})`, valor, nota: nota + '\nParcela classificada como custo variável.' };
+/** Linha de uma parcela no bloco "Cartão parcelado": nome, prazo e valor. */
+function linhaDeParcela(_bloco: ChaveBloco, nome: string, parcela: string, fim: string, valor: number, nota: string, classe?: string | null): Linha {
+    return { rotulo: nome, prazo: `${parcela} · até ${mesCurto(fim)}`, valor,
+        nota: nota + (classe && NOME_CLASSE_PARCELA[classe] ? `\nClassificada pelo analista como ${NOME_CLASSE_PARCELA[classe]}.` : '') };
 }
 
 function linhaDe(l: Lancamento): Linha {
@@ -286,7 +285,7 @@ export async function gerarPlanilhaConsultoria(
     };
 
     const noResumo = lancamentos.filter(l => l.situacao === 'incluido');
-    const pendentes = noResumo.filter(l => !l.classe);
+    const pendentes = noResumo.filter(l => !l.classe && !l.parcelaCartao);   // parcela entra sozinha
     res.aClassificar = pendentes.filter(l => l.origem === 'extrato').length;
     res.aClassificarCartao = pendentes.filter(l => l.origem === 'fatura').length;
 
@@ -327,7 +326,7 @@ export async function gerarPlanilhaConsultoria(
             const b = blocoDe(l);
             if (!b) continue;
             const linha: Linha = l.parcelaCartao ? linhaDeParcela(b, nomeDoLancamento(l), l.parcela!, l.parcelaFim!, l.valor,
-                notaDe(l) + `\n1ª parcela: ${mesCurto(l.parcelaInicio!)} · última: ${mesCurto(l.parcelaFim!)}`) : linhaDe(l);
+                notaDe(l) + `\n1ª parcela: ${mesCurto(l.parcelaInicio!)} · última: ${mesCurto(l.parcelaFim!)}`, l.classe) : linhaDe(l);
             (porBloco[b] ||= []).push(linha);
         }
         for (const [b, ls] of Object.entries(porBloco)) enfileirar(mes, b as ChaveBloco, ls!);
@@ -335,14 +334,13 @@ export async function gerarPlanilhaConsultoria(
     }
 
     // Projeção: cada parcela já comprada vai para TODOS os meses seguintes até a última.
-    // Vai para o mesmo bloco que o analista escolheu (fixo ou variável); sem escolha, não projeta.
+    // Sempre no bloco "Cartão parcelado" (classificada ou não).
     if (opcoes.projetarParcelas !== false && parcelamentos?.itens?.length) {
         const classeDe = new Map(lancamentos.map(l => [l.id, l.classe]));
         const porMes = new Map<string, Partial<Record<ChaveBloco, Linha[]>>>();
         for (const p of parcelamentos.itens) {
             const classe = classeDe.get(p.id);
-            if (classe !== 'fixo' && classe !== 'variavel') continue;
-            const bloco = blocoDaParcela(classe);
+            const bloco: ChaveBloco = 'cartaoParcelado';
             const mesDaFatura = somarMeses(p.inicio, p.parcelaAtual - 1);   // fatura de onde a parcela foi lida
             for (let k = 1; ; k++) {
                 const mes = somarMeses(mesDaFatura, k);
@@ -350,7 +348,7 @@ export async function gerarPlanilhaConsultoria(
                 const doMes = porMes.get(mes) || {};
                 porMes.set(mes, doMes);
                 (doMes[bloco] ||= []).push(linhaDeParcela(bloco, p.descricao, `${p.parcelaAtual + k}/${p.parcelaTotal}`, p.fim, p.valorParcela,
-                    `Projeção: parcela de compra já feita (lida na fatura de ${mesCurto(mesDaFatura)}).\n1ª parcela: ${mesCurto(p.inicio)} · última: ${mesCurto(p.fim)}`));
+                    `Projeção: parcela de compra já feita (lida na fatura de ${mesCurto(mesDaFatura)}).\n1ª parcela: ${mesCurto(p.inicio)} · última: ${mesCurto(p.fim)}`, classe));
             }
         }
         for (const mes of Array.from(porMes.keys()).sort()) {

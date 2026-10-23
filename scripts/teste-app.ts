@@ -134,10 +134,10 @@ async function main() {
         const pl = await api('GET', `/api/app/analises/${aid}/planilha`, undefined, T);
         const resumoPl = JSON.parse(decodeURIComponent(pl.headers.get('x-mirror-resumo') || '{}'));
         ok(pl.status === 200 && (pl.corpo as ArrayBuffer).byteLength > 20000, `planilha da consultoria gerada (${((pl.corpo as ArrayBuffer).byteLength / 1024).toFixed(0)} KB)`);
-        ok(resumoPl.meses?.includes('2026-08') && resumoPl.aClassificar > 0 && resumoPl.aClassificarCartao === vistaC.length - 2 + 2, `resumo da planilha: meses ${resumoPl.meses}, ${resumoPl.aClassificar} da conta e ${resumoPl.aClassificarCartao} do cartão a classificar (à vista e parcelas)`);
-        const itensProj = (clC.corpo.apuracao.resumo.parcelamentos.itens as any[]).filter(i => ['fixo', 'variavel'].includes(classeDe(i.id)));
+        ok(resumoPl.meses?.includes('2026-08') && resumoPl.aClassificar > 0 && resumoPl.aClassificarCartao === vistaC.length - 2, `resumo da planilha: meses ${resumoPl.meses}, ${resumoPl.aClassificar} da conta e ${resumoPl.aClassificarCartao} do cartão a classificar (parcelas não contam: entram sozinhas)`);
+        const itensProj = clC.corpo.apuracao.resumo.parcelamentos.itens as any[];
         const fimEsperado = itensProj.reduce((m: string, i: any) => (i.fim > m ? i.fim : m), '');
-        ok(!!fimEsperado && resumoPl.mesesProjetados?.at(-1) === fimEsperado, `só parcelas classificadas são projetadas, até a última (${resumoPl.mesesProjetados?.at(-1)})`);
+        ok(!!fimEsperado && resumoPl.mesesProjetados?.at(-1) === fimEsperado, `todas as parcelas são projetadas (classificadas ou não), até a última (${resumoPl.mesesProjetados?.at(-1)})`);
         // Confere na planilha: variável no "Cartão à vista do mês" (coluna M), fixa em "Cartão parcelado" (coluna P), pendente fora
         const ExcelJS = (await import('exceljs')).default;
         const wbPl = new ExcelJS.Workbook();
@@ -147,11 +147,11 @@ async function main() {
         const coluna = (ws: any, col: string) => { const v: string[] = []; ws.getColumn(col).eachCell((c: any) => v.push(String(c.value ?? ''))); return v; };
         const nome = (l: any) => l.descricao.replace(/\s+—\s+[^—]+$/, '').trim();
         const wsV = abaDe(parcV);
-        ok(coluna(wsV, 'M').some(v => v === `${nome(parcV)} (${parcV.parcela})`), `parcela variável no bloco "Cartão à vista do mês" (${nome(parcV)} ${parcV.parcela})`);
-        ok(!coluna(wsV, 'P').includes(nome(parcV)), 'parcela variável não aparece em "Cartão parcelado"');
+        ok(coluna(wsV, 'P').includes(nome(parcV)), `parcela classificada como variável vai para "Cartão parcelado" (${nome(parcV)} ${parcV.parcela})`);
+        ok(!coluna(wsV, 'M').some(v => v.startsWith(nome(parcV))), 'nenhuma parcela aparece em "Cartão à vista do mês"');
         ok(coluna(abaDe(parcFixas[0]), 'P').includes(nome(parcFixas[0])), `parcela fixa no bloco "Cartão parcelado" (${nome(parcFixas[0])})`);
         const wsP = abaDe(parcPend), pend = nome(parcPend);
-        ok(!coluna(wsP, 'P').includes(pend) && !coluna(wsP, 'M').some(v => v.startsWith(pend + ' (')), `parcela "a classificar" fica fora da planilha (${pend})`);
+        ok(coluna(wsP, 'P').includes(pend), `parcela ainda sem classificação também entra em "Cartão parcelado" (${pend})`);
         if (process.argv[3]) fs.writeFileSync(process.argv[3], Buffer.from(pl.corpo as ArrayBuffer));
 
         // Ficha do cliente (entrevista guiada): só o nome é obrigatório

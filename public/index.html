@@ -628,8 +628,8 @@ const NOME_CLASSE = Object.fromEntries(CLASSES.map(c => [c[0], c[2]]));
 const classificavel = l => l.situacao === 'incluido';
 /** Parcela de compra no cartão: o analista escolhe só entre custo fixo e custo variável. */
 const CLASSES_PARCELA = [
-  ['fixo', 'ti-lock', 'Custo fixo', 'Vai para "Cartão parcelado" (soma no custo fixo), neste mês e nos seguintes até a última parcela'],
-  ['variavel', 'ti-shopping-cart', 'Custo variável', 'Vai para "Cartão à vista do mês" (soma no custo variável), neste mês e nos seguintes até a última parcela']
+  ['fixo', 'ti-lock', 'Custo fixo', 'Para a sua análise. Na planilha, toda parcela vai para "Cartão parcelado", até a última'],
+  ['variavel', 'ti-shopping-cart', 'Custo variável', 'Para a sua análise. Na planilha, toda parcela vai para "Cartão parcelado", até a última']
 ];
 
 // ════════════════════════════════════════════════════════════════════════
@@ -2134,7 +2134,7 @@ function modalExportar() {
           ${pendConta ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendConta} lançamento(s) da <b>conta</b> ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="conta" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
           ${pendCartao ? `<div class="alerta" style="margin:0 0 8px"><i class="ti ti-alert-triangle"></i><span>${pendCartao} compra(s) do <b>cartão</b> (à vista ou parcelas) ainda estão "a classificar" e não vão para a planilha. <button class="btn" data-acao="ir-pendentes" data-aba="cartao" style="padding:2px 8px;font-size:12px">Classificar agora</button></span></div>` : ''}
           ${!pendConta && !pendCartao && cl.length ? '<div class="pill verde" style="margin-bottom:8px"><i class="ti ti-check"></i> Tudo classificado</div>' : ''}
-          ${temParcelas ? `<div class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-calendar-repeat"></i> As parcelas do cartão entram em <b>todos os meses até a última</b> (${nomeMesCurto(pm[pm.length - 1].mes)}), no bloco que o analista escolheu: custo fixo vai para "Cartão parcelado", custo variável para "Cartão à vista do mês". Meses de outro ano ganham abas novas copiadas do modelo.</div>` : ''}
+          ${temParcelas ? `<div class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-calendar-repeat"></i> As parcelas do cartão entram em <b>todos os meses até a última</b> (${nomeMesCurto(pm[pm.length - 1].mes)}), sempre no bloco "Cartão parcelado", classificadas ou não. Meses de outro ano ganham abas novas copiadas do modelo.</div>` : ''}
           <div id="xGrupos" class="suave" style="font-size:13px;margin-bottom:10px"><i class="ti ti-loader-2"></i> Procurando lançamentos com o mesmo nome…</div>
           <button class="btn primario" data-acao="baixar" data-tipo="consultoria"><i class="ti ti-download"></i> Baixar planilha da consultoria</button></div></div>
       <div id="xResultado"></div>
