@@ -943,6 +943,7 @@ function desenharCliente() {
           <div style="min-width:0"><h1>${esc(cliente.nome)}</h1><div class="suave" style="font-size:13px;margin-top:3px">${info || 'Perfil sem dados complementares'}</div></div></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           ${concluida ? '<span class="pill verde"><i class="ti ti-check"></i> Análise concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}
+          ${documentos.length ? `<button class="btn ${cliente.app_ativo ? '' : 'primario'}" data-acao="app-cliente"><i class="ti ti-device-mobile"></i> App do cliente${cliente.app_ativo ? ' <span class="pill verde" style="margin-left:2px">no ar</span>' : ''}</button>` : ''}
           <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha</button>
         </div>
       </div>
@@ -2170,6 +2171,45 @@ async function carregarGrupos() {
 }
 
 // ─── Modal genérico ──────────────────────────────────────────────────────
+// ─── App do cliente (link pessoal no celular) ────────────────────────────
+const linkApp = () => E.cli?.cliente?.app_token ? `${location.origin}/c/${E.cli.cliente.app_token}` : '';
+function modalApp() {
+  const c = E.cli.cliente, link = linkApp();
+  const publicado = !!c.app_publicado_em;
+  const desatualizado = publicado && E.cli.analise?.atualizado_em && E.cli.analise.atualizado_em > c.app_publicado_em;
+  const fone = String(c.telefone || '').replace(/\D/g, '');
+  const msg = encodeURIComponent(`Olá, ${(c.nome || '').split(' ')[0]}! Este é o seu resumo financeiro no celular: ${link}\nDica: abra e toque em "Adicionar à tela inicial" para ter como app.`);
+  abrirModal(`<h2>App do cliente</h2>
+    <p class="suave" style="margin:0 0 14px">O cliente vê no celular um resumo da análise: como está hoje, as parcelas, o plano e o futuro. Ele só vê a versão que você publicar.</p>
+    ${!publicado ? `<div class="alerta azul" style="display:block;margin-bottom:12px">Ainda não publicado. Revise a análise e o plano e clique em <b>Publicar para o cliente</b>; depois envie o link.</div>
+      <button class="btn primario" data-acao="app-publicar"><i class="ti ti-send"></i> Publicar para o cliente</button>`
+    : `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        ${c.app_ativo ? '<span class="pill verde"><i class="ti ti-circle-check"></i> Link no ar</span>' : '<span class="pill vermelho"><i class="ti ti-circle-off"></i> Link desativado</span>'}
+        <span class="fraco" style="font-size:13px">Publicado em ${new Date(c.app_publicado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></div>
+      ${desatualizado ? '<div class="alerta" style="margin-bottom:10px"><i class="ti ti-refresh-alert"></i><span>A análise mudou depois da última publicação. Publique de novo para o cliente ver os números atuais.</span></div>' : ''}
+      <label style="font-size:12px;font-weight:600;color:var(--fraco)">Link do cliente</label>
+      <div style="display:flex;gap:8px;margin:4px 0 12px"><input id="appLink" readonly value="${esc(link)}" style="flex:1;min-width:0;font-size:13px" onclick="this.select()">
+        <button class="btn" data-acao="app-copiar"><i class="ti ti-copy"></i> Copiar</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn primario" href="https://wa.me/${fone}?text=${msg}" target="_blank" rel="noopener" style="text-decoration:none"><i class="ti ti-brand-whatsapp"></i> Enviar no WhatsApp</a>
+        <a class="btn" href="${esc(link)}" target="_blank" rel="noopener" style="text-decoration:none"><i class="ti ti-eye"></i> Ver como o cliente</a>
+        <button class="btn" data-acao="app-publicar"><i class="ti ti-refresh"></i> Publicar de novo</button>
+      </div>
+      <details style="margin-top:14px"><summary style="cursor:pointer;font-size:13px;font-weight:600">Segurança do link</summary>
+        <p class="fraco" style="font-size:13px;margin:8px 0">Quem tiver o link vê o resumo (sem CPF, documentos ou lançamentos). Se o link foi parar com outra pessoa, gere um novo: o antigo para de funcionar na hora.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-acao="app-novo-link"><i class="ti ti-key"></i> Gerar novo link</button>
+        <button class="btn" data-acao="app-ativo" data-ativo="${c.app_ativo ? '' : '1'}">${c.app_ativo ? '<i class="ti ti-circle-off"></i> Desativar link' : '<i class="ti ti-circle-check"></i> Ativar link'}</button></div>
+      </details>`}
+    <div class="acoes"><button class="btn" data-acao="fechar-modal">Fechar</button></div>`);
+}
+async function acaoApp(rota, corpo, okMsg) {
+  try {
+    const r = await api('POST', `/api/app/clientes/${E.cli.cliente.id}/app/${rota}`, corpo || {});
+    Object.assign(E.cli.cliente, { app_token: r.token, app_ativo: r.ativo, app_publicado_em: r.publicadoEm });
+    desenharCliente(); modalApp(); toast(okMsg);
+  } catch (e) { toast(e.message, true); }
+}
+
 function abrirModal(html) {
   fecharModal();
   const f = document.createElement('div');
@@ -2198,6 +2238,11 @@ document.addEventListener('click', async ev => {
   switch (a) {
     case 'ir-clientes': location.hash = '#/clientes'; break;
     case 'cat-cartao': E.catCartao = el.dataset.cat || null; desenharConteudo(); if (E.catCartao) document.querySelector('.fatura-cab')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
+    case 'app-cliente': modalApp(); break;
+    case 'app-publicar': el.disabled = true; await acaoApp('publicar', null, 'Publicado para o cliente'); break;
+    case 'app-novo-link': if (confirm('Gerar um novo link? O link antigo para de funcionar na hora e você precisa mandar o novo para o cliente.')) await acaoApp('novo-link', null, 'Novo link gerado'); break;
+    case 'app-ativo': await acaoApp('ativo', { ativo: !!el.dataset.ativo }, el.dataset.ativo ? 'Link ativado' : 'Link desativado'); break;
+    case 'app-copiar': { const l = linkApp(); try { await navigator.clipboard.writeText(l); toast('Link copiado'); } catch { $('#appLink')?.select(); document.execCommand?.('copy'); toast('Link copiado'); } break; }
     case 'filtro-carteira': E.filtroCarteira = el.dataset.f; desenharClientes(); break;
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;

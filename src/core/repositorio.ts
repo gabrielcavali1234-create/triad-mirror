@@ -26,6 +26,11 @@ export interface Cliente {
     objetivo?: string | null;
     observacao?: string | null;
     ficha?: Ficha | null;               // entrevista guiada (ver modules/ficha.ts)
+    // App do cliente (link pessoal, ver modules/app-cliente.ts)
+    app_token?: string | null;
+    app_ativo?: boolean | null;
+    app_snapshot?: any | null;          // foto publicada pela consultora
+    app_publicado_em?: string | null;
     criado_por?: string | null;
     criado_por_nome?: string | null;
     criado_em: string;
@@ -82,6 +87,8 @@ export interface ClienteResumo extends Cliente {
 
 export type DadosCliente = Partial<Pick<Cliente, 'nome' | 'cpf' | 'telefone' | 'email' | 'renda_declarada' | 'objetivo' | 'observacao' | 'ficha'>>;
 
+export type DadosApp = Partial<Pick<Cliente, 'app_token' | 'app_ativo' | 'app_snapshot' | 'app_publicado_em'>>;
+
 export interface NovoDocumento {
     analise_id: string;
     tipo: 'extrato' | 'fatura';
@@ -103,6 +110,9 @@ export interface Repositorio {
     criarCliente(dados: DadosCliente, por: Usuario): Promise<Cliente>;
     obterCliente(id: string): Promise<Cliente | null>;
     atualizarCliente(id: string, dados: DadosCliente): Promise<Cliente | null>;
+    /** App do cliente: link, ativo/desativado e a foto publicada. */
+    salvarApp(id: string, dados: DadosApp): Promise<Cliente | null>;
+    obterClientePorToken(token: string): Promise<Cliente | null>;
     analiseAtual(clienteId: string, por: Usuario): Promise<Analise>;
     obterAnalise(id: string): Promise<Analise | null>;
     atualizarAnalise(id: string, dados: { status?: Analise['status']; plano?: Analise['plano'] }): Promise<void>;
@@ -188,6 +198,18 @@ class RepoSupabase implements Repositorio {
     async obterCliente(id: string): Promise<Cliente | null> {
         const { data, error } = await this.db.from('mirror_clientes').select('*').eq('id', id).maybeSingle();
         if (error) this.falhar(error, 'obter cliente');
+        return data as Cliente | null;
+    }
+
+    async salvarApp(id: string, dados: DadosApp): Promise<Cliente | null> {
+        const { data, error } = await this.db.from('mirror_clientes').update(dados).eq('id', id).select('*').maybeSingle();
+        if (error) this.falhar(error, 'salvar app do cliente');
+        return data as Cliente | null;
+    }
+
+    async obterClientePorToken(token: string): Promise<Cliente | null> {
+        const { data, error } = await this.db.from('mirror_clientes').select('id, nome, app_token, app_ativo, app_snapshot, app_publicado_em').eq('app_token', token).maybeSingle();
+        if (error) this.falhar(error, 'obter cliente pelo link');
         return data as Cliente | null;
     }
 
@@ -304,6 +326,13 @@ class RepoMemoria implements Repositorio {
         this.clientes.set(c.id, c); return c;
     }
     async obterCliente(id: string) { return this.clientes.get(id) || null; }
+    async salvarApp(id: string, dados: DadosApp) {
+        const c = this.clientes.get(id); if (!c) return null;
+        Object.assign(c, dados); return c;
+    }
+    async obterClientePorToken(token: string) {
+        return Array.from(this.clientes.values()).find(c => c.app_token === token) || null;
+    }
     async atualizarCliente(id: string, dados: DadosCliente) {
         const c = this.clientes.get(id); if (!c) return null;
         Object.assign(c, limparDadosCliente(dados), { atualizado_em: this.agora() }); return c;

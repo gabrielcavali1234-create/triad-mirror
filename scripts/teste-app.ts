@@ -192,6 +192,29 @@ async function main() {
         const zp = await api('PATCH', `/api/app/analises/${aidP}`, { plano: null }, T);
         ok(zp.status === 200 && (await api('GET', `/api/app/clientes/${cid}`, undefined, T)).corpo.plano.salvo === false, 'plano volta ao sugerido');
 
+        // App do cliente (link pessoal)
+        const semPub = await api('GET', `/api/app/clientes/${cid}/app`, undefined, T);
+        ok(semPub.status === 200 && !semPub.corpo.ativo && !semPub.corpo.token, 'app do cliente começa sem link');
+        const pub = await api('POST', `/api/app/clientes/${cid}/app/publicar`, {}, T);
+        ok(pub.status === 200 && pub.corpo.ativo && /^[A-Za-z0-9_-]{20,}$/.test(pub.corpo.token), 'publicar cria o link e ativa');
+        const tk = pub.corpo.token;
+        const pubR = await api('GET', `/api/publico/app/${tk}`);
+        const foto = pubR.corpo.foto;
+        ok(pubR.status === 200 && foto?.nome === 'Maria' && foto.hoje.renda > 0 && foto.parcelas.porMes.length > 1 && foto.plano.atitudes.length > 0 && foto.futuro.horizontes.length > 0,
+            `rota pública devolve a foto sem login (${foto?.nome}, ${foto?.plano?.atitudes?.length} atitudes, ${foto?.futuro?.horizontes?.length} horizontes)`);
+        ok(!JSON.stringify(foto).includes('000.000.000-00') && !('lancamentos' in foto), 'foto não leva CPF nem lançamentos');
+        ok(foto.futuro.horizontes.some((h: any) => h.rotulo === 'fim das parcelas'), 'futuro vai até o fim das parcelas');
+        const pag = await fetch(`${BASE}/c/${tk}`); const html = await pag.text();
+        ok(pag.status === 200 && html.includes('/api/publico/app/'), 'página do app abre no link /c/…');
+        const man = await (await fetch(`${BASE}/c/${tk}/manifest.webmanifest`)).json();
+        ok(man.start_url === `/c/${tk}` && man.icons?.length === 2, 'manifesto do app aponta para o link do cliente');
+        const novo = await api('POST', `/api/app/clientes/${cid}/app/novo-link`, {}, T);
+        ok(novo.corpo.token !== tk && (await api('GET', `/api/publico/app/${tk}`)).status === 404 && (await api('GET', `/api/publico/app/${novo.corpo.token}`)).status === 200, 'novo link: o antigo para de funcionar');
+        await api('POST', `/api/app/clientes/${cid}/app/ativo`, { ativo: false }, T);
+        ok((await api('GET', `/api/publico/app/${novo.corpo.token}`)).status === 404, 'link desativado não abre');
+        await api('POST', `/api/app/clientes/${cid}/app/ativo`, { ativo: true }, T);
+        ok((await api('GET', '/api/publico/app/curto')).status === 404, 'link inválido é recusado');
+
         // Painel da carteira
         const pn = await api('GET', '/api/app/painel', undefined, T);
         const lp = pn.corpo.linhas?.find((x: any) => x.clienteId === cid);

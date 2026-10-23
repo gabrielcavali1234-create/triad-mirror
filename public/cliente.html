@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0F5A3F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dees">
+<title>Dees — minha vida financeira</title>
+<link rel="apple-touch-icon" href="/img/app-180.png">
+<link rel="icon" href="/img/app-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<script>
+  // manifesto do próprio link (ícone e "Adicionar à tela inicial" abrem neste cliente)
+  (function () { var t = location.pathname.split('/')[2] || ''; var l = document.createElement('link'); l.rel = 'manifest'; l.href = '/c/' + encodeURIComponent(t) + '/manifest.webmanifest'; document.head.appendChild(l); })();
+</script>
+<style>
+:root{
+  --p:#0F5A3F;--p-claro:#7FB59B;--p-fundo:#E5F0EA;--t:#1C2420;--s:#4D5550;--f:#6B736E;--b:#E4E7E4;--b2:#EEF0EE;
+  --v:#B03A2E;--v-fundo:#FBEAE7;--am:#FFE680;--am-t:#3D3300;--bg:#ffffff;--bg2:#F6F7F6;--hero-t:#ffffff;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --p:#5FBF93;--p-claro:#3E8A68;--p-fundo:#17302A;--t:#E6EBE7;--s:#B7C0BA;--f:#8E9892;--b:#2A332E;--b2:#222B26;
+  --v:#F2927F;--v-fundo:#3A201C;--am:#E3C04A;--am-t:#1C1A0E;--bg:#111714;--bg2:#161E1A;--hero-t:#0E1A15;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--t);font-family:var(--sans);-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 18px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.top .marca{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:-.01em}.top .marca span{color:#D9A400}
+.top small{font-size:11.5px;color:var(--f);text-align:right}
+h1{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;margin:4px 0 4px}
+h1 b,.destaque{color:var(--p);font-weight:600}
+.at{font-size:12px;color:var(--f);margin:0 0 16px}
+h2{font-size:13px;font-weight:700;color:var(--s);margin:22px 0 10px;text-transform:none}
+.hero{background:var(--p);color:var(--hero-t);border-radius:18px;padding:18px}
+.hero small{opacity:.85;font-size:13px}.hero .n{display:block;font-family:var(--serif);font-weight:500;font-size:42px;line-height:1.1;margin:4px 0}
+.hero .l{display:flex;justify-content:space-between;font-size:13px;opacity:.92;margin-top:10px;border-top:1px solid color-mix(in srgb,var(--hero-t) 30%,transparent);padding-top:10px}
+.hero.neg{background:var(--v)}
+.alerta{background:var(--v-fundo);color:var(--v);border-radius:14px;padding:12px 14px;font-size:14px;margin:14px 0;line-height:1.4}
+.bar{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:14px;margin:10px 0}
+.bar .tr{grid-column:1/3;height:9px;background:var(--b2);border-radius:5px;overflow:hidden}.bar .tr i{display:block;height:100%;background:var(--p);border-radius:5px}
+.num{font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{font-size:13px;border-radius:20px;padding:6px 12px;background:var(--b2);color:var(--t)}.chip.am{background:var(--am);color:var(--am-t)}.chip.p{background:var(--p-fundo);color:var(--p)}
+.item{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:11px 0;border-bottom:1px solid var(--b)}
+.item em{font-style:normal;color:var(--f);font-size:12px;display:block;margin-top:2px}.item b{white-space:nowrap}
+.at3{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--b);align-items:flex-start}
+.at3 .n{font-family:var(--serif);font-size:30px;line-height:1;color:var(--p);width:20px}.at3 b{font-size:15px}.at3 p{margin:3px 0 0;font-size:13px;color:var(--s);line-height:1.35}
+.at3 .g{margin-left:auto;text-align:right;color:var(--p);font-weight:700;font-size:15px;white-space:nowrap}.at3 .g small{display:block;font-weight:400;font-size:11px;color:var(--f)}
+.datas{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-top:8px}
+.datas div{text-align:center;padding:12px 6px;border:1px solid var(--b);border-radius:14px}
+.datas b{font-family:var(--serif);font-size:21px;font-weight:500;display:block}.datas span{font-size:12px;color:var(--s)}
+.seg{display:flex;background:var(--b2);border-radius:12px;padding:3px;margin:10px 0 14px;overflow-x:auto;gap:2px}
+.seg button{flex:1;min-width:max-content;border:0;background:none;font:inherit;font-size:13px;padding:8px 10px;border-radius:9px;color:var(--s);line-height:1.2}
+.seg button.on{background:var(--bg);color:var(--t);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.comp{display:flex;gap:10px}.comp div{flex:1;border-radius:14px;padding:12px}.comp small{font-size:12px;color:var(--s)}
+.comp b{display:block;font-family:var(--serif);font-size:26px;font-weight:500;margin-top:2px}
+.meta{margin:14px 0}.meta .h{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.meta .tr{height:11px;background:var(--b2);border-radius:6px;margin:8px 0 5px;overflow:hidden}.meta .tr i{display:block;height:100%;background:var(--p);border-radius:6px}
+.meta em{font-style:normal;font-size:12.5px;color:var(--f);line-height:1.35;display:block}
+.nota{font-size:12px;color:var(--f);margin-top:14px;line-height:1.45}
+svg text{font-family:var(--sans)}
+nav[hidden]{display:none!important}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--b);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav .in{display:flex;max-width:520px;width:100%}
+nav button{flex:1;border:0;background:none;font:inherit;font-size:11.5px;color:var(--f);padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--p);font-weight:700}
+.instalar{display:flex;gap:10px;align-items:center;background:var(--p-fundo);color:var(--t);border-radius:14px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.instalar button{border:0;background:var(--p);color:var(--hero-t);font:inherit;font-weight:700;border-radius:9px;padding:7px 11px;white-space:nowrap}
+.instalar .x{background:none;color:var(--f);padding:4px 6px;margin-left:auto}
+.vazio{text-align:center;padding:60px 10px;color:var(--s)}.vazio h1{margin-bottom:10px}
+.carregando{padding:80px 0;text-align:center;color:var(--f)}
+</style>
+</head>
+<body>
+<main id="app"><div class="carregando">Carregando…</div></main>
+<nav id="nav" hidden><div class="in">
+  <button data-aba="hoje"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Hoje</button>
+  <button data-aba="parcelas"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Parcelas</button>
+  <button data-aba="plano"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Plano</button>
+  <button data-aba="futuro"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Futuro</button>
+</div></nav>
+<script>
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MESES_L = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const brl0 = n => (n < 0 ? '−' : '') + 'R$ ' + Math.round(Math.abs(n)).toLocaleString('pt-BR');
+const mc = k => /^\d{4}-\d{2}/.test(k || '') ? MESES[+k.slice(5, 7) - 1] + '/' + k.slice(2, 4) : '—';
+const mLongo = k => /^\d{4}-\d{2}/.test(k || '') ? MESES_L[+k.slice(5, 7) - 1] + ' de ' + k.slice(0, 4) : '';
+const dataBR = iso => { try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return ''; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const ler = k => { try { return localStorage.getItem(k); } catch { return null; } };
+
+const token = decodeURIComponent(location.pathname.split('/')[2] || '');
+let F = null, aba = 'hoje', horizonte = 0, pedidoInstalar = null;
+
+function telaHoje() {
+  const h = F.hoje, max = Math.max(1, ...h.categorias.map(c => c.valor));
+  const per = F.periodo.de ? `Análise de ${mc(F.periodo.de)}${F.periodo.ate && F.periodo.ate !== F.periodo.de ? ' a ' + mc(F.periodo.ate) : ''}` : 'Sua análise';
+  return `<h1>Olá, ${esc(F.nome)}</h1>
+    <p class="at">${per} · atualizada em ${dataBR(F.publicadoEm)}</p>
+    <div class="hero ${h.sobra < 0 ? 'neg' : ''}"><small>${h.sobra >= 0 ? 'Em média, sobram por mês' : 'Em média, falta por mês'}</small>
+      <span class="n num">${brl0(Math.abs(h.sobra))}</span>
+      <div class="l"><span>Entra ${brl0(h.renda)}</span><span>Sai ${brl0(h.custoVida)}</span></div></div>
+    ${h.juros > 0 ? `<div class="alerta"><b>${brl0(h.juros)} foram para juros do cartão</b> no último mês, porque parte da fatura ficou para depois.</div>` : ''}
+    ${h.categorias.length ? `<h2>Para onde vai o seu dinheiro (média por mês)</h2>
+    ${h.categorias.map(c => `<div class="bar"><span>${esc(c.nome)}</span><span class="num">${brl0(c.valor)}</span><span class="tr"><i style="width:${Math.max(2, c.valor / max * 100)}%"></i></span></div>`).join('')}` : ''}`;
+}
+
+function linhaParcelas(pm, pico) {
+  if (pm.length < 2) return '';
+  const W = 320, H = 130, pl = 8, pr = 8, pt = 14, pb = 22, maxV = Math.max(...pm.map(m => m.valor)) * 1.12 || 1;
+  const x = i => pl + (W - pl - pr) * i / (pm.length - 1), y = v => pt + (H - pt - pb) * (1 - v / maxV);
+  const d = pm.map((m, i) => `${x(i).toFixed(1)},${y(m.valor).toFixed(1)}`).join(' L');
+  const rot = [0, Math.floor((pm.length - 1) / 2), pm.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Parcelas por mês">
+    <path d="M${d} L${x(pm.length - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="var(--p-fundo)"/>
+    <path d="M${d}" fill="none" stroke="var(--p)" stroke-width="2.2" stroke-linejoin="round"/>
+    ${pm.map((m, i) => m.mes === pico ? `<circle cx="${x(i)}" cy="${y(m.valor)}" r="5.5" fill="#E3B600" stroke="var(--bg)" stroke-width="2"/>` : '').join('')}
+    ${rot.map(i => `<text x="${x(i)}" y="${H - 5}" font-size="11" fill="var(--f)" text-anchor="${i === 0 ? 'start' : i === pm.length - 1 ? 'end' : 'middle'}">${i === 0 ? 'agora' : mc(pm[i].mes)}</text>`).join('')}
+  </svg>`;
+}
+
+function telaParcelas() {
+  const p = F.parcelas;
+  if (!p.porMes.length || !p.totalRestante) return `<h1>Você não tem parcelas pela frente.</h1><p class="at">Nenhuma compra parcelada nas faturas analisadas.</p>`;
+  return `<h1>${p.proxima ? `A próxima fatura já começa com <b>${brl0(p.proxima.valor)}</b> de parcelas.` : `Faltam <b>${brl0(p.totalRestante)}</b> em parcelas.`}</h1>
+    ${linhaParcelas(p.porMes, p.pico?.mes)}
+    <div class="chips">
+      ${p.pico ? `<span class="chip am">Mês mais apertado: ${mc(p.pico.mes)}</span>` : ''}
+      ${p.alivio ? `<span class="chip p">Alívio a partir de ${mc(p.alivio.mes)}</span>` : ''}
+      ${p.livreEm ? `<span class="chip">Sem parcelas em ${mc(p.livreEm)}</span>` : ''}
+    </div>
+    <h2>Ainda faltam ${brl0(p.totalRestante)} em parcelas</h2>
+    ${p.itens.map(i => `<div class="item"><span>${esc(i.descricao)}<em>parcela ${esc(i.parcela)} · termina em ${mc(i.fim)}</em></span><b class="num">${brl0(i.valor)}</b></div>`).join('')}
+    <p class="nota">Considera só as compras já feitas. Compras novas parceladas aumentam esses valores.</p>`;
+}
+
+function telaPlano() {
+  const pl = F.plano;
+  if (!pl.atitudes.length) return `<h1>Seu plano está sendo preparado.</h1><p class="at">A sua consultora vai combinar as atitudes com você.</p>`;
+  const nomes = ['Uma atitude', 'Duas atitudes', 'Três atitudes', 'Quatro atitudes', 'Cinco atitudes'];
+  return `<h1>${nomes[pl.atitudes.length - 1] || pl.atitudes.length + ' atitudes'} ${pl.atitudes.length > 1 ? 'liberam' : 'libera'} <b>${brl0(pl.economiaMensal)} por mês</b>.</h1>
+    ${pl.atitudes.map((a, i) => `<div class="at3"><span class="n">${i + 1}</span><div><b>${esc(a.titulo)}</b><p>${esc(a.texto)}</p></div><span class="g">+${brl0(a.ganho)}<small>por mês</small></span></div>`).join('')}
+    <h2>Suas datas de liberdade</h2>
+    <div class="datas">${pl.datas.map(d => `<div><b>${d.quando ? mc(d.quando) : '—'}</b><span>${esc(d.titulo)}</span></div>`).join('')}</div>
+    <p class="nota">Combinado com a sua consultora${F.consultora ? ', ' + esc(F.consultora) : ''}. Seguindo o plano, a economia dos primeiros meses vai primeiro para quitar o que estiver em atraso.</p>`;
+}
+
+function telaFuturo() {
+  const fu = F.futuro, hs = fu.horizontes;
+  if (!hs.length) return `<h1>Projeção indisponível.</h1>`;
+  horizonte = Math.min(horizonte, hs.length - 1);
+  const h = hs[horizonte];
+  const pct = m => Math.max(0, Math.min(100, m.valor ? m.atual / m.valor * 100 : 0));
+  return `<h1>Seguindo o plano, em <b>${mc(h.mes)}</b> você terá cerca de <b>${brl0(h.comPlano)}</b> guardados.</h1>
+    <div class="seg" role="tablist">${hs.map((x, i) => `<button class="${i === horizonte ? 'on' : ''}" data-h="${i}">${mc(x.mes)}<br><span style="font-size:11px;font-weight:400">${esc(x.rotulo)}</span></button>`).join('')}</div>
+    <div class="comp">
+      <div style="background:var(--p-fundo)"><small>Com o plano</small><b class="num" style="color:var(--p)">${brl0(h.comPlano)}</b></div>
+      <div style="background:var(--v-fundo)"><small>Continuando assim</small><b class="num" style="color:var(--v)">${brl0(h.continuando)}</b></div>
+    </div>
+    <p class="nota" style="margin-top:8px">"Continuando assim" = os juros do cartão comendo o que você guardou.</p>
+    ${fu.metas.length ? `<h2>Seus objetivos</h2>
+    ${fu.metas.map(m => `<div class="meta"><div class="h"><b>${esc(m.titulo)}</b><span class="num">${brl0(m.valor)}</span></div>
+      <div class="tr"><i style="width:${pct(m)}%"></i></div>
+      <em>${m.atual ? brl0(m.atual) + ' hoje · ' : ''}${m.prazo ? 'prazo ' + mc(m.prazo) + ' · ' : ''}${m.previsao ? 'no ritmo do plano, ' + (m.atual >= m.valor ? 'já alcançado' : 'chega em ' + mc(m.previsao)) : 'acima de 30 anos no ritmo atual'}</em></div>`).join('')}` : ''}
+    <p class="nota">Simulação com rendimento de ${String(fu.taxaAno).replace('.', ',')}% ao ano. Não é promessa de retorno.</p>`;
+}
+
+function barraInstalar() {
+  if (matchMedia('(display-mode: standalone)').matches || navigator.standalone || ler('dees.instalar.fechado')) return '';
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (pedidoInstalar) return `<div class="instalar"><span>Tenha o seu resumo como um app no celular.</span><button data-acao="instalar">Instalar</button><button class="x" data-acao="fechar-instalar" aria-label="Fechar">✕</button></div>`;
+  if (ios) return `<div class="instalar"><span>Para ter como app: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</span><button class="x" data-acao="fechar-instalar" aria-label="Fechar">✕</button></div>`;
+  return '';
+}
+
+function desenhar() {
+  const telas = { hoje: telaHoje, parcelas: telaParcelas, plano: telaPlano, futuro: telaFuturo };
+  $('#app').innerHTML = `<div class="top"><span class="marca">De<span>es</span></span><small>${F.consultora ? 'Sua consultora: ' + esc(F.consultora) : ''}</small></div>${barraInstalar()}${telas[aba]()}`;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.aba === aba));
+  document.title = { hoje: 'Hoje', parcelas: 'Parcelas', plano: 'Plano', futuro: 'Futuro' }[aba] + ' — Dees';
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.aba) { aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
+  else if (b.dataset.h) { horizonte = +b.dataset.h; desenhar(); }
+  else if (b.dataset.acao === 'fechar-instalar') { guardar('dees.instalar.fechado', '1'); desenhar(); }
+  else if (b.dataset.acao === 'instalar' && pedidoInstalar) { pedidoInstalar.prompt(); pedidoInstalar = null; desenhar(); }
+});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; if (F) desenhar(); });
+
+(async function iniciar() {
+  const h = location.hash.slice(1); if (['hoje', 'parcelas', 'plano', 'futuro'].includes(h)) aba = h;
+  try {
+    const r = await fetch('/api/publico/app/' + encodeURIComponent(token), { cache: 'no-store' });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.foto) throw new Error(j.error || 'Não foi possível abrir.');
+    F = j.foto;
+    // horizonte inicial: o "fim das parcelas", se houver
+    const i = F.futuro.horizontes.findIndex(x => x.rotulo === 'fim das parcelas'); horizonte = i >= 0 ? i : 0;
+    $('#nav').hidden = false;
+    desenhar();
+  } catch (e) {
+    $('#app').innerHTML = `<div class="top"><span class="marca">De<span>es</span></span></div><div class="vazio"><h1>Link indisponível</h1><p>${esc(e.message)}</p></div>`;
+  }
+})();
+</script>
+</body>
+</html>

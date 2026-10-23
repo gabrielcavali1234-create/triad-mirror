@@ -20,6 +20,8 @@ import { gerarPlanilhaConsultoria, listarGrupos } from '../modules/planilha';
 import { evolucaoMensal, linhaDoPainel, produtividade } from '../modules/painel';
 import { CATEGORIAS, SUBCATEGORIAS } from '../modules/categorias';
 import { basePlano, normalizarPlano, planoPadrao, simular } from '../modules/plano';
+import { montarFoto } from '../modules/app-cliente';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -68,6 +70,41 @@ router.post('/api/admin/analistas', rota(async (req, res) => {
 }));
 
 // Daqui pra baixo, tudo exige login
+// ─── App do cliente: rota PÚBLICA (link pessoal, sem login) ──────────────
+// Fica antes do exigirLogin. Devolve só a foto publicada pela consultora.
+const acessosPublicos = new Map<string, { n: number; desde: number }>();
+const TOKEN_OK = /^[A-Za-z0-9_-]{20,64}$/;
+router.get('/api/publico/app/:token', rota(async (req, res) => {
+    const ip = String(req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
+    const agora = Date.now(), a = acessosPublicos.get(ip);
+    if (a && agora - a.desde < 60_000) { if (++a.n > 60) return res.status(429).json({ error: 'Muitas tentativas. Espere um minuto.' }); }
+    else acessosPublicos.set(ip, { n: 1, desde: agora });
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    const token = String(req.params.token || '');
+    if (!repo || !TOKEN_OK.test(token)) return res.status(404).json({ error: 'Link inválido.' });
+    const c = await repo.obterClientePorToken(token);
+    if (!c || !c.app_ativo || !c.app_snapshot) return res.status(404).json({ error: 'Este link não está ativo. Fale com a sua consultora.' });
+    res.json({ foto: c.app_snapshot });
+}));
+
+// Página do app e o manifesto (ícone / "Adicionar à tela inicial") de cada link
+const paginaApp = path.join(process.cwd(), 'public', 'cliente.html');
+router.get('/c/:token', (req, res) => {
+    res.setHeader('X-Robots-Tag', 'noindex');
+    if (!fs.existsSync(paginaApp)) return res.status(404).send('App indisponível.');
+    res.sendFile(paginaApp);
+});
+router.get('/c/:token/manifest.webmanifest', (req, res) => {
+    const token = String(req.params.token || '');
+    if (!TOKEN_OK.test(token)) return res.status(404).end();
+    res.type('application/manifest+json').send(JSON.stringify({
+        name: 'Dees — minha vida financeira', short_name: 'Dees', start_url: `/c/${token}`, scope: `/c/${token}`,
+        display: 'standalone', background_color: '#ffffff', theme_color: '#0F5A3F', lang: 'pt-BR',
+        icons: [{ src: '/img/app-192.png', sizes: '192x192', type: 'image/png' }, { src: '/img/app-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
+    }));
+});
+
 router.use('/api/app', exigirLogin);
 
 router.get('/api/app/me', (req, res) => res.json({ usuario: req.usuario, banco: repo?.modo || null }));
@@ -78,6 +115,52 @@ router.get('/api/app/categorias', (_req, res) => res.json({ categorias: CATEGORI
 router.get('/api/app/clientes', rota(async (_req, res) => {
     if (!repo) return semRepo(res);
     res.json({ clientes: await repo.listarClientes() });
+}));
+
+// ─── App do cliente: o que a consultora faz ─────────────────────────────
+const novoToken = () => crypto.randomBytes(18).toString('base64url');
+const estadoApp = (c: Cliente) => ({ token: c.app_token || null, ativo: !!c.app_ativo, publicadoEm: c.app_publicado_em || null, temFoto: !!c.app_snapshot });
+
+router.get('/api/app/clientes/:id/app', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+    if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
+    res.json(estadoApp(c));
+}));
+
+/** Tira a foto da análise atual e publica (cria o link na primeira vez). */
+router.post('/api/app/clientes/:id/app/publicar', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+    if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
+    const analise = await repo.analiseAtual(c.id, req.usuario!);
+    const { docs, apuracao } = await montarApuracao(analise.id);
+    if (!docs.length) return res.status(400).json({ error: 'Envie pelo menos um extrato ou fatura antes de publicar para o cliente.' });
+    const { base, config } = planoDaAnalise(analise, apuracao, c);
+    const foto = montarFoto({
+        cliente: c, consultora: req.usuario?.nome || analise.analista || null, base, plano: config,
+        parcelamentos: (apuracao.resumo as any).parcelamentos,
+        mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia)))
+    });
+    const salvo = await repo.salvarApp(c.id, { app_token: c.app_token || novoToken(), app_ativo: true, app_snapshot: foto, app_publicado_em: foto.publicadoEm });
+    res.json(estadoApp(salvo!));
+}));
+
+/** Novo link: o antigo para de funcionar na hora. */
+router.post('/api/app/clientes/:id/app/novo-link', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+    if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
+    res.json(estadoApp((await repo.salvarApp(c.id, { app_token: novoToken() }))!));
+}));
+
+router.post('/api/app/clientes/:id/app/ativo', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+    if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
+    const ativo = !!req.body?.ativo;
+    if (ativo && !c.app_snapshot) return res.status(400).json({ error: 'Publique para o cliente antes de ativar o link.' });
+    res.json(estadoApp((await repo.salvarApp(c.id, { app_ativo: ativo }))!));
 }));
 
 // ─── Painel: carteira + produtividade ────────────────────────────────────
