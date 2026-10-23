@@ -99,6 +99,31 @@ main{max-width:1320px;margin:0 auto;padding:32px 32px 120px}
 .cab-pagina h1{font-size:44px;margin:0;line-height:1.05}
 .cab-pagina + .card{border:0;border-radius:0}
 .tabela-clientes{width:100%;border-collapse:collapse}
+.painel-grade{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:1100px){.painel-grade{grid-template-columns:1fr}}
+.tabela-clientes.carteira th,.tabela-clientes.carteira td{padding-left:16px}
+.tabela-clientes.carteira td{padding-top:14px;padding-bottom:14px}
+.tabela-clientes.carteira td b{font-size:18px}
+.tabela-clientes .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tabela-ev{width:100%;border-collapse:collapse;font-size:13px}
+.tabela-ev th{text-align:left;font-size:12px;color:var(--fraco);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--borda);white-space:nowrap}
+.tabela-ev td{padding:9px 10px;border-bottom:1px solid var(--borda2);vertical-align:top}
+.tabela-ev .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ev-d{display:block;font-size:11px;font-weight:600}
+.ev-barra{display:block;height:8px;background:var(--borda2);border-radius:2px;margin-top:5px}
+.ev-barra span{display:block;height:100%;background:var(--primaria);border-radius:2px}
+.prod{padding:16px 18px}
+.prod-cab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.prod-cab b{font-family:var(--serif);font-weight:500;font-size:20px}
+.prod-grade{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:14px}
+.prod-grade small{display:block;color:var(--fraco);font-size:12px;margin-bottom:2px}
+.prod-grade b{font-family:var(--serif);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.prod-grade .fraco{display:block;font-size:11px}
+.prod-barras{display:flex;align-items:flex-end;gap:8px;margin-bottom:8px}
+.prod-barras>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:96px}
+.prod-barras .b{width:100%;max-width:26px;background:var(--primaria);border-radius:2px 2px 0 0}
+.prod-barras .v{font-size:11px;font-weight:600;color:var(--suave)}
+.prod-barras .m{font-size:11px;color:var(--fraco);border-top:1px solid var(--borda);width:100%;text-align:center;padding-top:3px}
 .tabela-clientes th{text-align:left;font-size:12px;color:var(--fraco);font-weight:600;padding:12px 16px 12px 0;border-bottom:1px solid var(--borda)}
 .tabela-clientes td{padding:20px 16px 20px 0;border-bottom:1px solid var(--borda);vertical-align:middle}
 .tabela-clientes td b{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.01em}
@@ -752,53 +777,89 @@ function telaLogin() {
 // CLIENTES
 // ════════════════════════════════════════════════════════════════════════
 async function telaClientes() {
-  document.title = 'Clientes — TRIAD Mirror';
-  $('#app').innerHTML = topo() + `<main><div class="carregando">Carregando clientes…</div></main>`;
-  try { E.clientes = (await api('GET', '/api/app/clientes')).clientes; }
+  document.title = 'Painel — TRIAD Mirror';
+  $('#app').innerHTML = topo() + `<main><div class="carregando">Carregando sua carteira…</div></main>`;
+  try { E.painel = await api('GET', '/api/app/painel'); }
   catch (e) { return telaErro(e.message); }
   desenharClientes();
 }
 
-function situacaoCliente(c) {
-  const docs = c.documentos || [];
-  const alertas = [];
-  if (docs.some(d => d.em_rotativo)) alertas.push('<span style="color:var(--vermelho)"><i class="ti ti-alert-triangle"></i> Rotativo no cartão</span>');
-  if (docs.some(d => d.qualidade_ruim)) alertas.push('<span style="color:var(--vermelho)"><i class="ti ti-file-alert"></i> Documento ilegível</span>');
-  const temExt = docs.some(d => d.tipo === 'extrato'), temFat = docs.some(d => d.tipo === 'fatura');
-  if (temExt && !temFat) alertas.push('<span style="color:var(--marrom)"><i class="ti ti-credit-card"></i> Falta fatura</span>');
-  if (temFat && !temExt) alertas.push('<span style="color:var(--marrom)"><i class="ti ti-building-bank"></i> Falta extrato</span>');
-  let pill = '<span class="pill cinza">Novo</span>';
-  if (docs.length) pill = c.analise?.status === 'concluida' ? '<span class="pill verde">Concluída</span>' : '<span class="pill amarelo">Em revisão</span>';
-  return { pill, alertas };
+const USD_BRL = 5.5;   // só para mostrar o custo de IA em reais (aproximado)
+const FILTROS_CARTEIRA = [
+  ['todos', 'Todos'], ['em_revisao', 'Em revisão'], ['concluida', 'Concluídas'], ['alerta', 'Com alerta'], ['classificar', 'A classificar'], ['novo', 'Sem documentos']
+];
+
+function pillStatus(l) {
+  if (l.status === 'novo') return '<span class="pill cinza">Sem documentos</span>';
+  return l.status === 'concluida' ? '<span class="pill verde">Concluída</span>' : '<span class="pill amarelo">Em revisão</span>';
 }
 
 function desenharClientes() {
-  const q = E.buscaClientes.toLowerCase();
-  const lista = (E.clientes || []).filter(c => !q || [c.nome, c.cpf, c.email].some(v => String(v || '').toLowerCase().includes(q)));
-  const emAndamento = (E.clientes || []).filter(c => c.documentos?.length && c.analise?.status !== 'concluida').length;
-  const linhas = lista.map(c => {
-    const s = situacaoCliente(c);
-    const ext = c.documentos.filter(d => d.tipo === 'extrato').length, fat = c.documentos.filter(d => d.tipo === 'fatura').length;
-    const docsTxt = c.documentos.length ? [ext ? `${ext} extrato${ext > 1 ? 's' : ''}` : '', fat ? `${fat} fatura${fat > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') : 'Sem documentos';
-    return `<tr class="linha" tabindex="0" data-acao="abrir-cliente" data-id="${c.id}">
-      <td><div style="display:flex;align-items:center;gap:10px"><span class="ini">${esc(iniciais(c.nome))}</span><div><b>${esc(c.nome)}</b><div class="fraco" style="font-size:12px">${esc(docsTxt)}</div></div></div></td>
-      <td class="suave">${c.analise?.atualizado_em && c.documentos.length ? dataLonga(c.analise.atualizado_em) : '—'}</td>
-      <td>${s.pill}</td>
-      <td style="font-size:13px">${s.alertas.join('<br>') || '<span class="fraco">Nenhum</span>'}</td>
-      <td class="suave" style="font-size:13px">${esc(c.criado_por_nome || '')}</td>
+  const P = E.painel || { linhas: [], produtividade: null };
+  const todas = P.linhas || [];
+  const q = (E.buscaClientes || '').toLowerCase();
+  const f = E.filtroCarteira || 'todos';
+  const passaFiltro = l => f === 'todos' || (f === 'alerta' ? l.alertas.length > 0 : f === 'classificar' ? l.aClassificar > 0 : l.status === f);
+  const lista = todas.filter(l => passaFiltro(l) && (!q || [l.nome, l.cpf, l.email].some(v => String(v || '').toLowerCase().includes(q))));
+  const conta = k => todas.filter(l => k === 'todos' || (k === 'alerta' ? l.alertas.length : k === 'classificar' ? l.aClassificar : l.status === k)).length;
+  const pr = P.produtividade;
+  const comAlerta = todas.filter(l => l.alertas.length).length;
+  const rotativo = todas.filter(l => l.emRotativo).length;
+
+  const linhas = lista.map(l => {
+    const docsTxt = l.status === 'novo' ? 'Sem documentos' : [l.extratos ? `${l.extratos} extrato${l.extratos > 1 ? 's' : ''}` : '', l.faturas ? `${l.faturas} fatura${l.faturas > 1 ? 's' : ''}` : '', l.meses.length ? `${nomeMesCurto(l.meses[0])}${l.meses.length > 1 ? ' a ' + nomeMesCurto(l.meses[l.meses.length - 1]) : ''}` : ''].filter(Boolean).join(' · ');
+    const pct = l.pctRendaEmParcelas;
+    const corPct = pct == null ? '' : pct >= 30 ? 'color:var(--vermelho)' : pct >= 15 ? 'color:var(--marrom)' : 'color:var(--verde)';
+    return `<tr class="linha" tabindex="0" data-acao="abrir-cliente" data-id="${l.clienteId}">
+      <td><div style="display:flex;align-items:center;gap:10px"><span class="ini">${esc(iniciais(l.nome))}</span><div><b>${esc(l.nome)}</b><div class="fraco" style="font-size:12px">${esc(docsTxt)}</div></div></div></td>
+      <td>${pillStatus(l)}</td>
+      <td class="num">${l.renda ? brl(l.renda) + `<div class="fraco" style="font-size:11px">${l.rendaFonte === 'declarada' ? 'declarada' : 'média das entradas'}</div>` : '<span class="fraco">—</span>'}</td>
+      <td class="num">${l.parcelasProximaFatura ? brl(l.parcelasProximaFatura) + (pct != null ? `<div style="font-size:12px;font-weight:600;${corPct}">${Math.round(pct)}% da renda</div>` : '') : '<span class="fraco">—</span>'}</td>
+      <td style="font-size:13px">${l.alertas.length ? l.alertas.map(a => `<div style="color:${/Rotativo|renda|ilegível/.test(a) ? 'var(--vermelho)' : 'var(--marrom)'}"><i class="ti ti-alert-triangle"></i> ${esc(a)}</div>`).join('') : '<span class="fraco">Nenhum</span>'}</td>
+      <td class="num">${l.aClassificar ? `<span class="pill amarelo">${l.aClassificar}</span>` : l.status === 'novo' ? '<span class="fraco">—</span>' : '<span class="pill verde"><i class="ti ti-check"></i></span>'}</td>
+      <td class="suave" style="font-size:13px">${l.atualizadoEm ? dataLonga(l.atualizadoEm) : '—'}</td>
     </tr>`;
   }).join('');
+
+  const maxBar = pr ? Math.max(1, ...pr.porMes.map(m => m.concluidas)) : 1;
+  const prod = pr ? `<div class="card prod">
+      <div class="prod-cab"><b>Produtividade</b><span class="fraco">${nomeMes(pr.mes)}</span></div>
+      <div class="prod-grade">
+        <div><small>Análises concluídas</small><b>${pr.analisesConcluidas}</b></div>
+        <div><small>Clientes novos</small><b>${pr.clientesNovos}</b></div>
+        <div><small>Documentos lidos pela IA</small><b>${pr.documentosLidos}</b></div>
+        <div><small>Custo de IA no mês</small><b>${brl(pr.custoIAMes * USD_BRL)}</b><span class="fraco">US$ ${pr.custoIAMes.toFixed(2)}</span></div>
+        <div><small>Custo médio por cliente</small><b>${pr.custoMedioPorCliente != null ? brl(pr.custoMedioPorCliente * USD_BRL) : '—'}</b></div>
+        <div><small>Leitura da IA por cliente</small><b>${pr.tempoMedioLeituraSeg != null ? (pr.tempoMedioLeituraSeg >= 60 ? Math.round(pr.tempoMedioLeituraSeg / 60) + ' min' : pr.tempoMedioLeituraSeg + ' s') : '—'}</b></div>
+        <div><small>Do cadastro à conclusão</small><b>${pr.diasMedioAteConcluir != null ? String(pr.diasMedioAteConcluir).replace('.', ',') + ' dia(s)' : '—'}</b></div>
+        <div><small>Em andamento agora</small><b>${pr.emAndamento}</b></div>
+      </div>
+      <div class="prod-barras" aria-label="Análises concluídas nos últimos 6 meses">${pr.porMes.map(m => `<div title="${nomeMes(m.mes)}: ${m.concluidas} concluída(s), ${m.documentos} documento(s), US$ ${m.custoIA.toFixed(2)}"><span class="v">${m.concluidas || ''}</span><span class="b" style="height:${Math.round(m.concluidas / maxBar * 52) + 2}px"></span><span class="m">${nomeMesCurto(m.mes)}</span></div>`).join('')}</div>
+      <div class="fraco" style="font-size:12px">Análises concluídas por mês · custo em reais com dólar a R$ ${USD_BRL.toFixed(2).replace('.', ',')}</div>
+    </div>` : '';
+
   $('#app').innerHTML = topo() + `<main>
     <div class="cab-pagina">
-      <div><h1>Seus clientes</h1><div class="suave" style="margin-top:4px">${(E.clientes || []).length} cliente(s) · ${emAndamento} análise(s) em andamento</div></div>
+      <div><h1>Sua carteira</h1><div class="suave" style="margin-top:4px">${todas.length} cliente(s) · ${conta('em_revisao')} em revisão · ${conta('concluida')} concluída(s)</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input type="search" id="bCli" aria-label="Buscar clientes" placeholder="Buscar por nome, CPF ou e-mail…" value="${esc(E.buscaClientes)}" style="width:260px">
+        <input type="search" id="bCli" aria-label="Buscar clientes" placeholder="Buscar por nome, CPF ou e-mail…" value="${esc(E.buscaClientes || '')}" style="width:260px">
         <button class="btn primario" data-acao="novo-cliente"><i class="ti ti-plus"></i> Novo cliente</button>
       </div>
     </div>
-    <div class="card" style="overflow-x:auto">
-      ${E.clientes.length ? `<table class="tabela-clientes"><thead><tr><th>Cliente</th><th>Última atualização</th><th>Situação</th><th>Alertas</th><th>Responsável</th></tr></thead><tbody>${linhas || '<tr><td colspan="5" class="suave" style="padding:24px">Nenhum cliente encontrado para essa busca.</td></tr>'}</tbody></table>`
-      : `<div class="vazio"><h2>Cadastre seu primeiro cliente</h2><p class="suave">Cada cliente tem um perfil próprio, com os extratos, as faturas e a sua análise.</p><button class="btn primario" data-acao="novo-cliente"><i class="ti ti-plus"></i> Novo cliente</button></div>`}
+    ${todas.length ? `<div class="kpis">
+      <div class="kpi"><small>Clientes na carteira</small><b>${todas.length}</b></div>
+      <div class="kpi"><small>Análises em revisão</small><b>${conta('em_revisao')}</b></div>
+      <div class="kpi"><small>Com alerta</small><b style="color:${comAlerta ? 'var(--vermelho)' : 'inherit'}">${comAlerta}</b></div>
+      <div class="kpi"><small>No rotativo do cartão</small><b style="color:${rotativo ? 'var(--vermelho)' : 'inherit'}">${rotativo}</b></div>
+      <div class="kpi"><small>Lançamentos a classificar</small><b>${todas.reduce((a, l) => a + l.aClassificar, 0)}</b></div>
+    </div>` : ''}
+    <div class="painel-grade">
+      <div class="card" style="overflow-x:auto;min-width:0">
+        ${todas.length ? `<div class="filtros" style="padding:14px 16px 0">${FILTROS_CARTEIRA.map(([k, t]) => `<button class="fc ${f === k ? 'on' : ''}" data-acao="filtro-carteira" data-f="${k}">${t} <span class="fraco">${conta(k)}</span></button>`).join('')}</div>
+        <table class="tabela-clientes carteira"><thead><tr><th>Cliente</th><th>Situação</th><th>Renda</th><th>Parcelas na próx. fatura</th><th>Alertas</th><th>A classificar</th><th>Atualizado</th></tr></thead><tbody>${linhas || '<tr><td colspan="7" class="suave" style="padding:24px">Nenhum cliente encontrado.</td></tr>'}</tbody></table>`
+        : `<div class="vazio"><h2>Cadastre seu primeiro cliente</h2><p class="suave">Cada cliente tem um perfil próprio, com os extratos, as faturas e a sua análise.</p><button class="btn primario" data-acao="novo-cliente"><i class="ti ti-plus"></i> Novo cliente</button></div>`}
+      </div>
+      ${todas.length ? prod : ''}
     </div></main>`;
   const b = $('#bCli');
   if (b) { b.oninput = () => { E.buscaClientes = b.value; const p = b.selectionStart; desenharClientes(); const n = $('#bCli'); n.focus(); n.setSelectionRange(p, p); }; }
@@ -1131,6 +1192,53 @@ function secaoParcelas(p) {
 const monthsBetween = (a, b) => { const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number); return (yb - ya) * 12 + (mb - ma); };
 
 // ─── ABA TUDO JUNTO ──────────────────────────────────────────────────────
+// ─── Evolução mês a mês (mesma conta do servidor: modules/painel.ts) ─────
+function evolucaoMensal(ls) {
+  const meses = new Map();
+  for (const l of ls) {
+    if (!/^\d{4}-\d{2}$/.test(l.mesReferencia || '')) continue;
+    if (!meses.has(l.mesReferencia)) meses.set(l.mesReferencia, { mes: l.mesReferencia, entradas: 0, saidasConta: 0, gastosCartao: 0, parcelas: 0, encargos: 0, temExtrato: false, temFatura: false });
+    const m = meses.get(l.mesReferencia);
+    if (l.origem === 'extrato') m.temExtrato = true; else m.temFatura = true;
+    if (l.situacao !== 'incluido') continue;
+    const sinal = l.direcao === 'saida' ? 1 : -1;
+    if (l.origem === 'extrato') { if (l.direcao === 'entrada') m.entradas += l.valor; else m.saidasConta += l.valor; }
+    else { m.gastosCartao += sinal * l.valor; if (l.parcelaCartao) m.parcelas += l.valor; if (/Encargos|IOF/i.test(l.categoria)) m.encargos += sinal * l.valor; }
+  }
+  return [...meses.values()].sort((a, b) => a.mes.localeCompare(b.mes)).map(m => ({ ...m, sobra: m.temExtrato ? m.entradas - m.saidasConta : null }));
+}
+
+function cardEvolucao(ls) {
+  const ev = evolucaoMensal(ls);
+  if (!ev.length) return '';
+  // seta comparando com o mês anterior; verde = melhorou (gasto caiu / entrada ou sobra subiu)
+  const delta = (atual, ant, maisEhBom) => {
+    if (ant == null || atual == null || !ant) return '';
+    const d = (atual - ant) / Math.abs(ant) * 100;
+    if (Math.abs(d) < 1) return '<span class="ev-d fraco">=</span>';
+    const bom = maisEhBom ? d > 0 : d < 0;
+    return `<span class="ev-d" style="color:${bom ? 'var(--verde)' : 'var(--vermelho)'}">${d > 0 ? '▲' : '▼'} ${Math.abs(Math.round(d))}%</span>`;
+  };
+  const cel = (m, i, campo, maisEhBom, so) => {
+    if (so === 'extrato' && !m.temExtrato || so === 'fatura' && !m.temFatura) return '<td class="num fraco">—</td>';
+    const ant = i > 0 && (so === 'extrato' ? ev[i - 1].temExtrato : ev[i - 1].temFatura) ? ev[i - 1][campo] : null;
+    return `<td class="num">${brl(m[campo])}${delta(m[campo], ant, maisEhBom)}</td>`;
+  };
+  const maxGasto = Math.max(1, ...ev.map(m => m.saidasConta + m.gastosCartao));
+  return `<div class="card" style="padding:16px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <b style="font-family:var(--serif);font-size:26px;font-weight:500">Evolução mês a mês</b>
+      <span class="fraco" style="font-size:12px">Cartão no mês do vencimento · setas comparam com o mês anterior</span></div>
+    <div style="overflow-x:auto"><table class="tabela-ev"><thead><tr><th>Mês</th><th class="num">Entradas</th><th class="num">Saídas da conta</th><th class="num">Gastos no cartão</th><th class="num">Parcelas</th><th class="num">Juros e encargos</th><th class="num">Sobra da conta</th><th style="min-width:110px">Gasto total</th></tr></thead><tbody>
+    ${ev.map((m, i) => `<tr><td><b>${nomeMesCurto(m.mes)}</b></td>
+      ${cel(m, i, 'entradas', true, 'extrato')}${cel(m, i, 'saidasConta', false, 'extrato')}${cel(m, i, 'gastosCartao', false, 'fatura')}${cel(m, i, 'parcelas', false, 'fatura')}${cel(m, i, 'encargos', false, 'fatura')}
+      <td class="num" style="font-weight:600;color:${m.sobra == null ? 'inherit' : m.sobra >= 0 ? 'var(--verde)' : 'var(--vermelho)'}">${m.sobra == null ? '<span class="fraco">—</span>' : brl(m.sobra)}${delta(m.sobra, i > 0 ? ev[i - 1].sobra : null, true)}</td>
+      <td><span class="ev-barra" title="${brl(m.saidasConta + m.gastosCartao)}"><span style="width:${Math.round((m.saidasConta + m.gastosCartao) / maxGasto * 100)}%"></span></span></td></tr>`).join('')}
+    </tbody></table></div>
+    ${ev.length === 1 ? '<div class="fraco" style="font-size:12px;margin-top:8px">Com mais meses de extrato e fatura, a comparação aparece aqui.</div>' : ''}
+  </div>`;
+}
+
 function abaTudo() {
   const r = E.cli.apuracao.resumo;
   const todos = lancs();
@@ -1152,6 +1260,7 @@ function abaTudo() {
       <div class="alterna"><button class="${E.modoMix === 'cat' ? 'on' : ''}" data-acao="mix" data-modo="cat">Categoria</button><button class="${E.modoMix === 'sub' ? 'on' : ''}" data-acao="mix" data-modo="sub">Subcategoria</button></div></div>
     ${mix.itens.map(([k, v]) => `<div class="barra-cat"><span>${esc(k)}</span><span class="trilho"><span style="width:${Math.max(1, Math.round(Math.max(0, v) / max * 100))}%;background:${corDe(k)}"></span></span><span class="num" style="text-align:right">${brl(v)}</span><span class="pct fraco num" style="text-align:right">${mix.tot > 0 ? Math.round(v / mix.tot * 100) : 0}%</span></div>`).join('') || '<p class="fraco">Sem gastos no resumo.</p>'}
   </div>
+  ${cardEvolucao(todos)}
   ${barraLote()}
   ${meses.map(g => grupoMes(g, vis => {
     const conta = vis.filter(l => l.origem === 'extrato'), cartao = vis.filter(l => l.origem === 'fatura');
@@ -1946,6 +2055,7 @@ document.addEventListener('click', async ev => {
   if (!['menu-sit', 'menu-usuario', 'menu-cls', 'menu-cls-lote'].includes(a) && !el.closest('.menu-sit,.menu-usuario')) fecharMenus();
   switch (a) {
     case 'ir-clientes': location.hash = '#/clientes'; break;
+    case 'filtro-carteira': E.filtroCarteira = el.dataset.f; desenharClientes(); break;
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;
     case 'editar-perfil': location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
@@ -1971,7 +2081,7 @@ document.addEventListener('click', async ev => {
       E.planoEdit.cortes.push({ categoria: livre.categoria, percentual: 20, titulo: tituloDoCorte(livre.categoria), texto: '' });
       desenharConteudo(); break;
     }
-    case 'sair': salvarSessao(null); E.cli = null; E.clientes = null; location.hash = '#/login'; break;
+    case 'sair': salvarSessao(null); E.cli = null; E.clientes = null; E.painel = null; location.hash = '#/login'; break;
     case 'aba': E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
     case 'mes': E.mesSel = el.dataset.mes || null; desenharConteudo(); break;
     case 'mix': E.modoMix = el.dataset.modo; desenharConteudo(); break;

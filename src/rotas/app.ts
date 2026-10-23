@@ -17,6 +17,7 @@ import { finalizarFatura, moduloFatura } from '../modules/fatura';
 import { AjusteLancamento, consolidar } from '../modules/consolidacao';
 import { gerarExcel } from '../modules/excel';
 import { gerarPlanilhaConsultoria, listarGrupos } from '../modules/planilha';
+import { evolucaoMensal, linhaDoPainel, produtividade } from '../modules/painel';
 import { CATEGORIAS, SUBCATEGORIAS } from '../modules/categorias';
 import { basePlano, normalizarPlano, planoPadrao, simular } from '../modules/plano';
 
@@ -77,6 +78,21 @@ router.get('/api/app/categorias', (_req, res) => res.json({ categorias: CATEGORI
 router.get('/api/app/clientes', rota(async (_req, res) => {
     if (!repo) return semRepo(res);
     res.json({ clientes: await repo.listarClientes() });
+}));
+
+// ─── Painel: carteira + produtividade ────────────────────────────────────
+router.get('/api/app/painel', rota(async (_req, res) => {
+    if (!repo) return semRepo(res);
+    const clientes = await repo.listarClientes();
+    const todosDocs: { criado_em: string; custo_usd?: number | null }[] = [];
+    const linhas = await Promise.all(clientes.map(async c => {
+        const extra = { cpf: c.cpf || null, email: c.email || null };
+        if (!c.analise || !c.documentos?.length) return { ...linhaDoPainel(c, c.analise || null, [], null), ...extra };
+        const { docs, apuracao } = await montarApuracao(c.analise.id);
+        todosDocs.push(...docs);
+        return { ...linhaDoPainel(c, c.analise, docs, apuracao), ...extra };
+    }));
+    res.json({ linhas, produtividade: produtividade(linhas, todosDocs) });
 }));
 
 router.post('/api/app/clientes', rota(async (req, res) => {
@@ -142,7 +158,7 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
     if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
     const analise = await repo.analiseAtual(cliente.id, req.usuario!);
     const { docs, apuracao } = await montarApuracao(analise.id);
-    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao, cliente) });
+    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao, cliente), evolucao: evolucaoMensal(apuracao.lancamentos) });
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────
@@ -213,7 +229,8 @@ if (MODO_DEV) {
         if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
         const analise = await repo.analiseAtual(cliente.id, req.usuario!);
         const resultado = tipo === 'fatura' ? finalizarFatura(req.body.resultado) : req.body.resultado;
-        const doc = await repo.inserirDocumento({ analise_id: analise.id, tipo: tipo as any, nome_arquivo: req.body.nome || 'importado.json', resultado });
+        const doc = await repo.inserirDocumento({ analise_id: analise.id, tipo: tipo as any, nome_arquivo: req.body.nome || 'importado.json', resultado,
+            custo_usd: Number(req.body.custo_usd) || 0, tempo_processamento: Number(req.body.tempo) || 0 });
         res.status(201).json({ documentoId: doc.id });
     }));
 }

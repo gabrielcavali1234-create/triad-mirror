@@ -51,6 +51,7 @@ export interface Documento {
     resultado: any;
     qualidade_ruim: boolean;
     custo_usd?: number;
+    tempo_processamento?: number | null;
     criado_em: string;
 }
 
@@ -224,7 +225,7 @@ class RepoSupabase implements Repositorio {
 
     async listarDocumentos(analiseId: string): Promise<Documento[]> {
         const { data, error } = await this.db.from('mirror_documentos')
-            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, criado_em')
+            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em')
             .eq('analise_id', analiseId).order('criado_em', { ascending: true });
         if (error) this.falhar(error, 'listar documentos');
         return (data || []) as Documento[];
@@ -232,7 +233,7 @@ class RepoSupabase implements Repositorio {
 
     async obterDocumento(id: string): Promise<Documento | null> {
         const { data, error } = await this.db.from('mirror_documentos')
-            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, criado_em').eq('id', id).maybeSingle();
+            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em').eq('id', id).maybeSingle();
         if (error) this.falhar(error, 'obter documento');
         return data as Documento | null;
     }
@@ -242,7 +243,7 @@ class RepoSupabase implements Repositorio {
             ...d,
             banco: d.resultado?.banco || null,
             qualidade_ruim: !!d.resultado?.qualidadeRuim
-        }).select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, criado_em').single();
+        }).select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em').single();
         if (error) this.falhar(error, 'salvar documento');
         return data as Documento;
     }
@@ -329,7 +330,7 @@ class RepoMemoria implements Repositorio {
         const doc: Documento = {
             id: crypto.randomUUID(), analise_id: d.analise_id, tipo: d.tipo, nome_arquivo: d.nome_arquivo || null,
             banco: d.resultado?.banco || null, resultado: d.resultado, qualidade_ruim: !!d.resultado?.qualidadeRuim,
-            custo_usd: d.custo_usd || 0, criado_em: this.agora()
+            custo_usd: d.custo_usd || 0, tempo_processamento: d.tempo_processamento || 0, criado_em: this.agora()
         };
         this.documentos.set(doc.id, doc);
         const a = this.analises.get(d.analise_id); if (a) { a.atualizado_em = this.agora(); this.tocarCliente(a.cliente_id); }

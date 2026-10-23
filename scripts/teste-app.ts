@@ -192,6 +192,15 @@ async function main() {
         const zp = await api('PATCH', `/api/app/analises/${aidP}`, { plano: null }, T);
         ok(zp.status === 200 && (await api('GET', `/api/app/clientes/${cid}`, undefined, T)).corpo.plano.salvo === false, 'plano volta ao sugerido');
 
+        // Painel da carteira
+        const pn = await api('GET', '/api/app/painel', undefined, T);
+        const lp = pn.corpo.linhas?.find((x: any) => x.clienteId === cid);
+        ok(pn.status === 200 && lp && lp.status === 'em_revisao' && lp.emRotativo && lp.renda === 9000, `painel: cliente em revisão, rotativo, renda declarada (${lp?.renda})`);
+        ok(lp.pctRendaEmParcelas > 0 && lp.meses.length >= 2 && lp.alertas.includes('Rotativo no cartão'), `painel: ${Math.round(lp.pctRendaEmParcelas)}% da renda em parcelas, ${lp.meses.length} meses`);
+        ok(pn.corpo.produtividade && typeof pn.corpo.produtividade.documentosLidos === 'number' && pn.corpo.produtividade.porMes.length === 6, 'painel: produtividade com os últimos 6 meses');
+        const cli = await api('GET', `/api/app/clientes/${cid}`, undefined, T);
+        ok(Array.isArray(cli.corpo.evolucao) && cli.corpo.evolucao.some((m: any) => m.temFatura && m.parcelas > 0), 'evolução mês a mês com parcelas do cartão');
+
         // Concluir análise
         ok((await api('PATCH', `/api/app/analises/${aid}`, { status: 'concluida' }, T)).status === 200, 'análise concluída');
 
