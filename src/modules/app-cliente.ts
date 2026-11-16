@@ -30,6 +30,7 @@ export interface MesCliente {
     categorias: Record<string, number>; // gasto por categoria (top 10)
     comFatura: boolean;                 // tem a fatura do mês detalhada (só se compara categoria entre meses do mesmo tipo)
     rendaEstimada?: boolean;            // sem extrato: entrou = renda declarada
+    semRenda?: boolean;                 // sem extrato e sem renda na ficha: só mostra o que gastou
 }
 
 export type TipoEvento = 'conquista' | 'alerta' | 'atencao';
@@ -89,7 +90,7 @@ const mesesAte = (hoje: string, mes: string) => {
 };
 
 export function montarFoto(entrada: {
-    cliente: { nome: string; ficha?: Ficha | null };
+    cliente: { nome: string; ficha?: Ficha | null; renda_declarada?: number | null };
     consultora?: string | null;
     base: BasePlano;
     plano: PlanoConfig;
@@ -167,7 +168,8 @@ export function montarFoto(entrada: {
 
     const mesesAn = entrada.mesesAnalise.filter(m => /^\d{4}-\d{2}$/.test(m)).sort();
     // ── v2: mês a mês, nota, linha do tempo e histórico
-    const meses = entrada.lancamentos ? mesesDoCliente(entrada.lancamentos, base.rendaMensal) : [];
+    const rendaInformada = Number(entrada.cliente.renda_declarada) > 0 ? Number(entrada.cliente.renda_declarada) : base.rendaMensal;
+    const meses = entrada.lancamentos ? mesesDoCliente(entrada.lancamentos, rendaInformada) : [];
     const atual = meses[meses.length - 1] || null;
     const anterior = entrada.anterior || null;
     const notaAnterior = anterior?.historico?.length ? anterior.historico[anterior.historico.length - 1].nota : null;
@@ -248,7 +250,7 @@ export function mesesDoCliente(lancamentos: Lancamento[], rendaDeclarada = 0): M
             mes, entrou: arred(entrou), gastou: arred(gastou), sobra: arred(entrou - gastou), juros: arred(Math.max(0, juros)),
             categorias: Object.fromEntries(top.map(([k, v]) => [k, arred(v)])),
             comFatura: mesesFatura.has(mes),
-            ...(semExtrato ? { rendaEstimada: true } : {})
+            ...(semExtrato ? (rendaDeclarada > 0 ? { rendaEstimada: true } : { semRenda: true }) : {})
         };
     });
 }
@@ -328,16 +330,16 @@ export function linhaDoTempo(e: {
     if (atual) {
         if (atual.juros > 0.5) novos.push({ tipo: 'alerta', titulo: `${brl0(atual.juros)} foram para juros do cartão`, texto: 'Pagar a fatura inteira evita esse custo.', mes: atual.mes });
         if (atual.sobra < 0) novos.push({ tipo: 'alerta', titulo: `O mês fechou com ${brl0(atual.sobra)} a menos`, texto: 'Gastou mais do que entrou.', mes: atual.mes });
-        // categorias que mudaram muito contra a média dos meses anteriores
-        const ant = ms.slice(0, -1).filter(m => m.comFatura === atual.comFatura);
-        if (ant.length) {
+        // categorias que mudaram muito contra o MÊS PASSADO (só se os dois meses forem do mesmo tipo)
+        const pa = ms.length > 1 ? ms[ms.length - 2] : null;
+        if (pa && pa.comFatura === atual.comFatura) {
             const mudancas = Object.entries(atual.categorias).map(([c, v]) => {
-                const media = ant.reduce((s, m) => s + (m.categorias[c] || 0), 0) / ant.length;
-                return { c, v, media, d: media > 0 ? (v - media) / media : 0 };
-            }).filter(x => x.media >= 100 && Math.abs(x.v - x.media) >= 100 && Math.abs(x.d) >= 0.3).sort((x, y) => Math.abs(y.v - y.media) - Math.abs(x.v - x.media)).slice(0, 2);
+                const antes = pa.categorias[c] || 0;
+                return { c, v, antes, d: antes > 0 ? (v - antes) / antes : 0 };
+            }).filter(x => x.antes >= 100 && Math.abs(x.v - x.antes) >= 100 && Math.abs(x.d) >= 0.3).sort((x, y) => Math.abs(y.v - y.antes) - Math.abs(x.v - x.antes)).slice(0, 2);
             for (const x of mudancas) novos.push(x.d > 0
-                ? { tipo: 'atencao', titulo: `Gasto com ${x.c.toLowerCase()} subiu ${Math.round(x.d * 100)}%`, texto: `${brl0(x.v)} em ${nomeMes(atual.mes)}, contra ${brl0(x.media)} de média.`, mes: atual.mes }
-                : { tipo: 'conquista', titulo: `Gasto com ${x.c.toLowerCase()} caiu ${Math.round(-x.d * 100)}%`, texto: `${brl0(x.v)} em ${nomeMes(atual.mes)}, contra ${brl0(x.media)} de média.`, mes: atual.mes });
+                ? { tipo: 'atencao', titulo: `Gasto com ${x.c.toLowerCase()} subiu ${Math.round(x.d * 100)}%`, texto: `${brl0(x.v)} em ${nomeMes(atual.mes)}, contra ${brl0(x.antes)} em ${nomeMes(pa.mes)}.`, mes: atual.mes }
+                : { tipo: 'conquista', titulo: `Gasto com ${x.c.toLowerCase()} caiu ${Math.round(-x.d * 100)}%`, texto: `${brl0(x.v)} em ${nomeMes(atual.mes)}, contra ${brl0(x.antes)} em ${nomeMes(pa.mes)}.`, mes: atual.mes });
         }
     }
     // parcelas

@@ -73,6 +73,12 @@ h2{font-size:13px;font-weight:700;color:var(--s);margin:22px 0 10px;text-transfo
 .tile{border:1px solid var(--b);border-radius:14px;padding:12px 12px 8px}.tile small{font-size:12px;color:var(--s)}
 .tile b{display:block;font-family:var(--serif);font-size:24px;font-weight:500;margin:2px 0}.tile em{display:block;font-style:normal;font-size:11.5px;font-weight:600;margin-bottom:4px}
 .up{color:var(--v)}.dn{color:var(--p)}.neu{color:var(--f)}
+.cat{padding:10px 0;border-bottom:1px solid var(--b)}.cat:last-of-type{border-bottom:0}
+.cat-l{display:flex;justify-content:space-between;gap:10px;font-size:14px}.cat-l em{display:block;font-style:normal;font-size:12px;color:var(--f);margin-top:2px}
+.cat-l b{white-space:nowrap}.cat-l small{font-size:12px;font-weight:700}
+.cat .z{display:block;position:relative;height:8px;background:var(--b2);border-radius:3px;margin-top:7px}
+.cat .z:before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--f)}
+.cat .z i{position:absolute;top:0;bottom:0;border-radius:3px}
 .score{display:flex;gap:14px;align-items:center}.score .sn{font-family:var(--serif);font-size:54px;line-height:1;color:var(--p)}.score .sn small{font-size:19px;color:var(--f)}
 .pil{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.pil div{border-radius:12px;padding:10px;font-size:12.5px;line-height:1.35;color:var(--t)}.pil b{display:block;font-size:14px;margin-bottom:2px}
 .ev{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--b);font-size:14px;line-height:1.35}.ev:last-of-type{border-bottom:0}
@@ -116,15 +122,16 @@ const ler = k => { try { return localStorage.getItem(k); } catch { return null; 
 const token = decodeURIComponent(location.pathname.split('/')[2] || '');
 let F = null, aba = 'hoje', horizonte = 0, pedidoInstalar = null;
 
-// ─── Hoje (v2): sobra, nota, quadros, mês a mês, linha do tempo, comparativos, objetivos ──
-let modoGrafico = 'gastos', modoComp = 'anterior';
-const media = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-const deltaTxt = (v, m, maisEhBom, fmt) => {
-  if (m == null) return '<em class="neu">&nbsp;</em>';
-  const d = v - m, p = m ? Math.round(d / Math.abs(m) * 100) : 0;
-  if (Math.abs(d) < 1 || (m && Math.abs(p) < 1)) return '<em class="neu">= igual à média</em>';
+// ─── Hoje (v2): tudo comparado com o MÊS PASSADO (mais fácil de ler que "média") ──
+let modoGrafico = 'gastos';
+const nomeCurto = k => mLongo(k).split(' ')[0];                    // "julho"
+/** "▲ R$ 400 a mais que em julho" / "▼ 6% a menos…" — verde quando é bom para o cliente. */
+const deltaMes = (v, ant, mesAnt, maisEhBom) => {
+  if (ant == null) return '<em class="neu">&nbsp;</em>';
+  const d = v - ant;
+  if (Math.abs(d) < 1) return `<em class="neu">= igual a ${nomeCurto(mesAnt)}</em>`;
   const bom = maisEhBom ? d > 0 : d < 0;
-  return `<em class="${bom ? 'dn' : 'up'}">${d > 0 ? '▲' : '▼'} ${fmt ? fmt(Math.abs(d)) : Math.abs(p) + '%'} ${d > 0 ? 'acima' : 'abaixo'} da média</em>`;
+  return `<em class="${bom ? 'dn' : 'up'}">${d > 0 ? '▲' : '▼'} ${brl0(Math.abs(d))} a ${d > 0 ? 'mais' : 'menos'} que em ${nomeCurto(mesAnt)}</em>`;
 };
 function sparkSVG(vals, cor) {
   if (vals.length < 2) return '';
@@ -136,64 +143,72 @@ function graficoMeses(ms) {
   const lbl = (i, txt, last) => `<text x="${gx(i) + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${last ? 'var(--t)' : 'var(--f)'}" font-weight="${last ? 700 : 400}">${txt}</text>`;
   let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${modoGrafico === 'gastos' ? 'Gastos por mês' : 'Sobra por mês'}">`;
   if (modoGrafico === 'gastos') {
-    const renda = media(ms.map(m => m.entrou)) || 0, maxV = Math.max(renda, ...ms.map(m => m.gastou)) * 1.12 || 1, y = v => pt + (H - pt - pb) * (1 - v / maxV);
+    const renda = ms[ms.length - 1].entrou, maxV = Math.max(renda, ...ms.map(m => m.gastou)) * 1.12 || 1, y = v => pt + (H - pt - pb) * (1 - v / maxV);
     ms.forEach((m, i) => { const last = i === n - 1, h = y(0) - y(m.gastou);
       s += `<g><title>${mLongo(m.mes)}: gastou ${brl0(m.gastou)}</title><rect x="${gx(i)}" y="${y(m.gastou)}" width="${bw}" height="${Math.max(0, h)}" rx="4" fill="${last ? 'var(--p)' : 'var(--p-claro)'}"/>
       ${h > 18 ? `<text x="${gx(i) + bw / 2}" y="${y(m.gastou) + 14}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${last ? 'var(--hero-t)' : 'var(--t)'}">${(m.gastou / 1000).toFixed(1).replace('.', ',')}</text>` : ''}</g>${lbl(i, mc(m.mes).split('/')[0], last)}`; });
-    if (renda) s += `<line x1="0" x2="${W}" y1="${y(renda)}" y2="${y(renda)}" stroke="var(--p)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${W - 2}" y="${y(renda) - 5}" text-anchor="end" font-size="10.5" fill="var(--p)">sua renda ${brl0(renda)}</text>`;
+    if (renda) s += `<line x1="0" x2="${W}" y1="${y(renda)}" y2="${y(renda)}" stroke="var(--p)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${W - 2}" y="${y(renda) - 5}" text-anchor="end" font-size="10.5" fill="var(--p)">o que entrou ${brl0(renda)}</text>`;
   } else {
     const mx = Math.max(0, ...ms.map(m => m.sobra)), mn = Math.min(0, ...ms.map(m => m.sobra)), span = (mx - mn) * 1.15 || 1, y = v => pt + (H - pt - pb) * ((mx * 1.08) - v) / span;
     s += `<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--f)"/>`;
     ms.forEach((m, i) => { const last = i === n - 1, neg = m.sobra < 0;
       s += `<g><title>${mLongo(m.mes)}: ${neg ? 'faltou' : 'sobrou'} ${brl0(Math.abs(m.sobra))}</title><rect x="${gx(i)}" y="${Math.min(y(m.sobra), y(0))}" width="${bw}" height="${Math.max(1, Math.abs(y(m.sobra) - y(0)))}" rx="3" fill="${neg ? 'var(--v)' : last ? 'var(--p)' : 'var(--p-claro)'}"/>
-      <text x="${gx(i) + bw / 2}" y="${neg ? y(m.sobra) + 13 : y(m.sobra) - 4}" text-anchor="middle" font-size="10" fill="var(--s)">${Math.round(m.sobra / 100) / 10 === 0 ? '0' : (m.sobra / 1000).toFixed(1).replace('.', ',')}</text></g>${lbl(i, mc(m.mes).split('/')[0], last)}`; });
+      <text x="${gx(i) + bw / 2}" y="${neg ? y(m.sobra) + 13 : y(m.sobra) - 4}" text-anchor="middle" font-size="10" fill="var(--s)">${(m.sobra / 1000).toFixed(1).replace('.', ',')}</text></g>${lbl(i, mc(m.mes).split('/')[0], last)}`; });
   }
   return s + '</svg>';
 }
+/** Sobra/falta comparada com o mês passado, sempre em palavras simples. */
+function deltaSobra(at, pa) {
+  if (!pa) return '<em class="neu">&nbsp;</em>';
+  const n = nomeCurto(pa.mes);
+  if (at.sobra >= 0 && pa.sobra >= 0) return deltaMes(at.sobra, pa.sobra, pa.mes, true);
+  if (at.sobra < 0 && pa.sobra < 0) { const d = Math.abs(at.sobra) - Math.abs(pa.sobra); return Math.abs(d) < 1 ? `<em class="neu">= igual a ${n}</em>` : `<em class="${d < 0 ? 'dn' : 'up'}">${d < 0 ? '▼' : '▲'} faltou ${brl0(Math.abs(d))} a ${d < 0 ? 'menos' : 'mais'} que em ${n}</em>`; }
+  return pa.sobra >= 0 ? `<em class="up">em ${n} sobrou ${brl0(pa.sobra)}</em>` : `<em class="dn">em ${n} faltou ${brl0(-pa.sobra)}</em>`;
+}
 function telaHojeV2() {
-  const ms = F.meses, at = ms[ms.length - 1], ant = ms.slice(0, -1);
-  const mSobra = media(ant.map(m => m.sobra)), mEnt = media(ant.map(m => m.entrou)), mGas = media(ant.map(m => m.gastou)), mJur = media(ant.map(m => m.juros));
+  const ms = F.meses, at = ms[ms.length - 1], pa = ms.length > 1 ? ms[ms.length - 2] : null;   // pa = mês passado
   const nt = F.nota, ev = F.eventos || [];
   const icone = { conquista: ['ok', '★'], alerta: ['al', '!'], atencao: ['at', '!'] };
   const corPilar = { ok: 'var(--p-fundo)', atencao: 'var(--am-fundo)', ruim: 'var(--v-fundo)' }, simb = { ok: '✓', atencao: '!', ruim: '✕' };
-  // comparativos (só meses do mesmo tipo: com/sem fatura detalhada)
-  const comp = ms.slice(0, -1).filter(m => m.comFatura === at.comFatura);
-  const ref = modoComp === 'anterior' ? (comp.length ? comp[comp.length - 1] : null) : null;
-  const refCat = c => modoComp === 'anterior' ? (ref ? ref.categorias[c] || 0 : null) : (comp.length ? comp.reduce((a, m) => a + (m.categorias[c] || 0), 0) / comp.length : null);
+  // categorias: só compara com o mês passado se os dois meses forem do mesmo tipo (os dois com fatura detalhada, ou nenhum)
+  const pc = pa && pa.comFatura === at.comFatura ? pa : null;
   const cats = Object.entries(at.categorias).slice(0, 7);
+  const maxPct = 50;
   const pctMeta = m => Math.max(0, Math.min(100, m.valor ? m.atual / m.valor * 100 : 0));
   return `<h1>Olá, ${esc(F.nome)}</h1>
     <p class="at">${mLongo(at.mes).replace(/^./, c => c.toUpperCase())} · atualizado em ${dataBR(F.publicadoEm)}</p>
-    <div class="hero ${at.sobra < 0 ? 'neg' : ''}"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'} em ${mLongo(at.mes).split(' ')[0]}</small>
+    ${at.semRenda ? `<div class="hero"><small>Gastou em ${nomeCurto(at.mes)}</small><span class="n num">${brl0(at.gastou)}</span><div class="l"><span>Só cartão de crédito</span><span>${at.juros > 0 ? 'Juros ' + brl0(at.juros) : 'Sem juros'}</span></div></div>`
+    : `<div class="hero ${at.sobra < 0 ? 'neg' : ''}"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'} em ${nomeCurto(at.mes)}</small>
       <span class="n num">${brl0(Math.abs(at.sobra))}</span>
-      <div class="l"><span>Entrou ${brl0(at.entrou)}${at.rendaEstimada ? '*' : ''}</span><span>Gastou ${brl0(at.gastou)}</span></div></div>
-    ${mSobra != null ? `<p class="at" style="margin:8px 0 0">${at.sobra >= mSobra ? `<b class="dn">▲ ${brl0(at.sobra - mSobra)}</b> acima` : `<b class="up">▼ ${brl0(mSobra - at.sobra)}</b> abaixo`} da sua média dos meses anteriores (${brl0(mSobra)}).</p>` : ''}
-    ${at.rendaEstimada ? '<p class="nota" style="margin-top:6px">* Renda declarada na ficha (sem extrato da conta).</p>' : ''}
+      <div class="l"><span>Entrou ${brl0(at.entrou)}${at.rendaEstimada ? '*' : ''}</span><span>Gastou ${brl0(at.gastou)}</span></div></div>`}
+    ${pa && !at.semRenda ? `<p class="at" style="margin:8px 0 0">${at.sobra >= pa.sobra ? `<b class="dn">▲ ${brl0(at.sobra - pa.sobra)}</b> melhor` : `<b class="up">▼ ${brl0(pa.sobra - at.sobra)}</b> pior`} que ${nomeCurto(pa.mes)}.</p>` : ''}
+    ${at.rendaEstimada ? '<p class="nota" style="margin-top:6px">* Renda informada na ficha; gastos só do cartão (sem extrato da conta).</p>' : ''}
 
     ${nt ? `<div class="card"><div class="score"><span class="sn">${nt.valor}<small>/100</small></span><div><b style="font-size:16px">Saúde financeira: ${esc(nt.rotulo)}</b>
-      <p class="at" style="margin:4px 0 0">${nt.anterior == null ? 'Primeira avaliação. Vamos acompanhar mês a mês.' : nt.valor > nt.anterior ? `Subiu ${nt.valor - nt.anterior} pontos desde a última atualização (era ${nt.anterior}).` : nt.valor < nt.anterior ? `Caiu ${nt.anterior - nt.valor} pontos desde a última atualização (era ${nt.anterior}).` : 'Igual à última atualização.'}</p></div></div>
+      <p class="at" style="margin:4px 0 0">${nt.anterior == null ? 'Primeira avaliação. Vamos acompanhar a cada mês.' : nt.valor > nt.anterior ? `Subiu ${nt.valor - nt.anterior} pontos desde a última atualização (era ${nt.anterior}).` : nt.valor < nt.anterior ? `Caiu ${nt.anterior - nt.valor} pontos desde a última atualização (era ${nt.anterior}).` : 'Igual à última atualização.'}</p></div></div>
       <div class="pil">${nt.pilares.map(p => `<div style="background:${corPilar[p.status]}"><b>${esc(p.nome)} ${simb[p.status]}</b>${esc(p.texto)}</div>`).join('')}</div>
-      <p class="nota" style="margin:10px 0 0">Cada ponto vale até 25: sobra do mês, juros do cartão, parcelas sobre a renda e reserva de emergência.</p></div>` : ''}
+      <p class="nota" style="margin:10px 0 0">Cada item vale até 25 pontos: sobra do mês, juros do cartão, parcelas e reserva de emergência.</p></div>` : ''}
 
     <div class="tiles">
-      <div class="tile"><small>Entrou</small><b class="num">${brl0(at.entrou)}</b>${deltaTxt(at.entrou, mEnt, true)}${sparkSVG(ms.map(m => m.entrou), 'var(--s)')}</div>
-      <div class="tile"><small>Gastou</small><b class="num">${brl0(at.gastou)}</b>${deltaTxt(at.gastou, mGas, false)}${sparkSVG(ms.map(m => m.gastou), 'var(--v)')}</div>
-      <div class="tile"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'}</small><b class="num">${brl0(Math.abs(at.sobra))}</b>${deltaTxt(at.sobra, mSobra, true, brl0)}${sparkSVG(ms.map(m => m.sobra), 'var(--p)')}</div>
-      <div class="tile"><small>Juros do cartão</small><b class="num">${brl0(at.juros)}</b>${mJur == null ? '<em class="neu">&nbsp;</em>' : at.juros < mJur - 1 ? `<em class="dn">▼ ${brl0(mJur - at.juros)} a menos</em>` : at.juros > mJur + 1 ? `<em class="up">▲ ${brl0(at.juros - mJur)} a mais</em>` : '<em class="neu">= igual à média</em>'}${sparkSVG(ms.map(m => m.juros), 'var(--v)')}</div>
+      ${at.semRenda ? '' : `<div class="tile"><small>Entrou${at.rendaEstimada ? '*' : ''}</small><b class="num">${brl0(at.entrou)}</b>${deltaMes(at.entrou, pa?.entrou, pa?.mes, true)}${sparkSVG(ms.map(m => m.entrou), 'var(--s)')}</div>`}
+      <div class="tile"><small>Gastou</small><b class="num">${brl0(at.gastou)}</b>${deltaMes(at.gastou, pa?.gastou, pa?.mes, false)}${sparkSVG(ms.map(m => m.gastou), 'var(--v)')}</div>
+      ${at.semRenda ? '' : `<div class="tile"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'}</small><b class="num">${brl0(Math.abs(at.sobra))}</b>${deltaSobra(at, pa)}${sparkSVG(ms.map(m => m.sobra), 'var(--p)')}</div>`}
+      <div class="tile"><small>Juros do cartão</small><b class="num">${brl0(at.juros)}</b>${deltaMes(at.juros, pa?.juros, pa?.mes, false)}${sparkSVG(ms.map(m => m.juros), 'var(--v)')}</div>
     </div>
 
     ${ms.length > 1 ? `<div class="card"><div class="t">Mês a mês</div>
-      <div class="seg" style="margin-top:0"><button data-g="gastos" class="${modoGrafico === 'gastos' ? 'on' : ''}">Gastos</button><button data-g="sobra" class="${modoGrafico === 'sobra' ? 'on' : ''}">Sobra</button></div>
+      <div class="seg" style="margin-top:0"><button data-g="gastos" class="${modoGrafico === 'gastos' ? 'on' : ''}">Quanto gastou</button><button data-g="sobra" class="${modoGrafico === 'sobra' ? 'on' : ''}">Quanto sobrou</button></div>
       ${graficoMeses(ms)}
-      <p class="nota" style="margin:2px 0 0">${modoGrafico === 'gastos' ? (ms[0].gastou > at.gastou ? `Desde ${mLongo(ms[0].mes).split(' ')[0]} você gasta ${brl0(ms[0].gastou - at.gastou)} a menos por mês.` : `Em ${mLongo(at.mes).split(' ')[0]} você gastou ${brl0(at.gastou - ms[0].gastou)} a mais que em ${mLongo(ms[0].mes).split(' ')[0]}.`) : `Sobrou dinheiro em ${ms.filter(m => m.sobra > 0).length} de ${ms.length} meses.`}</p></div>` : ''}
+      <p class="nota" style="margin:2px 0 0">${modoGrafico === 'gastos' ? (pa.gastou > at.gastou ? `Em ${nomeCurto(at.mes)} você gastou ${brl0(pa.gastou - at.gastou)} a menos que em ${nomeCurto(pa.mes)}.` : `Em ${nomeCurto(at.mes)} você gastou ${brl0(at.gastou - pa.gastou)} a mais que em ${nomeCurto(pa.mes)}.`) : `Sobrou dinheiro em ${ms.filter(m => m.sobra > 0).length} de ${ms.length} meses.`}</p></div>` : ''}
 
     ${ev.length ? `<h2>Linha do tempo</h2>${ev.map(e => `<div class="ev ${icone[e.tipo][0]}"><i>${icone[e.tipo][1]}</i><div><b>${esc(e.titulo)}</b><small>${mc(e.mes)} · ${esc(e.texto)}</small></div></div>`).join('')}` : ''}
 
-    ${cats.length && comp.length ? `<div class="card"><div class="t">Onde o dinheiro mudou</div>
-      <div class="seg" style="margin-top:0"><button data-c="anterior" class="${modoComp === 'anterior' ? 'on' : ''}">× ${mc(comp[comp.length - 1].mes)}</button><button data-c="media" class="${modoComp === 'media' ? 'on' : ''}">× sua média</button></div>
-      ${cats.map(([c, v]) => { const r = refCat(c); const d = r == null ? null : v - r; const p = r ? Math.round(d / r * 100) : null;
-        return `<div class="item"><span>${esc(c)}<em>${r == null ? '' : r ? brl0(r) + (modoComp === 'anterior' ? ' em ' + mc(comp[comp.length - 1].mes) : ' de média') : 'não teve antes'}</em></span><b class="num">${brl0(v)}${d == null || !r ? '' : ` <small class="${d > 0 ? 'up' : d < 0 ? 'dn' : 'neu'}" style="font-size:12px">${Math.abs(p) < 1 ? '=' : (d > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%'}</small>`}</b></div>`; }).join('')}
-      <p class="nota" style="margin:6px 0 0">Verde: gastou menos · vermelho: gastou mais.</p></div>` : ''}
+    ${cats.length && pc ? `<div class="card"><div class="t">Onde mudou em relação a ${nomeCurto(pc.mes)}</div>
+      ${cats.map(([c, v]) => { const r = pc.categorias[c] || 0, d = v - r, p = r ? Math.round(d / r * 100) : null, w = p == null ? 0 : Math.min(maxPct, Math.abs(p)) / maxPct * 50;
+        return `<div class="cat"><div class="cat-l"><span>${esc(c)}<em>${r ? brl0(r) + ' em ' + nomeCurto(pc.mes) : 'não teve em ' + nomeCurto(pc.mes)}</em></span>
+          <b class="num">${brl0(v)}${p == null ? '' : ` <small class="${d > 0 ? 'up' : d < 0 ? 'dn' : 'neu'}">${Math.abs(p) < 1 ? '=' : (d > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%'}</small>`}</b></div>
+          ${p == null ? '' : `<span class="z"><i style="${d >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`};background:${d > 0 ? 'var(--v)' : 'var(--p)'}"></i></span>`}</div>`; }).join('')}
+      <p class="nota" style="margin:8px 0 0">Verde: gastou menos · vermelho: gastou mais.</p></div>` : ''}
 
     ${F.futuro.metas.length ? `<h2>Seus objetivos</h2>${F.futuro.metas.map(m => `<div class="meta"><div class="h"><b>${esc(m.titulo)}</b><span class="num">${m.atual >= m.valor ? '✓ concluído' : brl0(m.valor)}</span></div>
       <div class="tr"><i style="width:${pctMeta(m)}%"></i></div><em>${m.atual >= m.valor ? 'Objetivo alcançado.' : `${brl0(m.atual)} de ${brl0(m.valor)}${m.prazo ? ' · prazo ' + mc(m.prazo) : ''} · ${Math.round(pctMeta(m))}%`}</em></div>`).join('')}
@@ -294,7 +309,6 @@ document.addEventListener('click', ev => {
   if (b.dataset.aba) { aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
   else if (b.dataset.h) { horizonte = +b.dataset.h; desenhar(); }
   else if (b.dataset.g) { modoGrafico = b.dataset.g; desenhar(); }
-  else if (b.dataset.c) { modoComp = b.dataset.c; desenhar(); }
   else if (b.dataset.acao === 'fechar-instalar') { guardar('dees.instalar.fechado', '1'); desenhar(); }
   else if (b.dataset.acao === 'instalar' && pedidoInstalar) { pedidoInstalar.prompt(); pedidoInstalar = null; desenhar(); }
 });
