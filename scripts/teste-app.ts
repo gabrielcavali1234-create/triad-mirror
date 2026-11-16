@@ -204,6 +204,13 @@ async function main() {
             `rota pública devolve a foto sem login (${foto?.nome}, ${foto?.plano?.atitudes?.length} atitudes, ${foto?.futuro?.horizontes?.length} horizontes)`);
         ok(!JSON.stringify(foto).includes('000.000.000-00') && !('lancamentos' in foto), 'foto não leva CPF nem lançamentos');
         ok(foto.futuro.horizontes.some((h: any) => h.rotulo === 'fim das parcelas'), 'futuro vai até o fim das parcelas');
+        ok(foto.versao === 2 && foto.meses?.length >= 2 && foto.meses.every((m: any) => typeof m.sobra === 'number' && m.categorias), `tela Hoje: ${foto.meses?.length} meses com entrou/gastou/sobra`);
+        ok(foto.nota && foto.nota.valor >= 0 && foto.nota.valor <= 100 && foto.nota.pilares.length === 4 && foto.nota.anterior === null, `nota de saúde ${foto.nota?.valor}/100 (${foto.nota?.rotulo}) com 4 pilares`);
+        ok(foto.eventos?.some((e: any) => e.tipo === 'alerta' && /juros/.test(e.titulo)), 'linha do tempo avisa juros do cartão');
+        ok(!foto.meses.some((m: any) => 'Pagamento de fatura' in m.categorias), 'pagamento de fatura não conta como gasto em dobro');
+        const pub2 = await api('POST', `/api/app/clientes/${cid}/app/publicar`, {}, T);
+        const foto2 = (await api('GET', `/api/publico/app/${pub2.corpo.token}`)).corpo.foto;
+        ok(foto2.historico?.length === 2 && foto2.nota.anterior === foto.nota.valor, 'segunda publicação guarda o histórico e a nota anterior');
         const pag = await fetch(`${BASE}/c/${tk}`); const html = await pag.text();
         ok(pag.status === 200 && html.includes('/api/publico/app/'), 'página do app abre no link /c/…');
         const man = await (await fetch(`${BASE}/c/${tk}/manifest.webmanifest`)).json();

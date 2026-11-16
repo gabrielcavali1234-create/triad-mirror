@@ -140,7 +140,9 @@ router.post('/api/app/clientes/:id/app/publicar', rota(async (req, res) => {
     const foto = montarFoto({
         cliente: c, consultora: req.usuario?.nome || analise.analista || null, base, plano: config,
         parcelamentos: (apuracao.resumo as any).parcelamentos,
-        mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia)))
+        mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia))),
+        lancamentos: apuracao.lancamentos,
+        anterior: c.app_snapshot || null
     });
     const salvo = await repo.salvarApp(c.id, { app_token: c.app_token || novoToken(), app_ativo: true, app_snapshot: foto, app_publicado_em: foto.publicadoEm });
     res.json(estadoApp(salvo!));

@@ -22,12 +22,12 @@
 <style>
 :root{
   --p:#0F5A3F;--p-claro:#7FB59B;--p-fundo:#E5F0EA;--t:#1C2420;--s:#4D5550;--f:#6B736E;--b:#E4E7E4;--b2:#EEF0EE;
-  --v:#B03A2E;--v-fundo:#FBEAE7;--am:#FFE680;--am-t:#3D3300;--bg:#ffffff;--bg2:#F6F7F6;--hero-t:#ffffff;
+  --v:#B03A2E;--v-fundo:#FBEAE7;--am:#FFE680;--am-t:#3D3300;--am-fundo:#FFF3BF;--am-t2:#7A5D00;--bg:#ffffff;--bg2:#F6F7F6;--hero-t:#ffffff;
   --serif:"Newsreader",Georgia,"Times New Roman",serif;--sans:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
   --p:#5FBF93;--p-claro:#3E8A68;--p-fundo:#17302A;--t:#E6EBE7;--s:#B7C0BA;--f:#8E9892;--b:#2A332E;--b2:#222B26;
-  --v:#F2927F;--v-fundo:#3A201C;--am:#E3C04A;--am-t:#1C1A0E;--bg:#111714;--bg2:#161E1A;--hero-t:#0E1A15;
+  --v:#F2927F;--v-fundo:#3A201C;--am:#E3C04A;--am-t:#1C1A0E;--am-fundo:#3A3214;--am-t2:#E3C04A;--bg:#111714;--bg2:#161E1A;--hero-t:#0E1A15;
 }}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font-family:var(--sans);-webkit-text-size-adjust:100%}
@@ -67,6 +67,18 @@ h2{font-size:13px;font-weight:700;color:var(--s);margin:22px 0 10px;text-transfo
 .meta .tr{height:11px;background:var(--b2);border-radius:6px;margin:8px 0 5px;overflow:hidden}.meta .tr i{display:block;height:100%;background:var(--p);border-radius:6px}
 .meta em{font-style:normal;font-size:12.5px;color:var(--f);line-height:1.35;display:block}
 .nota{font-size:12px;color:var(--f);margin-top:14px;line-height:1.45}
+.card{border:1px solid var(--b);border-radius:16px;padding:14px;margin:14px 0}
+.card .t{font-size:13px;font-weight:700;color:var(--s);margin-bottom:8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tile{border:1px solid var(--b);border-radius:14px;padding:12px 12px 8px}.tile small{font-size:12px;color:var(--s)}
+.tile b{display:block;font-family:var(--serif);font-size:24px;font-weight:500;margin:2px 0}.tile em{display:block;font-style:normal;font-size:11.5px;font-weight:600;margin-bottom:4px}
+.up{color:var(--v)}.dn{color:var(--p)}.neu{color:var(--f)}
+.score{display:flex;gap:14px;align-items:center}.score .sn{font-family:var(--serif);font-size:54px;line-height:1;color:var(--p)}.score .sn small{font-size:19px;color:var(--f)}
+.pil{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.pil div{border-radius:12px;padding:10px;font-size:12.5px;line-height:1.35;color:var(--t)}.pil b{display:block;font-size:14px;margin-bottom:2px}
+.ev{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--b);font-size:14px;line-height:1.35}.ev:last-of-type{border-bottom:0}
+.ev i{flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:15px;font-weight:700}
+.ev small{display:block;color:var(--f);font-size:12px;margin-top:2px}
+.ev.ok i{background:var(--p-fundo);color:var(--p)}.ev.al i{background:var(--v-fundo);color:var(--v)}.ev.at i{background:var(--am-fundo);color:var(--am-t2)}
 svg text{font-family:var(--sans)}
 nav[hidden]{display:none!important}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--b);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:5}
@@ -104,7 +116,92 @@ const ler = k => { try { return localStorage.getItem(k); } catch { return null; 
 const token = decodeURIComponent(location.pathname.split('/')[2] || '');
 let F = null, aba = 'hoje', horizonte = 0, pedidoInstalar = null;
 
+// ─── Hoje (v2): sobra, nota, quadros, mês a mês, linha do tempo, comparativos, objetivos ──
+let modoGrafico = 'gastos', modoComp = 'anterior';
+const media = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+const deltaTxt = (v, m, maisEhBom, fmt) => {
+  if (m == null) return '<em class="neu">&nbsp;</em>';
+  const d = v - m, p = m ? Math.round(d / Math.abs(m) * 100) : 0;
+  if (Math.abs(d) < 1 || (m && Math.abs(p) < 1)) return '<em class="neu">= igual à média</em>';
+  const bom = maisEhBom ? d > 0 : d < 0;
+  return `<em class="${bom ? 'dn' : 'up'}">${d > 0 ? '▲' : '▼'} ${fmt ? fmt(Math.abs(d)) : Math.abs(p) + '%'} ${d > 0 ? 'acima' : 'abaixo'} da média</em>`;
+};
+function sparkSVG(vals, cor) {
+  if (vals.length < 2) return '';
+  const W = 100, H = 28, mx = Math.max(...vals), mn = Math.min(...vals), x = i => i * W / (vals.length - 1), y = v => H - 3 - (H - 6) * (v - mn) / ((mx - mn) || 1);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="28" preserveAspectRatio="none" aria-hidden="true"><path d="M${vals.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' L')}" fill="none" stroke="${cor}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function graficoMeses(ms) {
+  const W = 340, H = 170, pt = 18, pb = 22, n = ms.length, slot = W / n, bw = Math.min(38, slot * 0.6), gx = i => i * slot + (slot - bw) / 2;
+  const lbl = (i, txt, last) => `<text x="${gx(i) + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${last ? 'var(--t)' : 'var(--f)'}" font-weight="${last ? 700 : 400}">${txt}</text>`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${modoGrafico === 'gastos' ? 'Gastos por mês' : 'Sobra por mês'}">`;
+  if (modoGrafico === 'gastos') {
+    const renda = media(ms.map(m => m.entrou)) || 0, maxV = Math.max(renda, ...ms.map(m => m.gastou)) * 1.12 || 1, y = v => pt + (H - pt - pb) * (1 - v / maxV);
+    ms.forEach((m, i) => { const last = i === n - 1, h = y(0) - y(m.gastou);
+      s += `<g><title>${mLongo(m.mes)}: gastou ${brl0(m.gastou)}</title><rect x="${gx(i)}" y="${y(m.gastou)}" width="${bw}" height="${Math.max(0, h)}" rx="4" fill="${last ? 'var(--p)' : 'var(--p-claro)'}"/>
+      ${h > 18 ? `<text x="${gx(i) + bw / 2}" y="${y(m.gastou) + 14}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${last ? 'var(--hero-t)' : 'var(--t)'}">${(m.gastou / 1000).toFixed(1).replace('.', ',')}</text>` : ''}</g>${lbl(i, mc(m.mes).split('/')[0], last)}`; });
+    if (renda) s += `<line x1="0" x2="${W}" y1="${y(renda)}" y2="${y(renda)}" stroke="var(--p)" stroke-dasharray="4 4" stroke-width="1.5"/><text x="${W - 2}" y="${y(renda) - 5}" text-anchor="end" font-size="10.5" fill="var(--p)">sua renda ${brl0(renda)}</text>`;
+  } else {
+    const mx = Math.max(0, ...ms.map(m => m.sobra)), mn = Math.min(0, ...ms.map(m => m.sobra)), span = (mx - mn) * 1.15 || 1, y = v => pt + (H - pt - pb) * ((mx * 1.08) - v) / span;
+    s += `<line x1="0" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--f)"/>`;
+    ms.forEach((m, i) => { const last = i === n - 1, neg = m.sobra < 0;
+      s += `<g><title>${mLongo(m.mes)}: ${neg ? 'faltou' : 'sobrou'} ${brl0(Math.abs(m.sobra))}</title><rect x="${gx(i)}" y="${Math.min(y(m.sobra), y(0))}" width="${bw}" height="${Math.max(1, Math.abs(y(m.sobra) - y(0)))}" rx="3" fill="${neg ? 'var(--v)' : last ? 'var(--p)' : 'var(--p-claro)'}"/>
+      <text x="${gx(i) + bw / 2}" y="${neg ? y(m.sobra) + 13 : y(m.sobra) - 4}" text-anchor="middle" font-size="10" fill="var(--s)">${Math.round(m.sobra / 100) / 10 === 0 ? '0' : (m.sobra / 1000).toFixed(1).replace('.', ',')}</text></g>${lbl(i, mc(m.mes).split('/')[0], last)}`; });
+  }
+  return s + '</svg>';
+}
+function telaHojeV2() {
+  const ms = F.meses, at = ms[ms.length - 1], ant = ms.slice(0, -1);
+  const mSobra = media(ant.map(m => m.sobra)), mEnt = media(ant.map(m => m.entrou)), mGas = media(ant.map(m => m.gastou)), mJur = media(ant.map(m => m.juros));
+  const nt = F.nota, ev = F.eventos || [];
+  const icone = { conquista: ['ok', '★'], alerta: ['al', '!'], atencao: ['at', '!'] };
+  const corPilar = { ok: 'var(--p-fundo)', atencao: 'var(--am-fundo)', ruim: 'var(--v-fundo)' }, simb = { ok: '✓', atencao: '!', ruim: '✕' };
+  // comparativos (só meses do mesmo tipo: com/sem fatura detalhada)
+  const comp = ms.slice(0, -1).filter(m => m.comFatura === at.comFatura);
+  const ref = modoComp === 'anterior' ? (comp.length ? comp[comp.length - 1] : null) : null;
+  const refCat = c => modoComp === 'anterior' ? (ref ? ref.categorias[c] || 0 : null) : (comp.length ? comp.reduce((a, m) => a + (m.categorias[c] || 0), 0) / comp.length : null);
+  const cats = Object.entries(at.categorias).slice(0, 7);
+  const pctMeta = m => Math.max(0, Math.min(100, m.valor ? m.atual / m.valor * 100 : 0));
+  return `<h1>Olá, ${esc(F.nome)}</h1>
+    <p class="at">${mLongo(at.mes).replace(/^./, c => c.toUpperCase())} · atualizado em ${dataBR(F.publicadoEm)}</p>
+    <div class="hero ${at.sobra < 0 ? 'neg' : ''}"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'} em ${mLongo(at.mes).split(' ')[0]}</small>
+      <span class="n num">${brl0(Math.abs(at.sobra))}</span>
+      <div class="l"><span>Entrou ${brl0(at.entrou)}${at.rendaEstimada ? '*' : ''}</span><span>Gastou ${brl0(at.gastou)}</span></div></div>
+    ${mSobra != null ? `<p class="at" style="margin:8px 0 0">${at.sobra >= mSobra ? `<b class="dn">▲ ${brl0(at.sobra - mSobra)}</b> acima` : `<b class="up">▼ ${brl0(mSobra - at.sobra)}</b> abaixo`} da sua média dos meses anteriores (${brl0(mSobra)}).</p>` : ''}
+    ${at.rendaEstimada ? '<p class="nota" style="margin-top:6px">* Renda declarada na ficha (sem extrato da conta).</p>' : ''}
+
+    ${nt ? `<div class="card"><div class="score"><span class="sn">${nt.valor}<small>/100</small></span><div><b style="font-size:16px">Saúde financeira: ${esc(nt.rotulo)}</b>
+      <p class="at" style="margin:4px 0 0">${nt.anterior == null ? 'Primeira avaliação. Vamos acompanhar mês a mês.' : nt.valor > nt.anterior ? `Subiu ${nt.valor - nt.anterior} pontos desde a última atualização (era ${nt.anterior}).` : nt.valor < nt.anterior ? `Caiu ${nt.anterior - nt.valor} pontos desde a última atualização (era ${nt.anterior}).` : 'Igual à última atualização.'}</p></div></div>
+      <div class="pil">${nt.pilares.map(p => `<div style="background:${corPilar[p.status]}"><b>${esc(p.nome)} ${simb[p.status]}</b>${esc(p.texto)}</div>`).join('')}</div>
+      <p class="nota" style="margin:10px 0 0">Cada ponto vale até 25: sobra do mês, juros do cartão, parcelas sobre a renda e reserva de emergência.</p></div>` : ''}
+
+    <div class="tiles">
+      <div class="tile"><small>Entrou</small><b class="num">${brl0(at.entrou)}</b>${deltaTxt(at.entrou, mEnt, true)}${sparkSVG(ms.map(m => m.entrou), 'var(--s)')}</div>
+      <div class="tile"><small>Gastou</small><b class="num">${brl0(at.gastou)}</b>${deltaTxt(at.gastou, mGas, false)}${sparkSVG(ms.map(m => m.gastou), 'var(--v)')}</div>
+      <div class="tile"><small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'}</small><b class="num">${brl0(Math.abs(at.sobra))}</b>${deltaTxt(at.sobra, mSobra, true, brl0)}${sparkSVG(ms.map(m => m.sobra), 'var(--p)')}</div>
+      <div class="tile"><small>Juros do cartão</small><b class="num">${brl0(at.juros)}</b>${mJur == null ? '<em class="neu">&nbsp;</em>' : at.juros < mJur - 1 ? `<em class="dn">▼ ${brl0(mJur - at.juros)} a menos</em>` : at.juros > mJur + 1 ? `<em class="up">▲ ${brl0(at.juros - mJur)} a mais</em>` : '<em class="neu">= igual à média</em>'}${sparkSVG(ms.map(m => m.juros), 'var(--v)')}</div>
+    </div>
+
+    ${ms.length > 1 ? `<div class="card"><div class="t">Mês a mês</div>
+      <div class="seg" style="margin-top:0"><button data-g="gastos" class="${modoGrafico === 'gastos' ? 'on' : ''}">Gastos</button><button data-g="sobra" class="${modoGrafico === 'sobra' ? 'on' : ''}">Sobra</button></div>
+      ${graficoMeses(ms)}
+      <p class="nota" style="margin:2px 0 0">${modoGrafico === 'gastos' ? (ms[0].gastou > at.gastou ? `Desde ${mLongo(ms[0].mes).split(' ')[0]} você gasta ${brl0(ms[0].gastou - at.gastou)} a menos por mês.` : `Em ${mLongo(at.mes).split(' ')[0]} você gastou ${brl0(at.gastou - ms[0].gastou)} a mais que em ${mLongo(ms[0].mes).split(' ')[0]}.`) : `Sobrou dinheiro em ${ms.filter(m => m.sobra > 0).length} de ${ms.length} meses.`}</p></div>` : ''}
+
+    ${ev.length ? `<h2>Linha do tempo</h2>${ev.map(e => `<div class="ev ${icone[e.tipo][0]}"><i>${icone[e.tipo][1]}</i><div><b>${esc(e.titulo)}</b><small>${mc(e.mes)} · ${esc(e.texto)}</small></div></div>`).join('')}` : ''}
+
+    ${cats.length && comp.length ? `<div class="card"><div class="t">Onde o dinheiro mudou</div>
+      <div class="seg" style="margin-top:0"><button data-c="anterior" class="${modoComp === 'anterior' ? 'on' : ''}">× ${mc(comp[comp.length - 1].mes)}</button><button data-c="media" class="${modoComp === 'media' ? 'on' : ''}">× sua média</button></div>
+      ${cats.map(([c, v]) => { const r = refCat(c); const d = r == null ? null : v - r; const p = r ? Math.round(d / r * 100) : null;
+        return `<div class="item"><span>${esc(c)}<em>${r == null ? '' : r ? brl0(r) + (modoComp === 'anterior' ? ' em ' + mc(comp[comp.length - 1].mes) : ' de média') : 'não teve antes'}</em></span><b class="num">${brl0(v)}${d == null || !r ? '' : ` <small class="${d > 0 ? 'up' : d < 0 ? 'dn' : 'neu'}" style="font-size:12px">${Math.abs(p) < 1 ? '=' : (d > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%'}</small>`}</b></div>`; }).join('')}
+      <p class="nota" style="margin:6px 0 0">Verde: gastou menos · vermelho: gastou mais.</p></div>` : ''}
+
+    ${F.futuro.metas.length ? `<h2>Seus objetivos</h2>${F.futuro.metas.map(m => `<div class="meta"><div class="h"><b>${esc(m.titulo)}</b><span class="num">${m.atual >= m.valor ? '✓ concluído' : brl0(m.valor)}</span></div>
+      <div class="tr"><i style="width:${pctMeta(m)}%"></i></div><em>${m.atual >= m.valor ? 'Objetivo alcançado.' : `${brl0(m.atual)} de ${brl0(m.valor)}${m.prazo ? ' · prazo ' + mc(m.prazo) : ''} · ${Math.round(pctMeta(m))}%`}</em></div>`).join('')}
+      <p class="nota">Projeção detalhada na aba Futuro.</p>` : ''}`;
+}
+
 function telaHoje() {
+  if (F.meses && F.meses.length) return telaHojeV2();
   const h = F.hoje, max = Math.max(1, ...h.categorias.map(c => c.valor));
   const per = F.periodo.de ? `Análise de ${mc(F.periodo.de)}${F.periodo.ate && F.periodo.ate !== F.periodo.de ? ' a ' + mc(F.periodo.ate) : ''}` : 'Sua análise';
   return `<h1>Olá, ${esc(F.nome)}</h1>
@@ -196,6 +293,8 @@ document.addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
   if (b.dataset.aba) { aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
   else if (b.dataset.h) { horizonte = +b.dataset.h; desenhar(); }
+  else if (b.dataset.g) { modoGrafico = b.dataset.g; desenhar(); }
+  else if (b.dataset.c) { modoComp = b.dataset.c; desenhar(); }
   else if (b.dataset.acao === 'fechar-instalar') { guardar('dees.instalar.fechado', '1'); desenhar(); }
   else if (b.dataset.acao === 'instalar' && pedidoInstalar) { pedidoInstalar.prompt(); pedidoInstalar = null; desenhar(); }
 });
