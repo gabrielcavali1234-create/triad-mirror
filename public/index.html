@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
-<script>try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+<script>
+const VERSAO_SISTEMA = '16/11/2026 · Gerar app do cliente + 3 visualizações';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2253,7 +2254,7 @@ document.addEventListener('click', async ev => {
     case 'menu-usuario': {
       if (document.querySelector('.menu-usuario')) { fecharMenus(); break; }
       const m = document.createElement('div'); m.className = 'menu-usuario';
-      m.innerHTML = `<div style="padding:8px 10px 10px;border-bottom:1px solid var(--borda2);margin-bottom:4px"><b>${esc(sessao?.usuario?.nome)}</b><div class="suave" style="font-size:12px">${esc(sessao?.usuario?.email)}</div></div><button data-acao="ir-clientes"><i class="ti ti-users"></i> Clientes</button><button data-acao="tema"><i class="ti ${temaEscuro() ? 'ti-sun' : 'ti-moon'}"></i> ${temaEscuro() ? 'Modo claro' : 'Modo escuro'}</button><button data-acao="sair"><i class="ti ti-logout"></i> Sair</button>`;
+      m.innerHTML = `<div style="padding:8px 10px 10px;border-bottom:1px solid var(--borda2);margin-bottom:4px"><b>${esc(sessao?.usuario?.nome)}</b><div class="suave" style="font-size:12px">${esc(sessao?.usuario?.email)}</div></div><button data-acao="ir-clientes"><i class="ti ti-users"></i> Clientes</button><button data-acao="tema"><i class="ti ${temaEscuro() ? 'ti-sun' : 'ti-moon'}"></i> ${temaEscuro() ? 'Modo claro' : 'Modo escuro'}</button><button data-acao="sair"><i class="ti ti-logout"></i> Sair</button><div class="fraco" style="font-size:11px;padding:8px 10px 4px;border-top:1px solid var(--borda2);margin-top:4px">Versão ${VERSAO_SISTEMA}</div>`;
       document.body.appendChild(m); break;
     }
     case 'tema': alternarTema(); if ($('#apSvg')) atualizarSimulacao(); break;

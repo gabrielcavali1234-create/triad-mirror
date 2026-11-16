@@ -58,6 +58,7 @@ app.get('/api/mirror/health', (_req, res) => {
         ok: true,
         servico: 'TRIAD Mirror',
         versao: '0.2.0',
+        atualizacao: '16/11/2026 · Gerar app do cliente + 3 visualizações',
         anthropicConfigurado: !!process.env.ANTHROPIC_API_KEY,
         supabaseConfigurado: !!supabaseAdmin,
         acessoProtegido: !!process.env.MIRROR_ACCESS_KEY,
@@ -250,9 +251,11 @@ app.use(rotasApp);
 const publicPath = [path.join(process.cwd(), 'public'), path.join(__dirname, '..', 'public')].find(p => fs.existsSync(path.join(p, 'index.html')));
 if (publicPath) {
     console.log('[Servidor] Servindo a aplicação de', publicPath);
-    app.use(express.static(publicPath, { index: 'index.html', extensions: ['html'] }));
+    // HTML nunca fica guardado em cache (navegador, CDN da hospedagem): assim toda atualização aparece na hora
+    app.use(express.static(publicPath, { index: 'index.html', extensions: ['html'],
+        setHeaders: (res, arquivo) => { if (arquivo.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); } }));
     // Qualquer rota que não seja API cai na aplicação (navegação interna por #)
-    app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(publicPath, 'index.html')));
+    app.get(/^\/(?!api\/).*/, (_req, res) => { res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); res.sendFile(path.join(publicPath, 'index.html')); });
 } else {
     console.log('[Servidor] public/index.html não encontrado — rodando só como API');
     app.get('/', (_req, res) => res.type('text/plain').send('TRIAD Mirror API no ar. Status: /api/mirror/health'));

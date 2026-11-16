@@ -89,9 +89,10 @@ router.get('/api/publico/app/:token', rota(async (req, res) => {
 }));
 
 // Página do app e o manifesto (ícone / "Adicionar à tela inicial") de cada link
-const paginaApp = path.join(process.cwd(), 'public', 'cliente.html');
+const paginaApp = [path.join(process.cwd(), 'public', 'cliente.html'), path.join(__dirname, '..', '..', 'public', 'cliente.html')].find(p => fs.existsSync(p)) || path.join(process.cwd(), 'public', 'cliente.html');
 router.get('/c/:token', (req, res) => {
     res.setHeader('X-Robots-Tag', 'noindex');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     if (!fs.existsSync(paginaApp)) return res.status(404).send('App indisponível.');
     res.sendFile(paginaApp);
 });
