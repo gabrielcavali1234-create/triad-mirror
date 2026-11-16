@@ -325,11 +325,11 @@ export function linhaDoTempo(e: {
     for (let i = 1; i < ms.length; i++) {
         const a = ms[i - 1], b = ms[i];
         if (a.juros > 0.5 && b.juros <= 0.5) novos.push({ tipo: 'conquista', titulo: 'Mês sem juros do cartão', texto: `Em ${nomeMes(b.mes)} a fatura veio sem juros.`, mes: b.mes });
-        if (a.sobra < 0 && b.sobra > 0) novos.push({ tipo: 'conquista', titulo: 'Voltou a sobrar dinheiro', texto: `Sobraram ${brl0(b.sobra)} em ${nomeMes(b.mes)}.`, mes: b.mes });
+        if (!a.semRenda && !b.semRenda && a.sobra < 0 && b.sobra > 0) novos.push({ tipo: 'conquista', titulo: 'Voltou a sobrar dinheiro', texto: `Sobraram ${brl0(b.sobra)} em ${nomeMes(b.mes)}.`, mes: b.mes });
     }
     if (atual) {
         if (atual.juros > 0.5) novos.push({ tipo: 'alerta', titulo: `${brl0(atual.juros)} foram para juros do cartão`, texto: 'Pagar a fatura inteira evita esse custo.', mes: atual.mes });
-        if (atual.sobra < 0) novos.push({ tipo: 'alerta', titulo: `O mês fechou com ${brl0(atual.sobra)} a menos`, texto: 'Gastou mais do que entrou.', mes: atual.mes });
+        if (!atual.semRenda && atual.sobra < 0) novos.push({ tipo: 'alerta', titulo: `O mês fechou com ${brl0(atual.sobra)} a menos`, texto: 'Gastou mais do que entrou.', mes: atual.mes });
         // categorias que mudaram muito contra o MÊS PASSADO (só se os dois meses forem do mesmo tipo)
         const pa = ms.length > 1 ? ms[ms.length - 2] : null;
         if (pa && pa.comFatura === atual.comFatura) {
