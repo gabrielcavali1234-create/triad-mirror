@@ -129,6 +129,31 @@ nav button.on{color:var(--p);font-weight:700}
   .tiles{grid-template-columns:repeat(4,1fr)!important}
   .card svg{max-width:560px;max-height:240px;display:block;margin:0 auto}.top .marca{visibility:hidden}
 }
+
+/* ═════ ANIMAÇÕES ═════ */
+@keyframes dEntra{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes dCresceY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes dCresceX{from{width:0}}
+@keyframes dPulo{0%{transform:scale(1)}40%{transform:scale(1.18) translateY(-2px)}100%{transform:scale(1)}}
+.anima>*:not(.top){animation:dEntra .45s cubic-bezier(.2,.7,.2,1) both}
+.anima>*:nth-child(3){animation-delay:.04s}.anima>*:nth-child(4){animation-delay:.08s}.anima>*:nth-child(5){animation-delay:.12s}.anima>*:nth-child(6){animation-delay:.16s}.anima>*:nth-child(7){animation-delay:.2s}.anima>*:nth-child(n+8){animation-delay:.24s}
+.anima .tiles>*{animation:dEntra .45s cubic-bezier(.2,.7,.2,1) both}.anima .tiles>*:nth-child(2){animation-delay:.06s}.anima .tiles>*:nth-child(3){animation-delay:.12s}.anima .tiles>*:nth-child(4){animation-delay:.18s}
+.anima svg rect{transform-box:fill-box;transform-origin:bottom;animation:dCresceY .65s cubic-bezier(.2,.7,.2,1) .2s both}
+.anima .tr i,.anima .meta .tr i,.anima .bar i{animation:dCresceX .9s cubic-bezier(.2,.7,.2,1) .25s both}
+.tile,.card,.chips-ev>div,.item{transition:transform .2s,box-shadow .2s,background-color .2s}
+.tile:hover,.chips-ev>div:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,.08)}
+.card:hover{box-shadow:0 8px 22px rgba(0,0,0,.06)}
+.item:hover{background:var(--bg2)}
+nav button{transition:color .18s}nav button svg{transition:transform .2s}
+nav button.on svg{animation:dPulo .38s ease}
+nav button:active svg{transform:scale(.9)}
+.gv-it{transition:background-color .18s,color .18s,transform .18s}.gv-it:hover{background:var(--bg2);transform:translateX(3px)}.gv-it.on:hover{background:var(--p-fundo)}
+.gv-it svg{transition:transform .2s cubic-bezier(.3,1.6,.5,1)}.gv-it:hover svg{transform:scale(1.15)}
+.gv-zap:hover{filter:brightness(1.06);transform:translateY(-1px)!important}
+#gaveta .gv-it{opacity:1}#gaveta.aberta .gv-it{animation:dEntra .3s ease both}
+#gaveta.aberta .gv-it:nth-of-type(2){animation-delay:.03s}#gaveta.aberta .gv-it:nth-of-type(3){animation-delay:.06s}#gaveta.aberta .gv-it:nth-of-type(4){animation-delay:.09s}#gaveta.aberta .gv-it:nth-of-type(5){animation-delay:.12s}
+button{transition:transform .12s}button:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .carregando{padding:80px 0;text-align:center;color:var(--f)}
 </style>
 </head>
@@ -295,7 +320,7 @@ const ICONES = {
   zap: '<path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z"/>'
 };
 const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`;
-let menuAberto = false;
+let menuAberto = false, animarProx = true;
 function gaveta() {
   const metas = F.futuro?.metas || [], prox = F.parcelas?.proxima, pr = F.proximaReuniao, w = F.contato?.whatsapp;
   const it = (id, txt, extra) => `<button class="gv-it ${aba === id ? 'on' : ''}" data-aba="${id}">${svg(id)}${txt}${extra ? `<em>${extra}</em>` : ''}</button>`;
@@ -396,6 +421,7 @@ function desenhar() {
   const telas = { hoje: telaHoje, parcelas: telaParcelas, plano: telaPlano, futuro: telaFuturo, objetivos: telaObjetivos };
   $('#app').innerHTML = `<div class="top"><span class="esq"><button class="bt-menu" data-acao="abrir-menu" aria-label="Abrir menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="marca">De<span>es</span></span></span><small>${F.consultora ? 'Sua consultora: ' + esc(F.consultora) : ''}</small></div>${barraInstalar()}${telas[aba]()}`;
   const g = $('#gaveta'); g.hidden = false; g.innerHTML = gaveta();
+  if (animarProx) { const a = $('#app'); a.classList.remove('anima'); void a.offsetWidth; a.classList.add('anima'); animarProx = false; clearTimeout(window._tA); window._tA = setTimeout(() => a.classList.remove('anima'), 1500); }
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.aba === aba));
   document.title = { hoje: 'Hoje', parcelas: 'Parcelas', plano: 'Plano', futuro: 'Futuro', objetivos: 'Objetivos' }[aba] + ' — Dees';
 }
@@ -404,7 +430,7 @@ document.addEventListener('click', ev => {
   const b = ev.target.closest('button,[data-acao]'); if (!b) return;
   if (b.dataset.acao === 'abrir-menu') return abrirMenu(true);
   if (b.dataset.acao === 'fechar-menu') return abrirMenu(false);
-  if (b.dataset.aba) { abrirMenu(false); aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
+  if (b.dataset.aba) { abrirMenu(false); animarProx = true; aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
   else if (b.dataset.h) { horizonte = +b.dataset.h; desenhar(); }
   else if (b.dataset.g) { modoGrafico = b.dataset.g; desenhar(); }
   else if (b.dataset.acao === 'fechar-instalar') { guardar('dees.instalar.fechado', '1'); desenhar(); }

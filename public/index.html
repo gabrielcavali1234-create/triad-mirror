@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '17/11/2026 · Menu lateral + Agenda';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '17/11/2026 · Animações';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -302,6 +302,55 @@ body:has(.trilho){padding-left:72px}
   .cc-id,.cc-t{display:none}.cc-abas{display:contents}.cc-aba,.cc-acao{width:auto;flex:none;white-space:nowrap}.cc-volta{flex:none;margin-right:6px}
   .pf-nome{padding-top:8px;min-width:100%}.pf-id{margin-top:-40px}
 }
+
+/* ═════ ANIMAÇÕES ═════ */
+@keyframes dEntra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes dFade{from{opacity:0}to{opacity:1}}
+@keyframes dCresceY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes dCresceX{from{width:0}}
+@keyframes dAnel{from{stroke-dasharray:0 400}}
+@keyframes dPop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes dDesenha{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+/* entrada da tela/aba: só quando muda de tela (classe .anima posta pelo JS) */
+.anima .pf-topo,.anima .cab-pagina,.anima .abas,.anima .pf-col>*,.anima .pf-kpis>*,.anima .pf-dupla>*,.anima #conteudo>*:not(.pf-grade):not(.at-grade),.anima .at-grade>*>*,.anima main>.card,.anima main>section,.anima .painel-grade>*,.anima .cc-abas>*,.anima .ag-grupo,.anima .medias>*{animation:dEntra .42s cubic-bezier(.2,.7,.2,1) both}
+.anima .pf-col>*:nth-child(2),.anima .pf-kpis>*:nth-child(2),.anima .cc-abas>*:nth-child(2){animation-delay:.05s}
+.anima .pf-col>*:nth-child(3),.anima .pf-kpis>*:nth-child(3),.anima .cc-abas>*:nth-child(3){animation-delay:.1s}
+.anima .pf-col>*:nth-child(4),.anima .pf-kpis>*:nth-child(4),.anima .cc-abas>*:nth-child(4){animation-delay:.15s}
+.anima .pf-col>*:nth-child(5),.anima .cc-abas>*:nth-child(5){animation-delay:.2s}
+.anima .pf-col>*:nth-child(n+6),.anima .cc-abas>*:nth-child(n+6){animation-delay:.25s}
+.anima .pf-grade>.pf-col:nth-child(2)>*{animation-delay:.08s}.anima .pf-grade>.pf-col:nth-child(3)>*{animation-delay:.14s}
+.anima .ag-grupo:nth-of-type(2){animation-delay:.06s}.anima .ag-grupo:nth-of-type(3){animation-delay:.12s}.anima .ag-grupo:nth-of-type(n+4){animation-delay:.18s}
+/* gráficos crescendo */
+.anima .pf-col svg rect[height]:not([fill="transparent"]){transform-box:fill-box;transform-origin:bottom;animation:dCresceY .6s cubic-bezier(.2,.7,.2,1) .15s both}
+.anima .pf-barra i,.anima .pf-pilha i{animation:dCresceX .8s cubic-bezier(.2,.7,.2,1) .2s both}
+.anima .pf-anel circle+circle{animation:dAnel 1s cubic-bezier(.2,.7,.2,1) .15s both}
+.anima .pf-col polyline{stroke-dasharray:1;animation:dDesenha 1s ease .2s both}
+/* passar o mouse */
+.btn{transition:background-color .15s,border-color .15s,color .15s,box-shadow .18s,transform .12s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(var(--sombra-rgb),.12)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.98);box-shadow:none}
+.card{transition:box-shadow .22s,border-color .22s,transform .22s}
+.pf-col>.card:hover,.pf-dupla>.card:hover,.at-doc:hover,.ag-grupo:hover{box-shadow:0 8px 24px rgba(var(--sombra-rgb),.08);border-color:var(--borda-forte)}
+.pf-kpi:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(var(--sombra-rgb),.1)}
+.tr-it,.cc-aba,.cc-acao,.pf-aba,.aba,.at-it,.ag-it,.pf-link,.pf-x,.at-tag,.tr-logo{transition:background-color .18s,color .18s,transform .18s,opacity .18s}
+.tr-it i,.cc-aba i,.cc-acao i{transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.tr-it:hover i,.cc-aba:hover i,.cc-acao:hover i{transform:scale(1.15)}
+.tr-it.on i{transform:scale(1.05)}
+.cc-aba:hover,.cc-acao:hover{transform:translateX(3px)}
+.cc-aba.on{box-shadow:inset 3px 0 0 var(--primaria)}
+.tr-logo:hover{transform:scale(1.04)}
+.at-it:hover{transform:translateX(2px)}.ag-it:hover{background:var(--linha-hover)}
+button.at-tag:hover{transform:translateY(-1px)}button.at-tag:active{transform:scale(.95)}
+.r,.tabela-clientes tr.linha td,.pf-lin,.pf-it{transition:background-color .15s}
+.pf-feed .pf-it:hover{background:var(--linha-hover);border-radius:6px}
+.pf-selo span{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}.pf-selo.on:hover span{transform:scale(1.12) rotate(-6deg)}
+.pf-foto,.cc-foto{transition:transform .3s cubic-bezier(.3,1.6,.5,1)}.pf-foto:hover,.cc-foto:hover{transform:scale(1.05)}
+svg rect,svg circle{transition:opacity .15s}.pf-col svg:hover rect:not(:hover)[height]{opacity:.75}
+/* janelas, menus e avisos */
+.fundo-modal{animation:dFade .18s ease both}.modal{animation:dPop .24s cubic-bezier(.2,.7,.2,1) both}
+.menu-usuario,.menu-sit{animation:dPop .16s ease both}
+.toast{animation:dPop .25s cubic-bezier(.2,.7,.2,1) both!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .docs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 20px;border-top:1px solid var(--borda)}
 .doc{border:1px solid var(--borda);border-radius:var(--r-ctrl);padding:6px 8px 6px 7px;display:flex;align-items:center;gap:8px;font-size:12px;background:var(--branco)}
 .doc button{border:0;background:none;color:var(--apagado);padding:0 2px;font-size:15px;border-radius:3px}
@@ -845,7 +894,16 @@ const E = {
 // ════════════════════════════════════════════════════════════════════════
 // Roteamento
 // ════════════════════════════════════════════════════════════════════════
-window.addEventListener('hashchange', rotear);
+window.addEventListener('hashchange', () => { marcarAnimacao(); rotear(); });
+// Animação de entrada: só depois de trocar de tela ou de aba (não a cada clique que redesenha)
+let animarAte = Date.now() + 2500;
+function marcarAnimacao() { animarAte = Date.now() + 2500; }
+new MutationObserver(() => {
+  if (Date.now() > animarAte) return;
+  const alvo = $('#app'); if (!alvo || alvo.querySelector('.carregando')) return;
+  alvo.classList.remove('anima'); void alvo.offsetWidth; alvo.classList.add('anima');
+  animarAte = 0; clearTimeout(window._tAnima); window._tAnima = setTimeout(() => alvo.classList.remove('anima'), 1400);
+}).observe(document.getElementById('app'), { childList: true });
 async function rotear() {
   fecharMenus();
   const h = location.hash || '#/clientes';
@@ -1226,7 +1284,7 @@ function pfParcelas() {
   const ult = pm[pm.length - 1];
   return `<div class="card"><div class="pf-t">Parcelas acabando</div>
     <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Parcelas por mês"><line x1="8" x2="${W - 8}" y1="${H - 24}" y2="${H - 24}" stroke="var(--borda)"/>
-      <polyline points="${pts}" fill="none" stroke="var(--primaria)" stroke-width="2.5" stroke-linejoin="round"/>
+      <polyline points="${pts}" pathLength="1" fill="none" stroke="var(--primaria)" stroke-width="2.5" stroke-linejoin="round"/>
       ${pm.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.valor)}" r="${i === 0 ? 3.5 : 0}" fill="var(--primaria)"><title>${nomeMes(p.mes)}: ${brl0(p.valor)}</title></circle><rect x="${x(i) - 6}" y="0" width="12" height="${H - 24}" fill="transparent"><title>${nomeMes(p.mes)}: ${brl0(p.valor)}${p.terminam ? ' · ' + p.terminam + ' terminam' : ''}</title></rect>`).join('')}
       <text x="8" y="${H - 8}" font-size="10" fill="var(--fraco)">${mesCurtoPf(pm[0].mes)}</text><text x="${W - 8}" y="${H - 8}" font-size="10" fill="var(--fraco)" text-anchor="end">${mesCurtoPf(ult.mes)}</text></svg>
     <small class="suave">De ${brl0(pm[0].valor)} em ${mesNomePf(pm[0].mes)} para ${brl0(ult.valor)} em ${mesNomePf(ult.mes)}/${ult.mes.slice(2, 4)}.${Pp.livreEm ? ` Livre em ${mesCurtoPf(Pp.livreEm)}.` : ''}</small></div>`;
@@ -2976,7 +3034,7 @@ document.addEventListener('click', async ev => {
       pfSalvarFicha({ notas }, 'Anotação apagada'); break; }
     case 'ag-abrir': E.ataSel = el.dataset.ata || E.ataSel; E.ataEdit = null; return;
     case 'ata-nova': E.ataEdit = novaAta(); E.ataAntFeitos = null; E.ataExcluir = null; if (E.aba !== 'reunioes') { E.aba = 'reunioes'; history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/reunioes`); desenharCliente(); } else desenharConteudo(); window.scrollTo({ top: 0 }); break;
-    case 'ata-ver': E.ataSel = el.dataset.id; E.ataEdit = null; E.ataExcluir = null; desenharConteudo(); break;
+    case 'ata-ver': marcarAnimacao(); E.ataSel = el.dataset.id; E.ataEdit = null; E.ataExcluir = null; desenharConteudo(); break;
     case 'ata-editar': E.ataEdit = JSON.parse(JSON.stringify(atasDe().find(x => x.id === el.dataset.id))); if (!E.ataEdit.assuntos.length) E.ataEdit.assuntos = ['']; E.ataAntFeitos = null; desenharConteudo(); break;
     case 'ata-cancelar': E.ataEdit = null; desenharConteudo(); break;
     case 'ata-chip': { const at = lerAta(); if (el.dataset.grupo === 'formato') at.formato = el.dataset.v; else { const i = at.temas.indexOf(el.dataset.v); if (i >= 0) at.temas.splice(i, 1); else at.temas.push(el.dataset.v); } desenharConteudo(); break; }
@@ -2995,7 +3053,7 @@ document.addEventListener('click', async ev => {
     case 'pf-contato-cancelar': E.pfEditCont = false; desenharConteudo(); break;
     case 'pf-contato-salvar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: $('#pfData')?.value || null, motivo: $('#pfMotivo')?.value || '' } }, 'Próximo contato salvo'); break;
     case 'pf-contato-limpar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: null, motivo: '' } }, 'Próximo contato removido'); break;
-    case 'aba': E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
+    case 'aba': marcarAnimacao(); E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
     case 'mes': E.mesSel = el.dataset.mes || null; desenharConteudo(); break;
     case 'mix': E.modoMix = el.dataset.modo; desenharConteudo(); break;
     case 'filtro': E.filtroCat[el.dataset.cat] = !E.filtroCat[el.dataset.cat]; if (E.aba !== 'conta') { E.aba = 'conta'; desenharCliente(); } else desenharConteudo(); break;
