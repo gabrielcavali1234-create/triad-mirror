@@ -193,7 +193,14 @@ router.patch('/api/app/clientes/:id', rota(async (req, res) => {
     if (!repo) return semRepo(res);
     if (!UUID.test(pid(req))) return res.status(404).json({ error: 'Cliente não encontrado.' });
     if ('nome' in (req.body || {}) && !String(req.body.nome || '').trim()) return res.status(400).json({ error: 'O nome não pode ficar vazio.' });
-    const cliente = await repo.atualizarCliente(pid(req), req.body || {});
+    const corpo = { ...(req.body || {}) };
+    // A ficha chega por partes (tela da ficha, anotações, próximo contato): o que não veio continua como estava
+    if (corpo.ficha && typeof corpo.ficha === 'object') {
+        const atual = await repo.obterCliente(pid(req));
+        if (!atual) return res.status(404).json({ error: 'Cliente não encontrado.' });
+        corpo.ficha = { ...(atual.ficha || {}), ...corpo.ficha };
+    }
+    const cliente = await repo.atualizarCliente(pid(req), corpo);
     if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
     res.json({ cliente });
 }));
@@ -244,7 +251,21 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
     if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
     const analise = await repo.analiseAtual(cliente.id, req.usuario!);
     const { docs, apuracao } = await montarApuracao(analise.id);
-    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano: planoDaAnalise(analise, apuracao, cliente), evolucao: evolucaoMensal(apuracao.lancamentos) });
+    const plano = planoDaAnalise(analise, apuracao, cliente);
+    // Perfil do cliente: os mesmos números que o app do cliente mostraria se fosse publicado agora
+    let perfil = null;
+    if (docs.length) {
+        try {
+            perfil = montarFoto({
+                cliente, consultora: req.usuario?.nome || analise.analista || null, base: plano.base, plano: plano.config,
+                parcelamentos: (apuracao.resumo as any).parcelamentos,
+                mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia))),
+                lancamentos: apuracao.lancamentos,
+                anterior: cliente.app_snapshot || null
+            });
+        } catch (e: any) { console.error('[perfil]', e?.message); }
+    }
+    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano, evolucao: evolucaoMensal(apuracao.lancamentos), perfil, resumoPainel: linhaDoPainel(cliente, analise, docs, apuracao) });
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────

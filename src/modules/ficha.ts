@@ -37,7 +37,13 @@ export interface Ficha {
     objetivos: Objetivo[];
     lgpd: boolean;                     // cliente autorizou o uso dos dados para a análise
     lgpdEm: string | null;             // quando autorizou
+    // ── perfil do cliente
+    cidade: string;
+    notas: Nota[];                     // anotações da consultora (aparecem na linha do tempo)
+    proximoContato: { data: string | null; motivo: string };
 }
+
+export interface Nota { texto: string; em: string; autor: string }
 
 const texto = (v: any, max: number) => String(v ?? '').trim().slice(0, max);
 const dinheiro = (v: any): number | null => {
@@ -67,6 +73,12 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         return [{ tipo, descricao: texto(o?.descricao, 120), valor: dinheiro(o?.valor), prazo }];
     }).slice(0, 3);
     const lgpd = !!v?.lgpd;
+    const notas: Nota[] = (Array.isArray(v?.notas) ? v.notas : []).flatMap((n: any) => {
+        const t = texto(n?.texto, 1000);
+        const em = typeof n?.em === 'string' && !Number.isNaN(Date.parse(n.em)) ? n.em : agora.toISOString();
+        return t ? [{ texto: t, em, autor: texto(n?.autor, 80) }] : [];
+    }).slice(-100);
+    const pcData = /^\d{4}-\d{2}-\d{2}$/.test(String(v?.proximoContato?.data || '')) ? String(v.proximoContato.data) : null;
     return {
         nascimento: nascOk,
         profissao: texto(v?.profissao, 120),
@@ -78,6 +90,9 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         dividas,
         objetivos,
         lgpd,
-        lgpdEm: lgpd ? (typeof v?.lgpdEm === 'string' && !Number.isNaN(Date.parse(v.lgpdEm)) ? v.lgpdEm : agora.toISOString()) : null
+        lgpdEm: lgpd ? (typeof v?.lgpdEm === 'string' && !Number.isNaN(Date.parse(v.lgpdEm)) ? v.lgpdEm : agora.toISOString()) : null,
+        cidade: texto(v?.cidade, 80),
+        notas,
+        proximoContato: { data: pcData, motivo: texto(v?.proximoContato?.motivo, 200) }
     };
 }

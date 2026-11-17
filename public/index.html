@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '16/11/2026 · Gerar app do cliente + 3 visualizações';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '17/11/2026 · Perfil do cliente';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,6 +178,56 @@ body{--g-claro:color-mix(in srgb,var(--primaria) 45%,var(--branco));--g-fundo:co
 .perfil .ini{width:56px;height:56px;font-size:17px}
 .perfil h1{font-size:46px;margin:0;line-height:1.05}
 main > .card:has(.perfil){border:0;border-radius:0;border-bottom:2px solid var(--texto)}
+:root{--pf-entrou:color-mix(in srgb,var(--primaria) 38%,var(--branco))}
+.pf-topo{padding:0;overflow:hidden}
+.pf-capa{height:132px;background:linear-gradient(120deg,var(--primaria-escura),var(--primaria) 55%,color-mix(in srgb,var(--primaria) 70%,#9fd0b5));position:relative}
+.pf-capa-pills{position:absolute;right:16px;top:14px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pf-vidro{background:rgba(255,255,255,.16);color:#fff}.pf-marca{background:var(--marca);color:#3D3300}
+.pf-id{display:flex;gap:18px;align-items:flex-end;padding:0 24px;margin-top:-44px;position:relative;flex-wrap:wrap}
+.pf-foto{width:96px;height:96px;border-radius:50%;background:var(--primaria);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:36px;border:4px solid var(--branco);flex:none}
+.pf-nome{flex:1;min-width:220px;padding-top:50px}.pf-nome h1{font-size:34px;margin:0 0 3px;line-height:1.1}
+.pf-botoes{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:6px}
+.pf-frase{margin:14px 24px 0;color:var(--suave);max-width:860px}
+.pf-stats{display:flex;gap:34px;flex-wrap:wrap;padding:16px 24px 2px}.pf-stats b{font-size:21px;font-weight:600}.pf-stats span{color:var(--fraco)}
+.pf-abas{display:flex;gap:22px;padding:0 24px;margin-top:12px;border-top:1px solid var(--borda2);overflow-x:auto}
+.pf-aba{background:none;border:0;border-bottom:2px solid transparent;padding:12px 0;color:var(--fraco);font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.pf-aba:hover{color:var(--texto)}.pf-aba.on{color:var(--texto);border-bottom-color:var(--primaria)}
+.pf-grade{display:grid;grid-template-columns:290px minmax(0,1fr) 290px;gap:14px;margin-top:14px;align-items:start}
+.pf-col{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
+.pf-col>.card,.pf-dupla>.card,.pf-col>.pf-kpis>.card,.pf-docs{padding:16px 18px}
+.pf-t{font-size:12px;font-weight:600;color:var(--fraco);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.pf-t-flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pf-leg{text-transform:none;letter-spacing:0;font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pf-leg i{width:10px;height:10px;display:inline-block;border-radius:2px;margin-left:6px}
+.pf-lin{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--borda2)}.pf-lin:first-of-type{border-top:0}.pf-lin>span{color:var(--suave)}.pf-lin>b{text-align:right;font-weight:600;min-width:0;white-space:normal}.pf-lin>span{min-width:0}
+.pf-lin2{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}
+.pf-barra{height:8px;background:var(--borda2);border-radius:5px;overflow:hidden}.pf-barra i{display:block;height:100%;border-radius:5px}
+.pf-anel{position:relative;width:150px;height:150px;margin:2px auto 6px}.pf-anel div{position:absolute;inset:0;display:grid;place-items:center;align-content:center}.pf-anel b{font-family:var(--serif);font-size:40px;font-weight:500;line-height:1}.pf-anel small{color:var(--fraco)}
+.pf-centro{text-align:center;font-size:13px;font-weight:600;margin-bottom:14px}
+.pf-pilares{display:grid;gap:10px}
+.pf-bom{color:var(--primaria-texto)}.pf-ruim{color:var(--vermelho)}.pf-atencao{color:#8A6D00}
+.pf-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pf-kpi small{display:block;color:var(--fraco);font-size:12px}.pf-kpi b{font-size:21px;font-weight:600;display:block;margin:2px 0}.pf-d{font-size:12px}
+.pf-dupla{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pf-pilha{display:flex;height:14px;border-radius:4px;overflow:hidden;margin-bottom:8px}.pf-pilha i{display:block;height:100%}
+.pf-q{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}
+.pf-nova{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}.pf-nova textarea{flex:1;resize:vertical;min-height:42px}
+.pf-feed small{display:block;margin-top:2px}
+.pf-feed .pf-it{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--borda2)}.pf-feed .pf-it:first-child{border-top:0}
+.pf-ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:16px}
+.pf-i-nota{background:var(--amarelo-fundo);color:#8A6D00}.pf-i-doc{background:var(--borda2);color:var(--suave)}.pf-i-ok{background:var(--verde-fundo);color:var(--primaria-texto)}.pf-i-app{background:var(--azul-fundo);color:var(--azul)}.pf-i-al{background:var(--vermelho-fundo);color:var(--vermelho)}
+.pf-quebra{white-space:pre-wrap;overflow-wrap:anywhere}
+.pf-x{background:none;border:0;color:var(--apagado);cursor:pointer;padding:2px;align-self:flex-start}.pf-x:hover{color:var(--vermelho)}
+.pf-meta{margin-bottom:12px}.pf-meta:last-child{margin-bottom:0}.pf-meta small{display:block;margin-top:5px}
+.pf-alertas{display:grid;gap:7px}.pf-alertas span{border-radius:4px;padding:7px 10px;font-size:13px;font-weight:600}
+.pf-a-a{background:var(--amarelo-fundo);color:#8A6D00}.pf-a-r{background:var(--vermelho-fundo);color:var(--vermelho)}.pf-a-z{background:var(--borda2);color:var(--suave)}
+.pf-selos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 6px}
+.pf-selo{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;font-size:11.5px;color:var(--apagado)}
+.pf-selo span{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:21px;border:2px solid var(--borda)}
+.pf-selo.on{color:var(--suave)}.pf-selo.on span{border-color:var(--primaria);color:var(--primaria-texto);background:var(--verde-fundo)}
+.pf-link{background:none;border:0;color:var(--primaria-texto);font:inherit;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0;padding:0}
+.pf-obs{margin-top:10px;background:var(--amarelo-fundo);border-radius:4px;padding:9px 11px;font-size:13px;white-space:pre-wrap}
+@media (max-width:1180px){.pf-grade{grid-template-columns:270px minmax(0,1fr)}.pf-grade>.pf-col:last-child{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
+@media (max-width:820px){.pf-grade{grid-template-columns:1fr}.pf-kpis{grid-template-columns:1fr 1fr}.pf-dupla{grid-template-columns:1fr}.pf-id{padding:0 16px}.pf-frase{margin:12px 16px 0}.pf-stats{padding:14px 16px 2px;gap:18px}.pf-abas{padding:0 16px}.pf-nome h1{font-size:28px}}
 .docs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 20px;border-top:1px solid var(--borda)}
 .doc{border:1px solid var(--borda);border-radius:var(--r-ctrl);padding:6px 8px 6px 7px;display:flex;align-items:center;gap:8px;font-size:12px;background:var(--branco)}
 .doc button{border:0;background:none;color:var(--apagado);padding:0 2px;font-size:15px;border-radius:3px}
@@ -713,7 +763,7 @@ const E = {
   taxonomia: null,              // { categorias, subcategorias }
   clientes: null, buscaClientes: '',
   cli: null,                    // { cliente, analise, documentos, apuracao }
-  aba: 'conta', modoMix: 'cat', mesSel: null, filtroCat: {}, busca: {}, sel: new Set(),
+  aba: 'perfil', modoMix: 'cat', mesSel: null, filtroCat: {}, busca: {}, sel: new Set(),
   salvando: 0, salvoEm: null,
   calMes: null, ordemParc: 'fim', soPendentes: false
 };
@@ -729,13 +779,13 @@ async function rotear() {
   if (h === '#/login') { location.hash = '#/clientes'; return; }
   if (!E.taxonomia) { try { E.taxonomia = await api('GET', '/api/app/categorias'); } catch (e) { return telaErro(e.message); } }
   if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
-  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
     if (m[2] === 'apresentacao') return telaApresentacao(m[1]);
     if (m[2] === 'ficha') { E.ap = null; return telaFicha(m[1]); }
     E.ap = null;
-    if (m[2]) E.aba = m[2];
+    E.aba = m[2] || 'perfil'; E.pfEditCont = false;
     return telaCliente(m[1]);
   }
   return telaClientes();
@@ -936,29 +986,20 @@ function desenharCliente() {
       <button data-acao="excluir-doc" data-id="${d.id}" title="Excluir documento" aria-label="Excluir documento"><i class="ti ti-x"></i></button></span>`;
   }).join('');
 
+  E.chipsDocs = chipsDocs;
+  if (LANC_ABAS.includes(E.aba)) E.ultLanc = E.aba;
+  const precisaDoc = !documentos.length && E.aba !== 'perfil' && E.aba !== 'docs';
   $('#app').innerHTML = topo(salvoTxt()) + `<main>
     <div style="margin-bottom:10px"><a href="#/clientes" class="suave" style="text-decoration:none;font-size:13px"><i class="ti ti-arrow-left"></i> Clientes</a></div>
-    <div class="card">
-      <div class="perfil">
-        <div style="display:flex;gap:14px;align-items:center;min-width:0"><span class="ini">${esc(iniciais(cliente.nome))}</span>
-          <div style="min-width:0"><h1>${esc(cliente.nome)}</h1><div class="suave" style="font-size:13px;margin-top:3px">${info || 'Perfil sem dados complementares'}</div></div></div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          ${concluida ? '<span class="pill verde"><i class="ti ti-check"></i> Análise concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}
-          <button class="btn ${cliente.app_publicado_em ? '' : 'primario'}" data-acao="app-cliente"><i class="ti ti-device-mobile"></i> ${cliente.app_publicado_em ? 'App do cliente' + (cliente.app_ativo ? ' <span class="pill verde" style="margin-left:2px">no ar</span>' : ' <span class="pill vermelho" style="margin-left:2px">desativado</span>') : 'Gerar app do cliente'}</button>
-          <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha</button>
-        </div>
-      </div>
-      ${documentos.length ? `<div class="docs">${chipsDocs}<button class="btn" data-acao="novo-doc" style="padding:6px 11px;font-size:13px"><i class="ti ti-plus"></i> Documento</button></div>` : ''}
-    </div>
-    ${documentos.length ? `
-    <div class="abas" role="tablist">
+    ${cabecalhoPerfil()}
+    ${LANC_ABAS.includes(E.aba) && documentos.length ? `
+    <div class="abas" role="tablist" style="margin-top:14px">
       <button class="aba ${E.aba === 'tudo' ? 'on' : ''}" data-acao="aba" data-aba="tudo" role="tab"><span class="ic tudo"><i class="ti ti-layout-list"></i></span><span><b>Tudo junto</b><small>Conta + cartão</small></span></button>
       <button class="aba ${E.aba === 'conta' ? 'on' : ''}" data-acao="aba" data-aba="conta" role="tab"><span class="ic conta"><i class="ti ti-building-bank"></i></span><span><b>Conta bancária</b><small>${bancosConta.length ? esc(bancosConta.join(', ')) : 'Nenhum extrato ainda'}</small></span></button>
       <button class="aba ${E.aba === 'cartao' ? 'on' : ''}" data-acao="aba" data-aba="cartao" role="tab"><span class="ic cartao"><i class="ti ti-credit-card"></i></span><span><b>Cartão de crédito</b><small>${cartoes.length ? esc(cartoes.join(', ')) : 'Nenhuma fatura ainda'}</small></span></button>
-      <button class="aba ${E.aba === 'plano' ? 'on' : ''}" data-acao="aba" data-aba="plano" role="tab"><span class="ic tudo"><i class="ti ti-target-arrow"></i></span><span><b>Plano do cliente</b><small>Atitudes e simulação</small></span></button>
-    </div>
-    <div id="conteudo"></div>` : `
-    <div class="card vazio" style="margin-top:16px"><h2>Envie o primeiro documento</h2><p class="suave">Extrato bancário (conta) ou fatura do cartão de crédito, em PDF ou foto.</p><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>`}
+    </div>` : ''}
+    ${precisaDoc ? `<div class="card vazio" style="margin-top:16px"><h2>Envie o primeiro documento</h2><p class="suave">Extrato bancário (conta) ou fatura do cartão de crédito, em PDF ou foto.</p><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>`
+      : `<div id="conteudo" style="${E.aba === 'perfil' ? '' : 'margin-top:14px'}"></div>`}
   </main>
   ${documentos.length ? `<div class="barra-acoes">
     <button data-acao="novo-doc"><i class="ti ti-file-plus"></i> Documento</button>
@@ -966,12 +1007,285 @@ function desenharCliente() {
     <button data-acao="editar-perfil"><i class="ti ti-user"></i> Ficha</button>
     ${concluida ? '<button data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="destaque" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>'}
   </div>` : ''}`;
-  if (documentos.length) desenharConteudo();
+  if (!precisaDoc) desenharConteudo();
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// PERFIL DO CLIENTE — capa + números + abas (Visão geral, Lançamentos,
+// Documentos, Plano, App). A Visão geral usa os mesmos cálculos do app do
+// cliente (E.cli.perfil) e a linha do painel (E.cli.resumoPainel).
+// ════════════════════════════════════════════════════════════════════════
+const LANC_ABAS = ['tudo', 'conta', 'cartao'];
+const FORMA_RENDA_TXT = { clt: 'CLT', autonomo: 'Autônomo', empresario: 'Empresário', aposentado: 'Aposentado', outro: '' };
+const DIVIDA_TXT = { emprestimo: 'Empréstimo', veiculo: 'Financiamento do veículo', imobiliario: 'Financiamento imobiliário', consignado: 'Consignado', cheque_especial: 'Cheque especial', outro: 'Outra dívida' };
+const mesCurtoPf = k => /^\d{4}-\d{2}/.test(k || '') ? MESES_C[Number(k.slice(5, 7)) - 1] + '/' + k.slice(2, 4) : '';
+const mesNomePf = k => /^\d{4}-\d{2}/.test(k || '') ? MESES[Number(k.slice(5, 7)) - 1].toLowerCase() : '';
+const PF_CORES = ['var(--primaria)', '#3B7D5E', 'var(--cal-barra)', '#C9A227', 'var(--borda-forte)'];
+
+function pfMeses() { return (E.cli?.perfil?.meses || []).filter(m => m.gastou > 0 || m.entrou > 0); }
+function pfUltimos() { const ms = pfMeses(); return { at: ms[ms.length - 1] || null, pa: ms.length > 1 ? ms[ms.length - 2] : null }; }
+
+function cabecalhoPerfil() {
+  const { cliente: c, analise, documentos } = E.cli;
+  const P = E.cli.perfil, R = E.cli.resumoPainel || {}, fi = c.ficha || {};
+  const idade = idadeDe(fi.nascimento);
+  const info = [fi.profissao ? esc(fi.profissao) : '', idade != null ? idade + ' anos' : '', FORMA_RENDA_TXT[fi.formaRenda] || '',
+    fi.dependentes ? fi.dependentes + (fi.dependentes > 1 ? ' dependentes' : ' dependente') : '', fi.cidade ? esc(fi.cidade) : ''].filter(Boolean).join(' · ');
+  const objs = (fi.objetivos || []).map(o => o.descricao).filter(Boolean);
+  const frase = c.objetivo || (objs.length ? 'Objetivos: ' + objs.join(', ') : '');
+  const { at } = pfUltimos();
+  const fone = String(c.telefone || '').replace(/\D/g, '');
+  const concluida = analise.status === 'concluida';
+  const desde = (c.criado_em || '').slice(0, 7);
+  const stats = [
+    P?.nota ? [String(P.nota.valor), 'nota'] : null,
+    R.renda ? [brl0(R.renda), 'renda'] : null,
+    at ? (at.semRenda ? [brl0(at.gastou), 'gastou em ' + MESES_C[Number(at.mes.slice(5, 7)) - 1]] : [brl0(Math.abs(at.sobra)), (at.sobra >= 0 ? 'sobrou em ' : 'faltou em ') + MESES_C[Number(at.mes.slice(5, 7)) - 1]]) : null,
+    R.meses?.length ? [String(R.meses.length), R.meses.length > 1 ? 'meses analisados' : 'mês analisado'] : null,
+    [String(documentos.length), documentos.length === 1 ? 'documento' : 'documentos']
+  ].filter(Boolean);
+  const secao = LANC_ABAS.includes(E.aba) ? 'lanc' : E.aba;
+  const aba = (id, alvo, txt) => `<button class="pf-aba ${secao === id ? 'on' : ''}" data-acao="aba" data-aba="${alvo}" role="tab" aria-selected="${secao === id}">${txt}</button>`;
+  return `<div class="card pf-topo">
+    <div class="pf-capa">
+      <div class="pf-capa-pills">${desde ? `<span class="pill pf-vidro">Cliente desde ${mesCurtoPf(desde)}</span>` : ''}
+        ${concluida ? '<span class="pill pf-vidro"><i class="ti ti-check"></i> Análise concluída</span>' : documentos.length ? '<span class="pill pf-vidro">Em revisão</span>' : '<span class="pill pf-vidro">Sem documentos</span>'}
+        ${c.app_publicado_em ? (c.app_ativo ? '<span class="pill pf-marca">App no ar</span>' : '<span class="pill pf-vidro">App desativado</span>') : ''}</div>
+    </div>
+    <div class="pf-id">
+      <span class="pf-foto">${esc(iniciais(c.nome))}</span>
+      <div class="pf-nome"><h1>${esc(c.nome)}</h1><div class="suave">${info || 'Complete a ficha para ver profissão, idade e cidade aqui'}</div></div>
+      <div class="pf-botoes">
+        ${fone ? `<a class="btn" href="https://wa.me/${fone.length <= 11 ? '55' + fone : fone}" target="_blank" rel="noopener" style="text-decoration:none"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>` : ''}
+        <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha</button>
+        <button class="btn ${c.app_publicado_em ? '' : 'primario'}" data-acao="app-cliente"><i class="ti ti-device-mobile"></i> ${c.app_publicado_em ? 'App do cliente' : 'Gerar app do cliente'}</button>
+      </div>
+    </div>
+    ${frase ? `<p class="pf-frase">“${esc(frase)}”</p>` : ''}
+    <div class="pf-stats num">${stats.map(([v, l]) => `<div><b>${v}</b> <span>${esc(l)}</span></div>`).join('')}</div>
+    <div class="pf-abas" role="tablist">
+      ${aba('perfil', 'perfil', 'Visão geral')}
+      ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'Lançamentos')}
+      ${aba('docs', 'docs', `Documentos <span class="fraco">${documentos.length}</span>`)}
+      ${aba('plano', 'plano', 'Plano')}
+      <button class="pf-aba" data-acao="app-cliente">App</button>
+    </div>
+  </div>`;
+}
+
+// ── blocos da visão geral
+function pfNota() {
+  const N = E.cli.perfil?.nota; if (!N) return '';
+  const r = 50, C = 2 * Math.PI * r, d = N.valor / 100 * C;
+  const delta = N.anterior != null ? N.valor - N.anterior : null;
+  return `<div class="card"><div class="pf-t">Saúde financeira</div>
+    <div class="pf-anel"><svg viewBox="0 0 120 120" width="150" height="150" aria-hidden="true"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--borda2)" stroke-width="11"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--primaria)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${d.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/></svg>
+      <div><b>${N.valor}</b><small>${esc(N.rotulo)}</small></div></div>
+    <div class="pf-centro ${delta > 0 ? 'pf-bom' : delta < 0 ? 'pf-ruim' : 'fraco'}">${delta == null ? 'Nota de 0 a 100' : delta === 0 ? 'Igual à última publicação' : `${delta > 0 ? '▲' : '▼'} ${Math.abs(delta)} pontos desde a última publicação`}</div>
+    <div class="pf-pilares">${N.pilares.map(p => `<div title="${esc(p.texto)}"><div class="pf-lin2"><span>${esc(p.nome)}</span><b class="num">${p.pontos}/25</b></div><div class="pf-barra"><i style="width:${p.pontos / 25 * 100}%;background:${p.status === 'ok' ? 'var(--primaria)' : p.status === 'atencao' ? '#C9A227' : 'var(--vermelho)'}"></i></div></div>`).join('')}</div>
+  </div>`;
+}
+
+function pfSobre() {
+  const { cliente: c } = E.cli, fi = c.ficha || {}, R = E.cli.resumoPainel || {};
+  const bancos = [...new Set((E.cli.documentos || []).map(d => d.banco).filter(Boolean))];
+  const L = [
+    ['Profissão', fi.profissao ? esc(fi.profissao) : ''],
+    ['Nascimento', fi.nascimento ? dataCompleta(fi.nascimento) : ''],
+    ['Renda', R.renda ? brl0(R.renda) + (FORMA_RENDA_TXT[fi.formaRenda] ? ' · ' + FORMA_RENDA_TXT[fi.formaRenda] : '') + (R.rendaFonte === 'extrato' ? ' <span class="fraco">(extrato)</span>' : '') : ''],
+    ['Outras rendas', fi.outrasRendas ? brl0(fi.outrasRendas) : ''],
+    ['Dependentes', fi.dependentes != null ? String(fi.dependentes) : ''],
+    ['Reserva hoje', fi.reservaAtual != null ? brl0(fi.reservaAtual) : ''],
+    ['Bancos', bancos.length ? esc(bancos.join(' · ')) : ''],
+    ['Cidade', fi.cidade ? esc(fi.cidade) : ''],
+    ['Telefone', c.telefone ? esc(c.telefone) : ''],
+    ['E-mail', c.email ? esc(c.email) : ''],
+    ['CPF', c.cpf ? esc(c.cpf) : ''],
+    ['LGPD', fi.lgpd ? `<span class="pf-bom">Autorizado ${fi.lgpdEm ? dataBR(fi.lgpdEm.slice(0, 10)) : ''}</span>` : '<span class="pf-ruim">Não autorizado</span>']
+  ].filter(([, v]) => v);
+  return `<div class="card"><div class="pf-t">Sobre</div>${L.map(([k, v]) => `<div class="pf-lin"><span>${k}</span><b>${v}</b></div>`).join('')}
+    ${c.observacao ? `<div class="pf-obs">${esc(c.observacao)}</div>` : ''}</div>`;
+}
+
+function pfKpis() {
+  const { at, pa } = pfUltimos(), R = E.cli.resumoPainel || {}, P = E.cli.perfil, fi = E.cli.cliente.ficha || {};
+  if (!at) return '';
+  const mm = MESES_C[Number(at.mes.slice(5, 7)) - 1], pm = pa ? mesNomePf(pa.mes) : '';
+  const comparavel = pa && pa.comFatura === at.comFatura;
+  const delta = (a, b, menorMelhor) => {
+    if (!comparavel || b == null) return '';
+    const d = a - b; if (Math.abs(d) < 1) return `<div class="pf-d fraco">igual a ${pm}</div>`;
+    const bom = menorMelhor ? d < 0 : d > 0;
+    return `<div class="pf-d ${bom ? 'pf-bom' : 'pf-ruim'}">${d > 0 ? '▲' : '▼'} ${brl0(Math.abs(d))} vs ${pm}</div>`;
+  };
+  const prox = P?.parcelas?.proxima;
+  const tiles = [
+    `<small>Renda</small><b class="num">${R.renda ? brl0(R.renda + (Number(fi.outrasRendas) || 0)) : '—'}</b><div class="pf-d fraco">${fi.outrasRendas ? 'salário + ' + brl0(fi.outrasRendas) + ' extra' : R.rendaFonte === 'extrato' ? 'pelo extrato' : R.renda ? 'declarada' : 'não informada'}</div>`,
+    `<small>Gastou em ${mm}</small><b class="num">${brl0(at.gastou)}</b>${delta(at.gastou, pa?.gastou, true)}`,
+    at.semRenda ? `<small>Juros em ${mm}</small><b class="num">${brl0(at.juros)}</b><div class="pf-d ${at.juros > 0.5 ? 'pf-ruim' : 'pf-bom'}">${at.juros > 0.5 ? 'pagou juros do cartão' : 'sem juros'}</div>`
+      : `<small>${at.sobra >= 0 ? 'Sobrou' : 'Faltou'} em ${mm}</small><b class="num ${at.sobra < 0 ? 'pf-ruim' : ''}">${brl0(Math.abs(at.sobra))}</b>${delta(at.sobra, pa?.sobra, false)}`,
+    `<small>Parcelas ${prox ? 'em ' + MESES_C[Number(prox.mes.slice(5, 7)) - 1] : ''}</small><b class="num">${prox ? brl0(prox.valor) : 'Nenhuma'}</b><div class="pf-d ${R.pctRendaEmParcelas >= 30 ? 'pf-ruim' : R.pctRendaEmParcelas >= 15 ? 'pf-atencao' : 'fraco'}">${R.pctRendaEmParcelas != null ? Math.round(R.pctRendaEmParcelas) + '% da renda' : prox ? 'cartão parcelado' : 'cartão livre'}</div>`
+  ];
+  return `<div class="pf-kpis">${tiles.map(t => `<div class="card pf-kpi">${t}</div>`).join('')}</div>`;
+}
+
+function pfGraficoMeses() {
+  const ms = pfMeses(); if (!ms.length) return '';
+  const semRenda = ms.every(m => m.semRenda);
+  const W = 560, H = 200, pt = 26, pb = 24, n = ms.length, slot = (W - 20) / n, bw = Math.min(30, slot * (semRenda ? 0.5 : 0.32));
+  const maxV = Math.max(...ms.map(m => Math.max(m.gastou, semRenda ? 0 : m.entrou))) * 1.1 || 1, y = v => pt + (H - pt - pb) * (1 - v / maxV);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Entrou e gastou por mês"><line x1="10" x2="${W - 10}" y1="${y(0)}" y2="${y(0)}" stroke="var(--borda)"/>`;
+  ms.forEach((m, i) => {
+    const cx = 10 + i * slot + slot / 2, last = i === n - 1;
+    if (!semRenda) s += `<g><title>${nomeMes(m.mes)}: entrou ${brl0(m.entrou)}${m.rendaEstimada ? ' (renda declarada)' : ''}</title><rect x="${cx - bw - 2}" y="${y(m.entrou)}" width="${bw}" height="${y(0) - y(m.entrou)}" rx="2" fill="var(--pf-entrou)" ${m.rendaEstimada ? 'opacity=".55"' : ''}/></g>`;
+    s += `<g><title>${nomeMes(m.mes)}: gastou ${brl0(m.gastou)}</title><rect x="${semRenda ? cx - bw / 2 : cx + 2}" y="${y(m.gastou)}" width="${bw}" height="${y(0) - y(m.gastou)}" rx="2" fill="${m.gastou > m.entrou && !m.semRenda ? 'var(--vermelho)' : 'var(--primaria)'}"/></g>`;
+    s += `<text x="${cx}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--fraco)" font-weight="${last ? 700 : 400}">${MESES_C[Number(m.mes.slice(5, 7)) - 1]}</text>`;
+  });
+  s += `</svg>`;
+  return `<div class="card"><div class="pf-t pf-t-flex"><span>${semRenda ? 'Gastos mês a mês' : 'Entrou × gastou, mês a mês'}</span>
+    <span class="pf-leg">${semRenda ? '' : '<i style="background:var(--pf-entrou)"></i>Entrou '}<i style="background:var(--primaria)"></i>Gastou${semRenda ? '' : ' <i style="background:var(--vermelho)"></i>Gastou mais do que entrou'}</span></div>${s}</div>`;
+}
+
+function pfOndeVai() {
+  const { at } = pfUltimos(); if (!at) return '';
+  const cats = Object.entries(at.categorias || {}).sort((a, b) => b[1] - a[1]);
+  const top = cats.filter(([k]) => k !== 'Outros').slice(0, 4), resto = Math.max(0, at.gastou - top.reduce((a, [, v]) => a + v, 0));
+  const linhas = [...top, ...(resto >= 1 ? [['Outros gastos', resto]] : [])];
+  const tot = linhas.reduce((a, [, v]) => a + v, 0) || 1;
+  return `<div class="card"><div class="pf-t">Para onde vai o dinheiro (${MESES_C[Number(at.mes.slice(5, 7)) - 1]})</div>
+    <div class="pf-pilha">${linhas.map(([, v], i) => `<i style="width:${v / tot * 100}%;background:${PF_CORES[i]}"></i>`).join('')}</div>
+    ${linhas.map(([k, v], i) => `<div class="pf-lin"><span><i class="pf-q" style="background:${PF_CORES[i]}"></i>${esc(k)}</span><b class="num">${brl0(v)}</b></div>`).join('')}</div>`;
+}
+
+function pfParcelas() {
+  const Pp = E.cli.perfil?.parcelas; if (!Pp) return '';
+  const pm = (Pp.porMes || []).slice(0, 18);
+  if (!pm.length) return `<div class="card"><div class="pf-t">Parcelas acabando</div><p class="suave" style="margin:0">Nenhuma compra parcelada em aberto no cartão.</p></div>`;
+  const W = 260, H = 110, mx = Math.max(...pm.map(p => p.valor)) || 1, x = i => 8 + i * (W - 16) / Math.max(1, pm.length - 1), y = v => 10 + (H - 34) * (1 - v / mx);
+  const pts = pm.map((p, i) => `${x(i).toFixed(1)},${y(p.valor).toFixed(1)}`).join(' ');
+  const ult = pm[pm.length - 1];
+  return `<div class="card"><div class="pf-t">Parcelas acabando</div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Parcelas por mês"><line x1="8" x2="${W - 8}" y1="${H - 24}" y2="${H - 24}" stroke="var(--borda)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--primaria)" stroke-width="2.5" stroke-linejoin="round"/>
+      ${pm.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.valor)}" r="${i === 0 ? 3.5 : 0}" fill="var(--primaria)"><title>${nomeMes(p.mes)}: ${brl0(p.valor)}</title></circle><rect x="${x(i) - 6}" y="0" width="12" height="${H - 24}" fill="transparent"><title>${nomeMes(p.mes)}: ${brl0(p.valor)}${p.terminam ? ' · ' + p.terminam + ' terminam' : ''}</title></rect>`).join('')}
+      <text x="8" y="${H - 8}" font-size="10" fill="var(--fraco)">${mesCurtoPf(pm[0].mes)}</text><text x="${W - 8}" y="${H - 8}" font-size="10" fill="var(--fraco)" text-anchor="end">${mesCurtoPf(ult.mes)}</text></svg>
+    <small class="suave">De ${brl0(pm[0].valor)} em ${mesNomePf(pm[0].mes)} para ${brl0(ult.valor)} em ${mesNomePf(ult.mes)}/${ult.mes.slice(2, 4)}.${Pp.livreEm ? ` Livre em ${mesCurtoPf(Pp.livreEm)}.` : ''}</small></div>`;
+}
+
+function pfEventosTempo() {
+  const { cliente: c, analise, documentos } = E.cli, fi = c.ficha || {}, P = E.cli.perfil;
+  const ev = [];
+  (fi.notas || []).forEach((n, i) => ev.push({ q: n.em, tipo: 'nota', titulo: 'Anotação' + (n.autor ? ' de ' + n.autor : ''), texto: n.texto, quando: dataCompleta(n.em.slice(0, 10)), i }));
+  const porDia = {};
+  documentos.forEach(d => { const k = (d.criado_em || '').slice(0, 10); if (k) (porDia[k] = porDia[k] || []).push(d); });
+  Object.entries(porDia).forEach(([k, ds]) => ev.push({ q: k + 'T23:00', tipo: 'doc', titulo: ds.length > 1 ? ds.length + ' documentos lidos' : 'Documento lido',
+    texto: ds.map(d => (d.tipo === 'extrato' ? 'Extrato ' : 'Fatura ') + (d.banco || '') + (d.vencimento ? ' venc. ' + dataBR(d.vencimento) : '')).join(' · '), quando: dataCompleta(k) }));
+  if (analise.status === 'concluida' && analise.atualizado_em) ev.push({ q: analise.atualizado_em, tipo: 'ok', titulo: 'Análise concluída', texto: lancs().filter(l => l.situacao === 'incluido').length + ' lançamentos na análise', quando: dataCompleta(analise.atualizado_em.slice(0, 10)) });
+  const hist = c.app_snapshot?.historico || [];
+  hist.forEach((h, i) => ev.push({ q: h.data, tipo: 'app', titulo: i === 0 ? 'App do cliente publicado' : 'App atualizado para o cliente', texto: `Nota ${h.nota}` + (i > 0 && hist[i - 1] ? ` (era ${hist[i - 1].nota})` : ''), quando: dataCompleta(h.data.slice(0, 10)) }));
+  (P?.eventos || []).forEach(e => ev.push({ q: e.mes + '-27', tipo: e.tipo === 'conquista' ? 'conq' : 'alerta', titulo: e.titulo, texto: e.texto, quando: nomeMes(e.mes) + ' · ' + (e.tipo === 'conquista' ? 'Conquista' : 'Atenção') }));
+  if (c.criado_em) ev.push({ q: c.criado_em, tipo: 'novo', titulo: 'Cliente cadastrado', texto: '', quando: dataCompleta(c.criado_em.slice(0, 10)) });
+  return ev.sort((a, b) => String(b.q).localeCompare(String(a.q)));
+}
+
+const PF_ICONE = { nota: ['pf-i-nota', 'ti-pencil'], doc: ['pf-i-doc', 'ti-file-text'], ok: ['pf-i-ok', 'ti-player-play'], app: ['pf-i-app', 'ti-device-mobile'], conq: ['pf-i-ok', 'ti-star'], alerta: ['pf-i-al', 'ti-alert-triangle'], novo: ['pf-i-doc', 'ti-user-plus'] };
+function pfLinhaTempo() {
+  const ev = pfEventosTempo(), lim = E.pfTudo ? ev.length : 8;
+  return `<div class="card"><div class="pf-t">Linha do tempo</div>
+    <div class="pf-nova"><textarea id="pfNota" rows="2" maxlength="1000" placeholder="Escreva uma anotação sobre o cliente (fica salva na linha do tempo)…"></textarea><button class="btn primario" data-acao="pf-nota"><i class="ti ti-send"></i> Salvar</button></div>
+    <div class="pf-feed">${ev.slice(0, lim).map(e => `<div class="pf-it"><span class="pf-ic ${PF_ICONE[e.tipo][0]}"><i class="ti ${PF_ICONE[e.tipo][1]}"></i></span>
+      <div style="flex:1;min-width:0"><b>${esc(e.titulo)}</b>${e.texto ? `<div class="suave pf-quebra">${esc(e.texto)}</div>` : ''}<small class="fraco">${e.quando}</small></div>
+      ${e.tipo === 'nota' ? `<button class="pf-x" data-acao="pf-nota-del" data-i="${e.i}" title="Apagar anotação" aria-label="Apagar anotação"><i class="ti ti-x"></i></button>` : ''}</div>`).join('')}</div>
+    ${ev.length > 8 ? `<button class="btn" data-acao="pf-tudo" style="width:100%;margin-top:8px">${E.pfTudo ? 'Mostrar menos' : `Ver tudo (${ev.length})`}</button>` : ''}</div>`;
+}
+
+function pfObjetivos() {
+  const metas = E.cli.perfil?.futuro?.metas;
+  const fi = E.cli.cliente.ficha || {};
+  const pct = m => Math.max(0, Math.min(100, m.valor ? m.atual / m.valor * 100 : 0));
+  let corpo;
+  if (metas?.length) corpo = metas.map((m, i) => `<div class="pf-meta"><div class="pf-lin2"><b>${esc(m.titulo)}</b><span class="num">${m.atual >= m.valor ? '✓' : Math.round(pct(m)) + '%'}</span></div>
+      <div class="pf-barra"><i style="width:${pct(m)}%;background:${i % 2 ? 'var(--azul)' : 'var(--primaria)'}"></i></div>
+      <small class="fraco">${brl0(m.atual)} de ${brl0(m.valor)}${m.prazo ? ' · ' + mesCurtoPf(m.prazo) : ''}${m.previsao && m.atual < m.valor ? ' · previsão ' + mesCurtoPf(m.previsao) : ''}</small></div>`).join('');
+  else if ((fi.objetivos || []).length) corpo = fi.objetivos.map(o => `<div class="pf-lin"><span>${esc(o.descricao || 'Objetivo')}</span><b>${o.valor ? brl0(o.valor) : ''}${o.prazo ? ' · ' + mesCurtoPf(o.prazo) : ''}</b></div>`).join('');
+  else corpo = `<p class="suave" style="margin:0">Nenhum objetivo na ficha. <a href="#" data-acao="editar-perfil">Adicionar</a></p>`;
+  return `<div class="card"><div class="pf-t">Objetivos</div>${corpo}</div>`;
+}
+
+function pfDividas() {
+  const fi = E.cli.cliente.ficha || {}, Pp = E.cli.perfil?.parcelas, rot = E.cli.apuracao?.resumo?.endividamentoCartao;
+  const L = (fi.dividas || []).map(d => [DIVIDA_TXT[d.tipo] || 'Dívida', [d.saldo ? brl0(d.saldo) : '', d.parcela ? brl0(d.parcela) + (d.parcelasRestantes ? ' · ' + d.parcelasRestantes + 'x' : '') : ''].filter(Boolean).join(' · ') || '—']);
+  if (Pp?.totalRestante > 0) L.push(['Cartão parcelado', brl0(Pp.totalRestante) + (Pp.livreEm ? ' · até ' + mesCurtoPf(Pp.livreEm) : '')]);
+  if (E.cli.documentos.some(d => d.tipo === 'fatura')) L.push(['Rotativo', rot?.emRotativo ? `<span class="pf-ruim">Sim${rot.encargos ? ' · ' + brl0(rot.encargos) + ' de juros' : ''}</span>` : '<span class="pf-bom">Nenhum</span>']);
+  return `<div class="card"><div class="pf-t">Dívidas</div>${L.length ? L.map(([k, v]) => `<div class="pf-lin"><span>${esc(k)}</span><b class="num">${v}</b></div>`).join('') : `<p class="suave" style="margin:0">${fi.semDividas ? 'Cliente sem dívidas.' : 'Nenhuma dívida informada.'}</p>`}</div>`;
+}
+
+function pfAtencao() {
+  const R = E.cli.resumoPainel || {}, itens = [];
+  (R.alertas || []).forEach(a => itens.push([/Rotativo|Documento ilegível/.test(a) ? 'pf-a-r' : 'pf-a-a', a]));
+  if (R.aClassificar) itens.push(['pf-a-z', R.aClassificar + (R.aClassificar > 1 ? ' lançamentos a classificar' : ' lançamento a classificar')]);
+  const fi = E.cli.cliente.ficha || {};
+  if (!fi.lgpd) itens.push(['pf-a-z', 'Falta a autorização LGPD na ficha']);
+  if (!itens.length) return '';
+  return `<div class="card"><div class="pf-t">Atenção</div><div class="pf-alertas">${itens.map(([c, t]) => `<span class="${c}">${esc(t)}</span>`).join('')}</div></div>`;
+}
+
+function pfConquistas() {
+  const P = E.cli.perfil; if (!P) return '';
+  const { at } = pfUltimos(), rot = E.cli.apuracao?.resumo?.endividamentoCartao;
+  const temFatura = E.cli.documentos.some(d => d.tipo === 'fatura');
+  const reserva = (P.futuro?.metas || []).find(m => /reserva/i.test(m.titulo));
+  const B = [
+    ['ti-circle-check', 'Fora do rotativo', temFatura && !rot?.emRotativo],
+    ['ti-receipt-off', 'Mês sem juros', !!at && temFatura && at.juros <= 0.5],
+    ['ti-coin', 'Sobrou dinheiro', !!at && !at.semRenda && at.sobra > 0],
+    ['ti-trending-up', 'Nota subiu', P.nota?.anterior != null && P.nota.valor > P.nota.anterior],
+    ['ti-shield-check', 'Reserva completa', !!reserva && reserva.atual >= reserva.valor],
+    ['ti-credit-card-off', 'Sem parcelas', temFatura && !P.parcelas?.proxima]
+  ];
+  return `<div class="card"><div class="pf-t">Conquistas <span class="fraco" style="text-transform:none;letter-spacing:0;font-weight:500">${B.filter(b => b[2]).length} de ${B.length}</span></div>
+    <div class="pf-selos">${B.map(([ic, t, ok]) => `<div class="pf-selo ${ok ? 'on' : ''}"><span><i class="ti ${ic}"></i></span>${t}</div>`).join('')}</div></div>`;
+}
+
+function pfContato() {
+  const pc = (E.cli.cliente.ficha || {}).proximoContato || {};
+  if (E.pfEditCont) return `<div class="card"><div class="pf-t">Próximo contato</div>
+    <label class="rot" for="pfData">Data</label><input id="pfData" type="date" value="${esc(pc.data || '')}" style="width:100%;margin-bottom:10px">
+    <label class="rot" for="pfMotivo">Motivo</label><input id="pfMotivo" type="text" maxlength="200" value="${esc(pc.motivo || '')}" placeholder="Ex: revisão mensal, pedir faturas" style="width:100%">
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn primario" data-acao="pf-contato-salvar">Salvar</button><button class="btn" data-acao="pf-contato-cancelar">Cancelar</button>${pc.data ? '<button class="btn" data-acao="pf-contato-limpar" style="margin-left:auto">Limpar</button>' : ''}</div></div>`;
+  const hoje = new Date().toISOString().slice(0, 10), atrasado = pc.data && pc.data < hoje;
+  return `<div class="card"><div class="pf-t pf-t-flex"><span>Próximo contato</span><button class="pf-link" data-acao="pf-contato-editar">${pc.data ? 'Editar' : 'Marcar'}</button></div>
+    ${pc.data ? `<b class="${atrasado ? 'pf-ruim' : ''}">${dataCompleta(pc.data)}${atrasado ? ' · atrasado' : pc.data === hoje ? ' · hoje' : ''}</b>${pc.motivo ? `<div class="suave" style="margin-top:3px">${esc(pc.motivo)}</div>` : ''}`
+      : '<p class="suave" style="margin:0">Nenhum contato marcado.</p>'}</div>`;
+}
+
+function abaPerfil() {
+  const temDados = !!E.cli.perfil;
+  return `<div class="pf-grade">
+    <div class="pf-col">${pfNota()}${pfSobre()}</div>
+    <div class="pf-col">${temDados ? pfKpis() + pfGraficoMeses() + `<div class="pf-dupla">${pfOndeVai()}${pfParcelas()}</div>`
+      : `<div class="card vazio"><h2>Envie o primeiro documento</h2><p class="suave">Com o extrato ou a fatura, o perfil mostra os gráficos, a nota de saúde financeira e as parcelas.</p><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>`}${pfLinhaTempo()}</div>
+    <div class="pf-col">${pfObjetivos()}${pfDividas()}${pfAtencao()}${pfConquistas()}${pfContato()}</div>
+  </div>`;
+}
+
+function abaDocs(chipsDocs) {
+  return `<div class="card pf-docs"><div class="pf-t pf-t-flex"><span>Documentos do cliente</span><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>
+    ${E.cli.documentos.length ? `<div class="docs" style="border:0;padding-top:4px;margin-top:0">${chipsDocs}</div>` : '<p class="suave">Nenhum documento enviado ainda.</p>'}</div>`;
+}
+
+async function pfSalvarFicha(parcial, msg) {
+  try {
+    const r = await api('PATCH', '/api/app/clientes/' + E.cli.cliente.id, { ficha: parcial });
+    E.cli.cliente = r.cliente; desenharCliente(); if (msg) toast(msg);
+  } catch (e) { toast(e.message, true); }
 }
 
 function desenharConteudo() {
   const el = $('#conteudo'); if (!el) return;
-  if (E.aba === 'conta') el.innerHTML = abaConta();
+  if (E.aba === 'perfil') el.innerHTML = abaPerfil();
+  else if (E.aba === 'docs') el.innerHTML = abaDocs(E.chipsDocs || '');
+  else if (E.aba === 'conta') el.innerHTML = abaConta();
   else if (E.aba === 'cartao') el.innerHTML = abaCartao();
   else if (E.aba === 'plano') { el.innerHTML = abaPlano(); ligarPlano(); }
   else el.innerHTML = abaTudo();
@@ -1862,7 +2176,7 @@ const FC_DEPEND = [[0, 'Nenhuma'], [1, '1'], [2, '2'], [3, '3 ou mais']];
 const FC_DIVIDAS = [['emprestimo', 'Empréstimo pessoal'], ['veiculo', 'Financiamento de veículo'], ['imobiliario', 'Financiamento imobiliário'], ['consignado', 'Consignado'], ['cheque_especial', 'Cheque especial'], ['outro', 'Outra dívida']];
 const FC_OBJ = [['reserva', 'Reserva de emergência', 'Para imprevistos'], ['dividas', 'Sair das dívidas', 'Rotativo, empréstimos'], ['viagem', 'Viagem', 'Férias, intercâmbio'],
   ['carro', 'Carro', 'Troca ou primeiro carro'], ['casa', 'Casa própria', 'Entrada ou quitação'], ['aposentadoria', 'Aposentadoria', 'Viver de renda']];
-const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null });
+const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null, cidade: '' });
 const paraNumero = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : null; };
 const fmtValor = n => n == null ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const mascaraCpf = v => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
@@ -1928,6 +2242,10 @@ function desenharFicha() {
        <div><label class="rot" for="fcEmail">E-mail</label><input id="fcEmail" type="email" data-fc="email" value="${esc(d.email)}" maxlength="200" autocomplete="off" spellcheck="false"></div>
        <div><label class="rot" for="fcProf">Profissão</label><input id="fcProf" type="text" data-fc="f.profissao" value="${esc(f.profissao)}" maxlength="120"></div>
      </div>
+     <div class="fc-g2" style="margin-top:16px">
+       <div><label class="rot" for="fcCidade">Cidade</label><input id="fcCidade" type="text" data-fc="f.cidade" value="${esc(f.cidade || '')}" maxlength="80" placeholder="Ex: São Paulo/SP"></div>
+       <div></div>
+     </div>
      <div style="margin-top:16px"><label class="rot" for="fcObs">Observações <span class="fraco" style="font-weight:400">(opcional)</span></label><textarea id="fcObs" rows="2" data-fc="observacao" maxlength="2000" placeholder="Ex: prefere contato por WhatsApp à noite…">${esc(d.observacao)}</textarea></div>`,
 
     `<h1 class="fc-pergunta">Quanto entra na sua conta por mês?</h1>
@@ -1967,7 +2285,7 @@ function desenharFicha() {
       <div class="logo"><img src="/img/logo-dees-destaque.png" alt="Dees" class="logo-img logo-tema-claro"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img logo-tema-escuro"></div>
       <div class="dir"><span class="fc-quem">${nomeTopo}${analista ? ' · com ' + esc(analista) : ''}</span>${botaoTema()}
         ${F.id ? '<button class="btn" type="button" data-acao="fc-concluir" data-sair="1">Salvar e sair</button>' : ''}
-        <a class="btn" href="${F.id ? '#/cliente/' + F.id + '/' + (E.aba || 'conta') : '#/clientes'}" style="text-decoration:none">${F.id ? 'Fechar' : 'Cancelar'}</a></div>
+        <a class="btn" href="${F.id ? '#/cliente/' + F.id + '/' + (E.aba || 'perfil') : '#/clientes'}" style="text-decoration:none">${F.id ? 'Fechar' : 'Cancelar'}</a></div>
     </header>
     <ol class="fc-passos">${FC_PASSOS.map((t, k) => `<li><button type="button" data-acao="fc-passo" data-p="${k}" class="${k < p ? 'feito' : k === p ? 'atual' : ''}" ${k === p ? 'aria-current="step"' : ''}><b>Passo ${k + 1}</b>${t}</button></li>`).join('')}</ol>
     <div class="fc-palco" id="fcPalco">${passos[p]}</div>
@@ -2049,13 +2367,13 @@ async function salvarFicha(sair) {
       if (E.cli?.cliente?.id === F.id) E.cli.cliente = r.cliente;
       E.planoEdit = null;
       toast('Ficha salva');
-      location.hash = '#/cliente/' + F.id + '/' + (E.aba || 'conta');
+      location.hash = '#/cliente/' + F.id + '/' + (E.aba || 'perfil');
       if (sair) return;
     } else {
       const r = await api('POST', '/api/app/clientes', corpo);
       E.clientes = null;
       toast('Cliente cadastrado');
-      location.hash = '#/cliente/' + r.cliente.id + '/conta';
+      location.hash = '#/cliente/' + r.cliente.id + '/perfil';
     }
   } catch (e) {
     toast(e.message, true);
@@ -2246,7 +2564,7 @@ document.addEventListener('click', async ev => {
     case 'app-ativo': await acaoApp('ativo', { ativo: !!el.dataset.ativo }, el.dataset.ativo ? 'Link ativado' : 'Link desativado'); break;
     case 'app-copiar': { const l = linkApp(); try { await navigator.clipboard.writeText(l); toast('Link copiado'); } catch { $('#appLink')?.select(); document.execCommand?.('copy'); toast('Link copiado'); } break; }
     case 'filtro-carteira': E.filtroCarteira = el.dataset.f; desenharClientes(); break;
-    case 'abrir-cliente': location.hash = '#/cliente/' + id + '/conta'; break;
+    case 'abrir-cliente': location.hash = '#/cliente/' + id + '/perfil'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;
     case 'editar-perfil': location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
     case 'fc-chip': case 'fc-obj': case 'fc-passo': case 'fc-voltar': case 'fc-seguir': case 'fc-concluir': fichaClique(a, el); break;
@@ -2272,6 +2590,18 @@ document.addEventListener('click', async ev => {
       desenharConteudo(); break;
     }
     case 'sair': salvarSessao(null); E.cli = null; E.clientes = null; E.painel = null; location.hash = '#/login'; break;
+    case 'pf-nota': {
+      const t = ($('#pfNota')?.value || '').trim(); if (!t) { $('#pfNota')?.focus(); break; }
+      const notas = [...((E.cli.cliente.ficha || {}).notas || []), { texto: t, em: new Date().toISOString(), autor: sessao?.usuario?.nome || '' }];
+      pfSalvarFicha({ notas }, 'Anotação salva'); break; }
+    case 'pf-nota-del': {
+      const notas = [...((E.cli.cliente.ficha || {}).notas || [])]; notas.splice(+el.dataset.i, 1);
+      pfSalvarFicha({ notas }, 'Anotação apagada'); break; }
+    case 'pf-tudo': E.pfTudo = !E.pfTudo; desenharConteudo(); break;
+    case 'pf-contato-editar': E.pfEditCont = true; desenharConteudo(); break;
+    case 'pf-contato-cancelar': E.pfEditCont = false; desenharConteudo(); break;
+    case 'pf-contato-salvar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: $('#pfData')?.value || null, motivo: $('#pfMotivo')?.value || '' } }, 'Próximo contato salvo'); break;
+    case 'pf-contato-limpar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: null, motivo: '' } }, 'Próximo contato removido'); break;
     case 'aba': E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
     case 'mes': E.mesSel = el.dataset.mes || null; desenharConteudo(); break;
     case 'mix': E.modoMix = el.dataset.modo; desenharConteudo(); break;
