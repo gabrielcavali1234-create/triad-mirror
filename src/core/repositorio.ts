@@ -58,6 +58,38 @@ export interface Documento {
     custo_usd?: number;
     tempo_processamento?: number | null;
     criado_em: string;
+    arquivo_caminho?: string | null;    // PDF/foto original guardado no storage (envios a partir de 17/11/2026)
+    arquivo_mime?: string | null;
+    arquivo_tamanho?: number | null;
+}
+
+export const CATEGORIAS_ARQUIVO = ['contrato', 'comprovante', 'planilha', 'dividas', 'imposto', 'outros'] as const;
+export type CategoriaArquivo = typeof CATEGORIAS_ARQUIVO[number];
+export interface Arquivo {
+    id: string;
+    cliente_id: string;
+    nome: string;
+    categoria: CategoriaArquivo;
+    anotacao: string | null;
+    nome_original: string | null;
+    mime: string | null;
+    tamanho: number | null;
+    caminho: string;
+    enviado_por: string | null;
+    enviado_por_id: string | null;
+    criado_em: string;
+    atualizado_em: string;
+}
+export type NovoArquivo = Omit<Arquivo, 'id' | 'criado_em' | 'atualizado_em'>;
+export type DadosArquivo = Partial<Pick<Arquivo, 'nome' | 'categoria' | 'anotacao'>>;
+
+/** Nome, categoria e anotação limpos (o que vem da tela). */
+export function limparDadosArquivo(d: any): DadosArquivo {
+    const out: DadosArquivo = {};
+    if (d?.nome !== undefined) out.nome = String(d.nome || '').trim().slice(0, 200) || 'Arquivo';
+    if (d?.categoria !== undefined) out.categoria = (CATEGORIAS_ARQUIVO as readonly string[]).includes(d.categoria) ? d.categoria : 'outros';
+    if (d?.anotacao !== undefined) out.anotacao = String(d.anotacao || '').trim().slice(0, 1000) || null;
+    return out;
 }
 
 export interface Ajuste {
@@ -102,6 +134,9 @@ export interface NovoDocumento {
     tokens_cache_read?: number;
     modelo_usado?: string;
     tempo_processamento?: number;
+    arquivo_caminho?: string | null;
+    arquivo_mime?: string | null;
+    arquivo_tamanho?: number | null;
 }
 
 export interface Repositorio {
@@ -122,6 +157,11 @@ export interface Repositorio {
     excluirDocumento(id: string): Promise<void>;
     listarAjustes(documentoIds: string[]): Promise<Ajuste[]>;
     salvarAjustes(salvar: Ajuste[], remover: { documento_id: string; lancamento_ref: number }[]): Promise<void>;
+    listarArquivos(clienteId: string): Promise<Arquivo[]>;
+    obterArquivo(id: string): Promise<Arquivo | null>;
+    inserirArquivo(a: NovoArquivo): Promise<Arquivo>;
+    atualizarArquivo(id: string, dados: DadosArquivo): Promise<Arquivo | null>;
+    excluirArquivo(id: string): Promise<void>;
 }
 
 const CAMPOS_CLIENTE = ['nome', 'cpf', 'telefone', 'email', 'renda_declarada', 'objetivo', 'observacao', 'ficha'] as const;
@@ -247,7 +287,7 @@ class RepoSupabase implements Repositorio {
 
     async listarDocumentos(analiseId: string): Promise<Documento[]> {
         const { data, error } = await this.db.from('mirror_documentos')
-            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em')
+            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em, arquivo_caminho, arquivo_mime, arquivo_tamanho')
             .eq('analise_id', analiseId).order('criado_em', { ascending: true });
         if (error) this.falhar(error, 'listar documentos');
         return (data || []) as Documento[];
@@ -255,7 +295,7 @@ class RepoSupabase implements Repositorio {
 
     async obterDocumento(id: string): Promise<Documento | null> {
         const { data, error } = await this.db.from('mirror_documentos')
-            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em').eq('id', id).maybeSingle();
+            .select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em, arquivo_caminho, arquivo_mime, arquivo_tamanho').eq('id', id).maybeSingle();
         if (error) this.falhar(error, 'obter documento');
         return data as Documento | null;
     }
@@ -265,7 +305,7 @@ class RepoSupabase implements Repositorio {
             ...d,
             banco: d.resultado?.banco || null,
             qualidade_ruim: !!d.resultado?.qualidadeRuim
-        }).select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em').single();
+        }).select('id, analise_id, tipo, nome_arquivo, banco, resultado, qualidade_ruim, custo_usd, tempo_processamento, criado_em, arquivo_caminho, arquivo_mime, arquivo_tamanho').single();
         if (error) this.falhar(error, 'salvar documento');
         return data as Documento;
     }
@@ -294,6 +334,31 @@ class RepoSupabase implements Repositorio {
             if (error) this.falhar(error, 'remover ajuste');
         }
     }
+
+    async listarArquivos(clienteId: string): Promise<Arquivo[]> {
+        const { data, error } = await this.db.from('mirror_arquivos').select('*').eq('cliente_id', clienteId).order('criado_em', { ascending: false });
+        if (error) this.falhar(error, 'listar arquivos');
+        return (data || []) as Arquivo[];
+    }
+    async obterArquivo(id: string): Promise<Arquivo | null> {
+        const { data, error } = await this.db.from('mirror_arquivos').select('*').eq('id', id).maybeSingle();
+        if (error) this.falhar(error, 'abrir arquivo');
+        return (data as Arquivo) || null;
+    }
+    async inserirArquivo(a: NovoArquivo): Promise<Arquivo> {
+        const { data, error } = await this.db.from('mirror_arquivos').insert(a).select('*').single();
+        if (error) this.falhar(error, 'salvar arquivo');
+        return data as Arquivo;
+    }
+    async atualizarArquivo(id: string, dados: DadosArquivo): Promise<Arquivo | null> {
+        const { data, error } = await this.db.from('mirror_arquivos').update({ ...limparDadosArquivo(dados), atualizado_em: new Date().toISOString() }).eq('id', id).select('*').maybeSingle();
+        if (error) this.falhar(error, 'atualizar arquivo');
+        return (data as Arquivo) || null;
+    }
+    async excluirArquivo(id: string): Promise<void> {
+        const { error } = await this.db.from('mirror_arquivos').delete().eq('id', id);
+        if (error) this.falhar(error, 'excluir arquivo');
+    }
 }
 
 // ─── Memória (modo de desenvolvimento / testes) ──────────────────────────
@@ -303,6 +368,18 @@ class RepoMemoria implements Repositorio {
     private analises = new Map<string, Analise>();
     private documentos = new Map<string, Documento>();
     private ajustes = new Map<string, Ajuste>();
+    private arquivos = new Map<string, Arquivo>();
+    async listarArquivos(clienteId: string) { return Array.from(this.arquivos.values()).filter(a => a.cliente_id === clienteId).sort((a, b) => b.criado_em.localeCompare(a.criado_em)); }
+    async obterArquivo(id: string) { return this.arquivos.get(id) || null; }
+    async inserirArquivo(a: NovoArquivo): Promise<Arquivo> {
+        const x: Arquivo = { ...a, id: crypto.randomUUID(), criado_em: this.agora(), atualizado_em: this.agora() };
+        this.arquivos.set(x.id, x); return x;
+    }
+    async atualizarArquivo(id: string, dados: DadosArquivo) {
+        const a = this.arquivos.get(id); if (!a) return null;
+        Object.assign(a, limparDadosArquivo(dados), { atualizado_em: this.agora() }); return a;
+    }
+    async excluirArquivo(id: string) { this.arquivos.delete(id); }
     private agora() { return new Date().toISOString(); }
     private tocarCliente(clienteId: string) {
         const c = this.clientes.get(clienteId); if (c) c.atualizado_em = this.agora();
@@ -359,7 +436,8 @@ class RepoMemoria implements Repositorio {
         const doc: Documento = {
             id: crypto.randomUUID(), analise_id: d.analise_id, tipo: d.tipo, nome_arquivo: d.nome_arquivo || null,
             banco: d.resultado?.banco || null, resultado: d.resultado, qualidade_ruim: !!d.resultado?.qualidadeRuim,
-            custo_usd: d.custo_usd || 0, tempo_processamento: d.tempo_processamento || 0, criado_em: this.agora()
+            custo_usd: d.custo_usd || 0, tempo_processamento: d.tempo_processamento || 0, criado_em: this.agora(),
+            arquivo_caminho: d.arquivo_caminho || null, arquivo_mime: d.arquivo_mime || null, arquivo_tamanho: d.arquivo_tamanho || null
         };
         this.documentos.set(doc.id, doc);
         const a = this.analises.get(d.analise_id); if (a) { a.atualizado_em = this.agora(); this.tocarCliente(a.cliente_id); }

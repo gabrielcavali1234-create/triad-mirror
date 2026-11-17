@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '17/11/2026 · Menus em preto';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '17/11/2026 · Documentos do cliente';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -352,6 +352,38 @@ svg rect,svg circle{transition:opacity .15s}.pf-col svg:hover rect:not(:hover)[h
 .menu-usuario,.menu-sit{animation:dPop .16s ease both}
 .toast{animation:dPop .25s cubic-bezier(.2,.7,.2,1) both!important}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.dc-subabas{display:flex;gap:4px;border-bottom:1px solid var(--borda);margin-bottom:16px}
+.dc-sub{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 16px;font:inherit;font-weight:600;color:var(--fraco);cursor:pointer;display:flex;gap:8px;align-items:center;transition:color .18s,border-color .18s}
+.dc-sub em{font-style:normal;font-size:12px;background:var(--borda2);border-radius:9px;padding:1px 8px;color:var(--suave)}
+.dc-sub:hover{color:var(--texto)}.dc-sub.on{color:var(--texto);border-bottom-color:var(--primaria)}
+.dc-barra{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.dc-tabela{padding:0!important;overflow:hidden}
+.dc-cab,.dc-lin{display:grid;grid-template-columns:minmax(0,1fr) 150px 190px 150px 128px;gap:14px;align-items:center;padding:11px 18px}
+.dc-cab{font-size:11.5px;font-weight:700;color:var(--fraco);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--borda)}
+.dc-lin{border-top:1px solid var(--borda2);transition:background-color .15s}.dc-lin:first-of-type{border-top:0}.dc-lin:hover{background:var(--linha-hover)}
+.dc-nome{display:flex;gap:12px;align-items:center;min-width:0}.dc-nome>span:last-child{min-width:0}.dc-nome b{display:block;overflow-wrap:anywhere}.dc-nome small{display:block;color:var(--fraco);overflow-wrap:anywhere}
+.dc-ext{width:38px;height:44px;border-radius:5px;display:grid;place-items:center;font-size:9.5px;font-weight:800;flex:none;letter-spacing:.02em}
+.dc-pdf{background:var(--vermelho-fundo);color:var(--vermelho)}.dc-xls{background:var(--verde-fundo);color:var(--primaria-texto)}.dc-doc,.dc-img{background:var(--azul-fundo);color:var(--azul)}.dc-zip{background:var(--borda2);color:var(--suave)}
+.dc-tag{font-size:11.5px;font-weight:700;border-radius:4px;padding:3px 8px;white-space:nowrap}
+.cat-extrato,.cat-planilha{background:var(--azul-fundo);color:var(--azul)}.cat-fatura,.cat-comprovante{background:var(--verde-fundo);color:var(--primaria-texto)}
+.cat-contrato{background:var(--tinta);color:#fff}.cat-dividas{background:var(--vermelho-fundo);color:var(--vermelho)}.cat-imposto{background:var(--amarelo-fundo);color:#8A6D00}.cat-outros{background:var(--borda2);color:var(--suave)}
+.dc-sit{font-size:13px;font-weight:600;display:inline-flex;gap:5px;align-items:center}.dc-sit.ok{color:var(--primaria-texto)}.dc-sit.ruim{color:#8A6D00}.dc-sit.atencao{color:var(--vermelho)}
+.dc-quando{color:var(--suave);font-size:13px}
+.dc-acoes{display:flex;gap:2px;justify-content:flex-end;align-items:center}
+.dc-acoes button{width:34px;height:34px;border:0;background:none;border-radius:6px;color:var(--fraco);cursor:pointer;font-size:18px;display:grid;place-items:center;transition:background-color .15s,color .15s,transform .15s}
+.dc-acoes button:hover{background:var(--borda2);color:var(--texto);transform:translateY(-1px)}
+.dc-sem{font-size:11px;color:var(--apagado);margin-right:6px}
+.dc-rodape{font-size:13px;margin:12px 2px 0}
+.dc-drop{display:flex;align-items:center;gap:16px;border:2px dashed var(--borda-forte);border-radius:10px;padding:16px 20px;background:var(--branco);cursor:pointer;transition:border-color .2s,background-color .2s,transform .2s}
+.dc-drop>i{font-size:30px;color:var(--fraco)}.dc-drop>span:nth-child(2){flex:1}.dc-drop small{display:block;color:var(--fraco);margin-top:2px}
+.dc-drop:hover,.dc-drop.sobre{border-color:var(--primaria);background:var(--verde-fundo)}.dc-drop.sobre{transform:scale(1.01)}
+.dc-filtros{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 12px}.dc-filtros input{width:240px}
+.dc-chips{display:flex;gap:6px;flex-wrap:wrap}
+.dc-chip{border:0;background:var(--borda2);color:var(--suave);border-radius:20px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:background-color .15s,color .15s,transform .15s}
+.dc-chip em{font-style:normal;opacity:.7;margin-left:2px}.dc-chip:hover{transform:translateY(-1px)}.dc-chip.on{background:var(--tinta);color:var(--branco)}
+.dc-envio-lista{display:grid;gap:10px;max-height:320px;overflow:auto}
+.dc-envio-it{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--borda);border-radius:8px;padding:10px 12px}.dc-envio-it input{width:100%;margin:3px 0 4px}
+@media (max-width:900px){.dc-sub{white-space:nowrap;padding:10px 10px;font-size:13.5px}.dc-subabas{overflow-x:auto}.dc-cab{display:none}.dc-lin{grid-template-columns:1fr auto;row-gap:6px}.dc-lin>span:nth-child(3),.dc-lin>span:nth-child(4){grid-column:1}.dc-acoes{grid-row:1;grid-column:2}.dc-filtros input{width:100%}}
 .docs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 20px;border-top:1px solid var(--borda)}
 .doc{border:1px solid var(--borda);border-radius:var(--r-ctrl);padding:6px 8px 6px 7px;display:flex;align-items:center;gap:8px;font-size:12px;background:var(--branco)}
 .doc button{border:0;background:none;color:var(--apagado);padding:0 2px;font-size:15px;border-radius:3px}
@@ -1389,10 +1421,6 @@ function abaPerfil() {
   </div>`;
 }
 
-function abaDocs(chipsDocs) {
-  return `<div class="card pf-docs"><div class="pf-t pf-t-flex"><span>Documentos do cliente</span><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>
-    ${E.cli.documentos.length ? `<div class="docs" style="border:0;padding-top:4px;margin-top:0">${chipsDocs}</div>` : '<p class="suave">Nenhum documento enviado ainda.</p>'}</div>`;
-}
 
 async function pfSalvarFicha(parcial, msg) {
   try {
@@ -1614,7 +1642,7 @@ function colunaCliente() {
     <nav class="cc-abas">
       ${aba('perfil', 'perfil', 'ti-layout-grid', 'Visão geral', '')}
       ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'ti-list-details', 'Lançamentos', documentos.length ? nLanc : '')}
-      ${aba('docs', 'docs', 'ti-file-text', 'Documentos', documentos.length || '')}
+      ${aba('docs', 'docs', 'ti-file-text', 'Documentos', (documentos.length + (E.cli.arquivos || []).length) || '')}
       ${aba('plano', 'plano', 'ti-target-arrow', 'Plano', '')}
       ${aba('reunioes', 'reunioes', 'ti-messages', 'Reuniões', nAtas || '')}
       <button class="cc-aba" data-acao="app-cliente"><i class="ti ti-device-mobile"></i><span>App do cliente</span><em class="${c.app_ativo ? 'cc-ok' : ''}">${c.app_publicado_em ? (c.app_ativo ? 'no ar' : 'desativado') : 'gerar'}</em></button>
@@ -1713,10 +1741,179 @@ async function telaReunioesGeral(recarregar = true) {
   const b = $('#buscaAtas'); if (b) { b.oninput = () => { E.buscaAtas = b.value; clearTimeout(E.tBusca); E.tBusca = setTimeout(() => { telaReunioesGeral(false).then(() => { const x = $('#buscaAtas'); x?.focus(); x?.setSelectionRange(x.value.length, x.value.length); }); }, 300); }; }
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// DOCUMENTOS — aba "Extratos e faturas" (lidos pela IA) e aba
+// "Arquivos do cliente" (guardados: contrato, comprovante, planilha…).
+// ════════════════════════════════════════════════════════════════════════
+const CAT_ARQ = [['contrato', 'Contrato', 'cat-contrato'], ['comprovante', 'Comprovante', 'cat-comprovante'], ['planilha', 'Planilha', 'cat-planilha'], ['dividas', 'Dívidas', 'cat-dividas'], ['imposto', 'Imposto de renda', 'cat-imposto'], ['outros', 'Outros', 'cat-outros']];
+const catTxt = c => (CAT_ARQ.find(x => x[0] === c) || CAT_ARQ[5])[1];
+const catCls = c => (CAT_ARQ.find(x => x[0] === c) || CAT_ARQ[5])[2];
+const tamTxt = b => !b ? '' : b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB';
+function extDe(nome, mime) {
+  const e = (String(nome || '').match(/\.([a-z0-9]{2,5})$/i) || [])[1];
+  if (e) return e.toUpperCase().replace('JPEG', 'JPG');
+  return /pdf/.test(mime || '') ? 'PDF' : /image/.test(mime || '') ? 'IMG' : 'ARQ';
+}
+const iconeArq = ext => `<span class="dc-ext dc-${/PDF/.test(ext) ? 'pdf' : /XLS|CSV/.test(ext) ? 'xls' : /DOC|PPT|TXT/.test(ext) ? 'doc' : /JPG|PNG|WEBP|HEIC|GIF|IMG/.test(ext) ? 'img' : 'zip'}">${esc(ext.slice(0, 4))}</span>`;
+const quandoPor = (iso, por) => `${dataBR(String(iso).slice(0, 10))}/${String(iso).slice(2, 4)}${por ? ' · ' + esc(por) : ''}`;
+
+function abaDocs() {
+  const docs = E.cli.documentos, arqs = E.cli.arquivos || [];
+  const sub = E.docsAba === 'arquivos' ? 'arquivos' : 'leitura';
+  return `<div class="dc-subabas" role="tablist">
+      <button class="dc-sub ${sub === 'leitura' ? 'on' : ''}" data-acao="docs-sub" data-v="leitura" role="tab" aria-selected="${sub === 'leitura'}">Extratos e faturas <em>${docs.length}</em></button>
+      <button class="dc-sub ${sub === 'arquivos' ? 'on' : ''}" data-acao="docs-sub" data-v="arquivos" role="tab" aria-selected="${sub === 'arquivos'}">Arquivos do cliente <em>${arqs.length}</em></button>
+    </div>
+    <div class="dc-corpo">${sub === 'leitura' ? docsLeitura(docs) : docsArquivos(arqs)}</div>`;
+}
+
+function docsLeitura(docs) {
+  const lin = d => {
+    const conta = d.tipo === 'extrato';
+    const prod = !conta && d.produto ? String(d.produto) : '';
+    const titulo = (conta ? 'Extrato ' : 'Fatura ') + (prod && d.banco && prod.toLowerCase().includes(String(d.banco).toLowerCase()) ? prod : [d.banco || '', prod].filter(Boolean).join(' '));
+    const det = conta
+      ? [d.periodo ? (d.periodo.inicio.slice(0, 7) === d.periodo.fim.slice(0, 7) ? nomeMes(d.periodo.inicio.slice(0, 7)) : nomeMes(d.periodo.inicio.slice(0, 7)) + ' a ' + nomeMes(d.periodo.fim.slice(0, 7))) : '', d.lancamentos + ' lançamentos'].filter(Boolean).join(' · ')
+      : [d.vencimento ? 'Vencimento ' + dataBR(d.vencimento) + '/' + d.vencimento.slice(0, 4) : '', d.valor_total != null ? brl(d.valor_total) : '', d.lancamentos + ' lançamentos'].filter(Boolean).join(' · ');
+    const sit = d.qualidade_ruim ? `<span class="dc-sit ruim" title="${esc(d.motivo_qualidade_ruim || '')}"><i class="ti ti-alert-triangle"></i> Leitura ruim — confira</span>`
+      : !conta && d.conferencia?.bateu === false ? '<span class="dc-sit atencao"><i class="ti ti-alert-circle"></i> Totais divergentes</span>'
+      : `<span class="dc-sit ok"><i class="ti ti-circle-check"></i> Lido pela IA${!conta && d.conferencia?.bateu ? ' · conferida' : ''}</span>`;
+    return `<div class="dc-lin">
+      <span class="dc-nome">${iconeArq(extDe(d.nome_arquivo))}<span><b>${esc(titulo.trim())}</b><small>${esc(det)}${d.nome_arquivo ? ` · <span title="${esc(d.nome_arquivo)}">${esc(d.nome_arquivo.length > 34 ? d.nome_arquivo.slice(0, 32) + '…' : d.nome_arquivo)}</span>` : ''}</small></span></span>
+      <span><span class="dc-tag ${conta ? 'cat-extrato' : 'cat-fatura'}">${conta ? 'Extrato' : 'Fatura'}</span></span>
+      <span>${sit}</span>
+      <span class="dc-quando">${quandoPor(d.criado_em)}</span>
+      <span class="dc-acoes">
+        ${d.tem_arquivo ? `<button data-acao="doc-ver" data-id="${d.id}" title="Visualizar" aria-label="Visualizar"><i class="ti ti-eye"></i></button><button data-acao="doc-baixar" data-id="${d.id}" title="Baixar" aria-label="Baixar"><i class="ti ti-download"></i></button>`
+          : `<span class="dc-sem" title="Enviado antes de a plataforma guardar o original">sem original</span>`}
+        <button data-acao="excluir-doc" data-id="${d.id}" title="Excluir" aria-label="Excluir"><i class="ti ti-trash"></i></button></span>
+    </div>`;
+  };
+  const ext = docs.filter(d => d.tipo === 'extrato'), fat = docs.filter(d => d.tipo === 'fatura');
+  const custo = docs.reduce((a, d) => a + (Number(d.custo_usd) || 0), 0);
+  return `<div class="dc-barra"><span class="suave">Documentos que a IA lê para montar a análise.</span><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar extrato ou fatura</button></div>
+    ${docs.length ? `<div class="card dc-tabela"><div class="dc-cab"><span>Documento</span><span>Tipo</span><span>Situação</span><span>Enviado</span><span></span></div>${[...docs].sort((a, b) => b.criado_em.localeCompare(a.criado_em)).map(lin).join('')}</div>
+      <p class="fraco dc-rodape">${ext.length} ${ext.length === 1 ? 'extrato' : 'extratos'} e ${fat.length} ${fat.length === 1 ? 'fatura' : 'faturas'}${custo ? ` · custo de leitura: US$ ${custo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}</p>`
+      : `<div class="card vazio"><h2>Nenhum extrato ou fatura</h2><p class="suave">Envie o extrato da conta ou a fatura do cartão (PDF ou foto) — a IA lê e monta a análise.</p></div>`}`;
+}
+
+function docsArquivos(arqs) {
+  const f = E.arqFiltro || 'todos', busca = (E.arqBusca || '').toLowerCase();
+  const visiveis = arqs.filter(a => (f === 'todos' || a.categoria === f) && (!busca || (a.nome + ' ' + (a.anotacao || '') + ' ' + (a.nome_original || '')).toLowerCase().includes(busca)));
+  const n = c => arqs.filter(a => a.categoria === c).length;
+  return `<label class="dc-drop" id="dcDrop" for="dcInput">
+      <i class="ti ti-cloud-upload"></i>
+      <span><b>Arraste arquivos aqui ou clique para escolher</b><small>PDF, imagens, Excel, Word, CSV ou ZIP · até 20 MB cada. Ficam guardados — a IA não lê.</small></span>
+      <span class="btn primario">Enviar arquivo</span>
+      <input id="dcInput" type="file" multiple hidden>
+    </label>
+    ${arqs.length ? `<div class="dc-filtros">
+      <div class="dc-chips">${[['todos', 'Todos', arqs.length], ...CAT_ARQ.map(([c, t]) => [c, t, n(c)]).filter(x => x[2])].map(([c, t, k]) => `<button class="dc-chip ${f === c ? 'on' : ''}" data-acao="arq-filtro" data-v="${c}">${t} <em>${k}</em></button>`).join('')}</div>
+      <input type="search" id="arqBusca" placeholder="Buscar arquivo…" value="${esc(E.arqBusca || '')}" aria-label="Buscar arquivo">
+    </div>
+    <div class="card dc-tabela"><div class="dc-cab"><span>Arquivo</span><span>Categoria</span><span>Tamanho</span><span>Enviado</span><span></span></div>
+      ${visiveis.length ? visiveis.map(a => `<div class="dc-lin">
+        <span class="dc-nome">${iconeArq(extDe(a.nome_original, a.mime))}<span><b>${esc(a.nome)}</b>${a.anotacao ? `<small>${esc(a.anotacao)}</small>` : ''}</span></span>
+        <span><span class="dc-tag ${catCls(a.categoria)}">${catTxt(a.categoria)}</span></span>
+        <span class="dc-quando">${tamTxt(a.tamanho)}</span>
+        <span class="dc-quando">${quandoPor(a.criado_em, a.enviado_por)}</span>
+        <span class="dc-acoes"><button data-acao="arq-ver" data-id="${a.id}" title="Visualizar" aria-label="Visualizar"><i class="ti ti-eye"></i></button><button data-acao="arq-baixar" data-id="${a.id}" title="Baixar" aria-label="Baixar"><i class="ti ti-download"></i></button><button data-acao="arq-editar" data-id="${a.id}" title="Renomear, mudar categoria ou excluir" aria-label="Editar"><i class="ti ti-dots"></i></button></span>
+      </div>`).join('') : '<p class="suave" style="padding:16px 18px;margin:0">Nenhum arquivo nesse filtro.</p>'}
+    </div>` : `<p class="suave" style="margin:18px 2px 0">Nenhum arquivo guardado ainda. Guarde aqui o contrato, os comprovantes de pagamento, planilhas do cliente e o que mais precisar.</p>`}`;
+}
+
+/** Liga o arrastar-e-soltar e a busca (chamado depois de desenhar a aba). */
+function ligarDocs() {
+  const drop = $('#dcDrop'), inp = $('#dcInput');
+  if (inp) inp.onchange = () => { if (inp.files.length) modalEnviarArquivos([...inp.files]); inp.value = ''; };
+  if (drop) {
+    ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, ev => { ev.preventDefault(); drop.classList.add('sobre'); }));
+    ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, ev => { ev.preventDefault(); drop.classList.remove('sobre'); }));
+    drop.addEventListener('drop', ev => { const fs = [...(ev.dataTransfer?.files || [])]; if (fs.length) modalEnviarArquivos(fs); });
+  }
+  const b = $('#arqBusca');
+  if (b) b.oninput = () => { E.arqBusca = b.value; clearTimeout(E.tArq); E.tArq = setTimeout(() => { desenharConteudo(); const x = $('#arqBusca'); x?.focus(); x?.setSelectionRange(x.value.length, x.value.length); }, 250); };
+}
+
+function sugerirCategoria(nome) {
+  const n = nome.toLowerCase();
+  if (/contrato/.test(n)) return 'contrato';
+  if (/comprovante|pix|recibo|boleto|pagamento/.test(n)) return 'comprovante';
+  if (/\.(xlsx?|csv)$/.test(n) || /planilha/.test(n)) return 'planilha';
+  if (/irpf|imposto|informe|declara/.test(n)) return 'imposto';
+  if (/financiamento|emprestimo|empréstimo|renegocia|divida|dívida|acordo/.test(n)) return 'dividas';
+  return 'outros';
+}
+
+function modalEnviarArquivos(files) {
+  const grandes = files.filter(f => f.size > 20 * 1024 * 1024);
+  if (grandes.length) toast(`${grandes.map(f => f.name).join(', ')}: passa de 20 MB e não será enviado.`, true);
+  files = files.filter(f => f.size <= 20 * 1024 * 1024).slice(0, 20);
+  if (!files.length) return;
+  E.envio = { files, nomes: files.map(f => f.name.replace(/\.[^.]+$/, '')), categoria: sugerirCategoria(files[0].name), anotacao: '' };
+  desenharModalEnvio();
+}
+function desenharModalEnvio() {
+  const v = E.envio;
+  abrirModal(`<h2>Guardar ${v.files.length > 1 ? v.files.length + ' arquivos' : 'arquivo'}</h2><p class="suave" style="margin:0 0 16px">${esc(E.cli.cliente.nome)}</p>
+    <div class="dc-envio-lista">${v.files.map((f, i) => `<div class="dc-envio-it">${iconeArq(extDe(f.name, f.type))}<div style="flex:1;min-width:0">
+      <label class="rot" for="envNome${i}" style="font-size:11.5px">Nome</label><input id="envNome${i}" type="text" maxlength="200" data-env-nome="${i}" value="${esc(v.nomes[i])}">
+      <small class="fraco">${esc(f.name)} · ${tamTxt(f.size)}</small></div>${v.files.length > 1 ? `<button class="pf-x" data-acao="env-tirar" data-i="${i}" aria-label="Tirar da lista"><i class="ti ti-x"></i></button>` : ''}</div>`).join('')}</div>
+    <label class="rot" style="display:block;margin-top:16px">Categoria${v.files.length > 1 ? ' (para todos)' : ''}</label>
+    <div class="dc-chips" style="margin-top:6px">${CAT_ARQ.map(([c, t]) => `<button type="button" class="dc-chip ${v.categoria === c ? 'on' : ''}" data-acao="env-cat" data-v="${c}">${t}</button>`).join('')}</div>
+    <label class="rot" for="envAnot" style="display:block;margin-top:16px">Anotação <span class="fraco" style="font-weight:400">(opcional)</span></label>
+    <input id="envAnot" type="text" maxlength="1000" value="${esc(v.anotacao)}" placeholder="Ex: pago via PIX, conferido">
+    <div id="envProg" class="fraco" style="margin-top:12px;font-size:13px"></div>
+    <div class="acoes"><button class="btn" data-acao="fechar-modal">Cancelar</button><button class="btn primario" id="envOk" data-acao="env-guardar"><i class="ti ti-check"></i> Guardar</button></div>`);
+}
+function lerEnvio() {
+  const v = E.envio; if (!v) return v;
+  document.querySelectorAll('[data-env-nome]').forEach(el => { v.nomes[+el.dataset.envNome] = el.value; });
+  v.anotacao = $('#envAnot')?.value || '';
+  return v;
+}
+async function guardarEnvio() {
+  const v = lerEnvio(), btn = $('#envOk'), prog = $('#envProg');
+  btn.disabled = true; let ok = 0; const falhas = [];
+  for (let i = 0; i < v.files.length; i++) {
+    prog.textContent = `Enviando ${i + 1} de ${v.files.length}…`;
+    const fd = new FormData(); fd.append('file', v.files[i]); fd.append('nome', v.nomes[i] || v.files[i].name); fd.append('categoria', v.categoria); fd.append('anotacao', v.anotacao);
+    try { await api('POST', `/api/app/clientes/${E.cli.cliente.id}/arquivos`, fd); ok++; } catch (e) { falhas.push(v.files[i].name + ': ' + e.message); }
+  }
+  E.envio = null; fecharModal();
+  try { E.cli.arquivos = (await api('GET', `/api/app/clientes/${E.cli.cliente.id}/arquivos`)).arquivos; } catch {}
+  E.docsAba = 'arquivos'; E.arqFiltro = 'todos'; desenharCliente();
+  if (falhas.length) toast(falhas.join(' · '), true); else toast(ok > 1 ? ok + ' arquivos guardados' : 'Arquivo guardado');
+}
+
+function modalEditarArquivo(a) {
+  E.arqEdit = { id: a.id, categoria: a.categoria, excluir: false };
+  abrirModal(`<h2>Arquivo</h2><p class="suave" style="margin:0 0 16px">${esc(a.nome_original || a.nome)} · ${tamTxt(a.tamanho)} · enviado ${quandoPor(a.criado_em, a.enviado_por)}</p>
+    <label class="rot" for="edNome">Nome</label><input id="edNome" type="text" maxlength="200" value="${esc(a.nome)}">
+    <label class="rot" style="display:block;margin-top:16px">Categoria</label>
+    <div class="dc-chips" id="edCats" style="margin-top:6px">${CAT_ARQ.map(([c, t]) => `<button type="button" class="dc-chip ${a.categoria === c ? 'on' : ''}" data-acao="ed-cat" data-v="${c}">${t}</button>`).join('')}</div>
+    <label class="rot" for="edAnot" style="display:block;margin-top:16px">Anotação</label><input id="edAnot" type="text" maxlength="1000" value="${esc(a.anotacao || '')}">
+    <div class="acoes" style="justify-content:space-between"><button class="btn" id="edExcluir" data-acao="arq-excluir" data-id="${a.id}" style="color:var(--vermelho)"><i class="ti ti-trash"></i> Excluir</button>
+      <span style="display:flex;gap:8px"><button class="btn" data-acao="fechar-modal">Cancelar</button><button class="btn primario" data-acao="arq-salvar" data-id="${a.id}">Salvar</button></span></div>`);
+}
+
+/** Abre (ou baixa) um arquivo protegido: busca com o login e entrega ao navegador. */
+async function abrirProtegido(rota, nome, baixar) {
+  const janela = baixar ? null : window.open('', '_blank');
+  if (janela) janela.document.write('<p style="font:15px system-ui;padding:24px;color:#4D5550">Abrindo arquivo…</p>');
+  try {
+    const r = await api('GET', rota + (baixar ? '?baixar=1' : ''), undefined, { blob: true });
+    const url = URL.createObjectURL(await r.blob());
+    if (baixar || !janela) { const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); }
+    else janela.location.href = url;
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { janela?.close(); toast(e.message, true); }
+}
+
 function desenharConteudo() {
   const el = $('#conteudo'); if (!el) return;
   if (E.aba === 'perfil') el.innerHTML = abaPerfil();
-  else if (E.aba === 'docs') el.innerHTML = abaDocs(E.chipsDocs || '');
+  else if (E.aba === 'docs') { el.innerHTML = abaDocs(); ligarDocs(); }
   else if (E.aba === 'reunioes') el.innerHTML = abaReunioes();
   else if (E.aba === 'conta') el.innerHTML = abaConta();
   else if (E.aba === 'cartao') el.innerHTML = abaCartao();
@@ -3035,6 +3232,31 @@ document.addEventListener('click', async ev => {
     case 'pf-nota-del': {
       const notas = [...((E.cli.cliente.ficha || {}).notas || [])]; notas.splice(+el.dataset.i, 1);
       pfSalvarFicha({ notas }, 'Anotação apagada'); break; }
+    case 'docs-sub': E.docsAba = el.dataset.v; marcarAnimacao(); desenharConteudo(); break;
+    case 'arq-filtro': E.arqFiltro = el.dataset.v; desenharConteudo(); break;
+    case 'doc-ver': case 'doc-baixar': { const d = E.cli.documentos.find(x => x.id === id); abrirProtegido('/api/app/documentos/' + id + '/arquivo', d?.nome_arquivo || 'documento.pdf', a === 'doc-baixar'); break; }
+    case 'arq-ver': case 'arq-baixar': {
+      const x = (E.cli.arquivos || []).find(y => y.id === id); if (!x) break;
+      const ext = (x.nome_original || '').match(/\.[^.]+$/)?.[0] || '';
+      const visual = /^(application\/pdf|image\/(jpeg|png|webp|gif)|text\/plain)/.test(x.mime || '');
+      abrirProtegido('/api/app/arquivos/' + id + '/conteudo', x.nome.endsWith(ext) ? x.nome : x.nome + ext, a === 'arq-baixar' || !visual); break; }
+    case 'arq-editar': { const x = (E.cli.arquivos || []).find(y => y.id === id); if (x) modalEditarArquivo(x); break; }
+    case 'ed-cat': E.arqEdit.categoria = el.dataset.v; document.querySelectorAll('#edCats .dc-chip').forEach(b => b.classList.toggle('on', b === el)); break;
+    case 'arq-salvar': {
+      el.disabled = true;
+      try { const r = await api('PATCH', '/api/app/arquivos/' + id, { nome: $('#edNome').value, categoria: E.arqEdit.categoria, anotacao: $('#edAnot').value });
+        E.cli.arquivos = E.cli.arquivos.map(y => y.id === id ? r.arquivo : y); fecharModal(); desenharCliente(); toast('Arquivo atualizado'); }
+      catch (e) { el.disabled = false; toast(e.message, true); }
+      break; }
+    case 'arq-excluir': {
+      if (!E.arqEdit?.excluir) { E.arqEdit.excluir = true; el.innerHTML = '<i class="ti ti-trash"></i> Confirmar exclusão'; el.style.background = 'var(--vermelho)'; el.style.color = '#fff'; break; }
+      el.disabled = true;
+      try { await api('DELETE', '/api/app/arquivos/' + id); E.cli.arquivos = E.cli.arquivos.filter(y => y.id !== id); fecharModal(); desenharCliente(); toast('Arquivo excluído'); }
+      catch (e) { el.disabled = false; toast(e.message, true); }
+      break; }
+    case 'env-cat': lerEnvio(); E.envio.categoria = el.dataset.v; desenharModalEnvio(); break;
+    case 'env-tirar': { const v = lerEnvio(); v.files.splice(+el.dataset.i, 1); v.nomes.splice(+el.dataset.i, 1); if (!v.files.length) { E.envio = null; fecharModal(); } else desenharModalEnvio(); break; }
+    case 'env-guardar': guardarEnvio(); break;
     case 'ag-abrir': E.ataSel = el.dataset.ata || E.ataSel; E.ataEdit = null; return;
     case 'ata-nova': E.ataEdit = novaAta(); E.ataAntFeitos = null; E.ataExcluir = null; if (E.aba !== 'reunioes') { E.aba = 'reunioes'; history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/reunioes`); desenharCliente(); } else desenharConteudo(); window.scrollTo({ top: 0 }); break;
     case 'ata-ver': marcarAnimacao(); E.ataSel = el.dataset.id; E.ataEdit = null; E.ataExcluir = null; desenharConteudo(); break;

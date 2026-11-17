@@ -6,8 +6,9 @@ import fs from 'fs';
 import path from 'path';
 import express, { Request, Response } from 'express';
 import multer from 'multer';
+import { guardarArquivo, lerArquivo, apagarArquivo, nomeSeguro } from '../core/armazenamento';
 import { chaveAdminConfere, criarAnalista, entrar, ErroLogin, exigirLogin, renovar } from '../core/auth';
-import { Ajuste, Analise, Cliente, Documento, MODO_DEV, repo } from '../core/repositorio';
+import { Ajuste, Analise, Cliente, Documento, MODO_DEV, repo, limparDadosArquivo } from '../core/repositorio';
 import { buildUserFriendlyError, jobs, novoJobId } from '../core/jobs';
 import { analisarDocumento, ModuloDocumento } from '../core/pipeline';
 import { novoUsageTotal } from '../core/ia';
@@ -36,6 +37,9 @@ const upload = multer({
 });
 
 const MODULOS: Record<string, ModuloDocumento<any>> = { extrato: moduloExtrato, fatura: moduloFatura };
+const LIMITE_ARQUIVO = 20 * 1024 * 1024;   // arquivos do cliente: até 20 MB cada
+const TIPOS_ACEITOS = /^(application\/pdf|image\/(jpeg|png|webp|heic|heif|gif)|application\/vnd\.openxmlformats-officedocument\.(spreadsheetml\.sheet|wordprocessingml\.document|presentationml\.presentation)|application\/vnd\.ms-excel|application\/msword|text\/(csv|plain)|application\/zip|application\/x-zip-compressed)$/i;
+const EXT_ACEITAS = /\.(pdf|jpe?g|png|webp|heic|heif|gif|xlsx|xls|csv|docx|doc|pptx|txt|zip)$/i;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const pid = (req: Request): string => String(req.params.id || '');
 const apagar = (p?: string) => { if (p) { try { fs.unlinkSync(p); } catch { /* já foi */ } } };
@@ -233,6 +237,8 @@ const resumoDocumento = (d: Documento) => {
     const r = d.resultado || {};
     return {
         id: d.id, tipo: d.tipo, nome_arquivo: d.nome_arquivo, banco: d.banco || r.banco, criado_em: d.criado_em,
+        tem_arquivo: !!d.arquivo_caminho, arquivo_tamanho: d.arquivo_tamanho || null, custo_usd: d.custo_usd || 0,
+        periodo: (() => { const ds = (Array.isArray(r.transacoes) ? r.transacoes : []).map((t: any) => String(t.data || '')).filter((x: string) => /^\d{4}-\d{2}-\d{2}/.test(x)).sort(); return ds.length ? { inicio: ds[0].slice(0, 10), fim: ds[ds.length - 1].slice(0, 10) } : null; })(),
         qualidade_ruim: d.qualidade_ruim, motivo_qualidade_ruim: r.motivoQualidadeRuim || null,
         titular: r.titular || null, relatorio: r.relatorioFalado || '',
         lancamentos: Array.isArray(r.transacoes) ? r.transacoes.length : 0,
@@ -266,7 +272,8 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
             });
         } catch (e: any) { console.error('[perfil]', e?.message); }
     }
-    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), apuracao, plano, evolucao: evolucaoMensal(apuracao.lancamentos), perfil, resumoPainel: linhaDoPainel(cliente, analise, docs, apuracao) });
+    const arquivos = await repo.listarArquivos(cliente.id);
+    res.json({ cliente, analise, documentos: docs.map(resumoDocumento), arquivos, apuracao, plano, evolucao: evolucaoMensal(apuracao.lancamentos), perfil, resumoPainel: linhaDoPainel(cliente, analise, docs, apuracao) });
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────
@@ -306,7 +313,18 @@ router.post('/api/app/clientes/:id/documentos', upload.single('file'), rota(asyn
             }
             const { _tokensInput, _tokensOutput, _tokensCacheWrite, _tokensCacheRead, _custoUSD, _custoUSDTentativasFalhas, _custoUSDTotal, _modelo, ...resultado } = result;
             const tempo = (Date.now() - startedAt) / 1000;
+            // Guarda o PDF/foto original para visualizar e baixar depois (se falhar, a leitura continua valendo)
+            let arquivo_caminho: string | null = null;
+            const tamanho = (await fs.promises.stat(filePath)).size;
+            if (tamanho <= LIMITE_ARQUIVO) {
+                try {
+                    const caminho = `clientes/${cliente.id}/documentos/${crypto.randomUUID()}-${nomeSeguro(originalname)}`;
+                    await guardarArquivo(caminho, await fs.promises.readFile(filePath), mimetype);
+                    arquivo_caminho = caminho;
+                } catch (e: any) { console.error('[App] Original não guardado:', e?.message); }
+            }
             const doc = await repo!.inserirDocumento({
+                arquivo_caminho, arquivo_mime: arquivo_caminho ? mimetype : null, arquivo_tamanho: arquivo_caminho ? tamanho : null,
                 analise_id: analise.id, tipo: tipo as any, nome_arquivo: originalname, file_hash: fileHash, resultado,
                 custo_usd: _custoUSDTotal || 0, tokens_input: _tokensInput || 0, tokens_output: _tokensOutput || 0,
                 tokens_cache_write: _tokensCacheWrite || 0, tokens_cache_read: _tokensCacheRead || 0,
@@ -337,8 +355,14 @@ if (MODO_DEV) {
         if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
         const analise = await repo.analiseAtual(cliente.id, req.usuario!);
         const resultado = tipo === 'fatura' ? finalizarFatura(req.body.resultado) : req.body.resultado;
+        let arquivo_caminho: string | null = null;
+        if (typeof req.body.arquivoBase64 === 'string') {   // testes: simula o PDF original guardado
+            arquivo_caminho = `clientes/${cliente.id}/documentos/${crypto.randomUUID()}-${nomeSeguro(req.body.nome || 'doc.pdf')}`;
+            await guardarArquivo(arquivo_caminho, Buffer.from(req.body.arquivoBase64, 'base64'), 'application/pdf');
+        }
         const doc = await repo.inserirDocumento({ analise_id: analise.id, tipo: tipo as any, nome_arquivo: req.body.nome || 'importado.json', resultado,
-            custo_usd: Number(req.body.custo_usd) || 0, tempo_processamento: Number(req.body.tempo) || 0 });
+            custo_usd: Number(req.body.custo_usd) || 0, tempo_processamento: Number(req.body.tempo) || 0,
+            arquivo_caminho, arquivo_mime: arquivo_caminho ? 'application/pdf' : null, arquivo_tamanho: arquivo_caminho ? Buffer.byteLength(req.body.arquivoBase64, 'base64') : null });
         res.status(201).json({ documentoId: doc.id });
     }));
 }
@@ -355,7 +379,97 @@ router.delete('/api/app/documentos/:id', rota(async (req, res) => {
     const doc = UUID.test(pid(req)) ? await repo.obterDocumento(pid(req)) : null;
     if (!doc) return res.status(404).json({ error: 'Documento não encontrado.' });
     await repo.excluirDocumento(doc.id);
+    await apagarArquivo(doc.arquivo_caminho);
     res.json({ ok: true });
+}));
+
+// ── Arquivos guardados (original do extrato/fatura e arquivos do cliente) ──
+/** Envia o arquivo para o navegador: ?baixar=1 força o download; sem ele abre na aba (PDF/imagem). */
+async function enviarArquivo(res: Response, caminho: string | null | undefined, nome: string, mime: string | null | undefined, baixar: boolean) {
+    const a = caminho ? await lerArquivo(caminho) : null;
+    if (!a) return res.status(404).json({ error: 'Arquivo não encontrado no armazenamento.' });
+    const tipo = mime || a.mime || 'application/octet-stream';
+    const visualizavel = /^(application\/pdf|image\/|text\/plain)/.test(tipo);
+    res.setHeader('Content-Type', tipo);
+    res.setHeader('Content-Length', String(a.buf.length));
+    res.setHeader('Content-Disposition', `${baixar || !visualizavel ? 'attachment' : 'inline'}; filename*=UTF-8''${encodeURIComponent(nome)}`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.end(a.buf);
+}
+
+router.get('/api/app/documentos/:id/arquivo', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const doc = UUID.test(pid(req)) ? await repo.obterDocumento(pid(req)) : null;
+    if (!doc) return res.status(404).json({ error: 'Documento não encontrado.' });
+    if (!doc.arquivo_caminho) return res.status(404).json({ error: 'O original deste documento não foi guardado (enviado antes desta função existir).' });
+    await enviarArquivo(res, doc.arquivo_caminho, doc.nome_arquivo || 'documento', doc.arquivo_mime, req.query.baixar === '1');
+}));
+
+const uploadArquivo = multer({
+    storage: multer.diskStorage({
+        destination: (_r, _f, cb) => cb(null, uploadDir),
+        filename: (_r, f, cb) => cb(null, Date.now() + '-' + nomeSeguro(f.originalname))
+    }),
+    limits: { fileSize: LIMITE_ARQUIVO }
+});
+
+router.get('/api/app/clientes/:id/arquivos', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    res.json({ arquivos: UUID.test(pid(req)) ? await repo.listarArquivos(pid(req)) : [] });
+}));
+
+router.post('/api/app/clientes/:id/arquivos', (req, res, next) => {
+    uploadArquivo.single('file')(req, res, (err: any) => {
+        if (err?.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ error: 'O arquivo passa de 20 MB.' });
+        if (err) return res.status(400).json({ error: 'Não foi possível receber o arquivo.' });
+        next();
+    });
+}, rota(async (req, res) => {
+    const filePath = req.file?.path;
+    try {
+        if (!repo) return semRepo(res);
+        if (!req.file || !filePath) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+        const cliente = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+        if (!cliente) return res.status(404).json({ error: 'Cliente não encontrado.' });
+        const { originalname, mimetype, size } = req.file;
+        if (!TIPOS_ACEITOS.test(mimetype) && !EXT_ACEITAS.test(originalname)) return res.status(415).json({ error: 'Tipo de arquivo não aceito. Use PDF, imagem, Excel, Word, CSV ou ZIP.' });
+        const caminho = `clientes/${cliente.id}/arquivos/${crypto.randomUUID()}-${nomeSeguro(originalname)}`;
+        await guardarArquivo(caminho, await fs.promises.readFile(filePath), mimetype);
+        const d = limparDadosArquivo({ nome: req.body?.nome || originalname.replace(/\.[^.]+$/, ''), categoria: req.body?.categoria || 'outros', anotacao: req.body?.anotacao || '' });
+        try {
+            const arquivo = await repo.inserirArquivo({
+                cliente_id: cliente.id, nome: d.nome!, categoria: d.categoria!, anotacao: d.anotacao ?? null,
+                nome_original: originalname.slice(0, 255), mime: mimetype || null, tamanho: size, caminho,
+                enviado_por: req.usuario?.nome || null, enviado_por_id: req.usuario?.id || null
+            });
+            res.status(201).json({ arquivo });
+        } catch (e) { await apagarArquivo(caminho); throw e; }
+    } finally { apagar(filePath); }
+}));
+
+router.patch('/api/app/arquivos/:id', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const a = UUID.test(pid(req)) ? await repo.atualizarArquivo(pid(req), req.body || {}) : null;
+    if (!a) return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    res.json({ arquivo: a });
+}));
+
+router.delete('/api/app/arquivos/:id', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const a = UUID.test(pid(req)) ? await repo.obterArquivo(pid(req)) : null;
+    if (!a) return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    await repo.excluirArquivo(a.id);
+    await apagarArquivo(a.caminho);
+    res.json({ ok: true });
+}));
+
+router.get('/api/app/arquivos/:id/conteudo', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const a = UUID.test(pid(req)) ? await repo.obterArquivo(pid(req)) : null;
+    if (!a) return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    const ext = (a.nome_original || '').match(/\.[^.]+$/)?.[0] || '';
+    await enviarArquivo(res, a.caminho, a.nome.endsWith(ext) ? a.nome : a.nome + ext, a.mime, req.query.baixar === '1');
 }));
 
 // ─── Ajustes do analista ─────────────────────────────────────────────────
