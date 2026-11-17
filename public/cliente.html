@@ -205,9 +205,14 @@ function visu1(ms, at, pa) {
       <p class="nota" style="margin-top:2px">${pa.gastou > at.gastou ? `Em ${nomeCurto(at.mes)} você gastou ${brl0(pa.gastou - at.gastou)} a menos que em ${nomeCurto(pa.mes)}.` : `Em ${nomeCurto(at.mes)} você gastou ${brl0(at.gastou - pa.gastou)} a mais que em ${nomeCurto(pa.mes)}.`}</p>` : ''}
     ${(recentes.length ? recentes : ev).length ? `<h2>Neste mês</h2>${blocoEventos((recentes.length ? recentes : ev).slice(0, 4))}` : ''}
     ${cats.length && pc ? `<h2>Onde mudou em relação a ${nomeCurto(pc.mes)}</h2>
-      ${cats.map(([c, v]) => { const r = pc.categorias[c] || 0, d = v - r, p = r ? Math.round(d / r * 100) : null;
-        return `<div class="item"><span>${esc(c)}<em>${r ? brl0(r) + ' em ' + nomeCurto(pc.mes) : 'não teve em ' + nomeCurto(pc.mes)}</em></span><b class="num">${brl0(v)}${p == null ? '' : ` <small class="${d > 0 ? 'up' : d < 0 ? 'dn' : 'neu'}" style="font-size:12px">${Math.abs(p) < 1 ? '=' : (d > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%'}</small>`}</b></div>`; }).join('')}` : ''}
+      ${listaMudancas(cats, pc)}` : ''}
     ${F.futuro.metas.length ? `<h2>Seus objetivos</h2>${blocoMetas()}` : ''}`;
+}
+
+/** Categorias do mês com o valor do mês comparado embaixo e a variação ao lado. */
+function listaMudancas(cats, pc) {
+  return cats.map(([c, v]) => { const r = pc.categorias[c] || 0, d = v - r, p = r ? Math.round(d / r * 100) : null;
+    return `<div class="item"><span>${esc(c)}<em>${r ? brl0(r) + ' em ' + nomeCurto(pc.mes) : 'não teve em ' + nomeCurto(pc.mes)}</em></span><b class="num">${brl0(v)}${p == null ? '' : ` <small class="${d > 0 ? 'up' : d < 0 ? 'dn' : 'neu'}" style="font-size:12px">${Math.abs(p) < 1 ? '=' : (d > 0 ? '▲ ' : '▼ ') + Math.abs(p) + '%'}</small>`}</b></div>`; }).join('');
 }
 
 // ── Visualização 2: painel de cartões
@@ -224,11 +229,7 @@ function visu2(ms, at, pa) {
     ${ev.length ? `<div class="chips-ev">${ev.map(e => `<div style="background:${corChip[e.tipo]}"><b>${simbChip[e.tipo]} ${esc(e.titulo)}</b><span>${esc(e.texto)}</span></div>`).join('')}</div>` : ''}
     ${ms.length > 1 && !at.semRenda ? `<div class="card"><div class="t">Quanto sobrou em cada mês</div>${graficoMeses(ms, 'sobra')}
       <p class="nota" style="margin:0">Sobrou dinheiro em ${ms.filter(m => m.sobra > 0).length} de ${ms.length} meses.</p></div>` : ms.length > 1 ? `<div class="card"><div class="t">Quanto gastou em cada mês</div>${graficoMeses(ms, 'gastos')}</div>` : ''}
-    ${cats.length && pc ? `<div class="card"><div class="t">${nomeCurto(at.mes).replace(/^./, c => c.toUpperCase())} × ${nomeCurto(pc.mes)}, por categoria</div>
-      ${cats.map(([c, v]) => { const r = pc.categorias[c] || 0; if (!r) return `<div class="cmp"><span>${esc(c)}</span><span class="z"></span><b class="num neu">novo</b></div>`;
-        const p = Math.max(-50, Math.min(50, Math.round((v - r) / r * 100))), real = Math.round((v - r) / r * 100);
-        return `<div class="cmp"><span>${esc(c)}</span><span class="z"><i style="${p >= 0 ? `left:50%;width:${p}%` : `right:50%;width:${-p}%`};background:${p > 0 ? 'var(--v)' : 'var(--p)'}"></i></span><b class="num ${real > 0 ? 'up' : real < 0 ? 'dn' : 'neu'}">${real > 0 ? '+' : ''}${real}%</b></div>`; }).join('')}
-      <p class="nota" style="margin:6px 0 0">Verde: gastou menos que em ${nomeCurto(pc.mes)} · vermelho: gastou mais.</p></div>` : ''}
+    ${cats.length && pc ? `<div class="card"><div class="t">Onde mudou em relação a ${nomeCurto(pc.mes)}</div>${listaMudancas(cats, pc)}</div>` : ''}
     ${F.futuro.metas.length ? `<div class="card"><div class="t">Seus objetivos</div>${blocoMetas()}</div>` : ''}`;
 }
 
