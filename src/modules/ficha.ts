@@ -41,9 +41,31 @@ export interface Ficha {
     cidade: string;
     notas: Nota[];                     // anotações da consultora (aparecem na linha do tempo)
     proximoContato: { data: string | null; motivo: string };
+    atas: Ata[];                       // atas de reunião com o cliente
 }
 
 export interface Nota { texto: string; em: string; autor: string }
+
+export const FORMATOS_REUNIAO = ['online', 'presencial', 'whatsapp', 'telefone'] as const;
+export interface Combinado { texto: string; responsavel: string; prazo: string | null; feito: boolean; feitoEm: string | null }
+export interface Ata {
+    id: string;
+    numero: number;
+    titulo: string;
+    data: string;                       // YYYY-MM-DD
+    hora: string;                       // HH:MM ou ''
+    duracao: number | null;             // minutos
+    formato: typeof FORMATOS_REUNIAO[number] | null;
+    participantes: string;
+    temas: string[];
+    assuntos: string[];
+    combinados: Combinado[];
+    proxima: { data: string | null; hora: string };
+    observacoes: string;
+    nota: number | null;                // nota de saúde financeira no dia
+    autor: string;
+    criadoEm: string;
+}
 
 const texto = (v: any, max: number) => String(v ?? '').trim().slice(0, max);
 const dinheiro = (v: any): number | null => {
@@ -78,6 +100,32 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         const em = typeof n?.em === 'string' && !Number.isNaN(Date.parse(n.em)) ? n.em : agora.toISOString();
         return t ? [{ texto: t, em, autor: texto(n?.autor, 80) }] : [];
     }).slice(-100);
+    const dataOk = (x: any) => /^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) ? String(x) : null;
+    const horaOk = (x: any) => /^\d{2}:\d{2}$/.test(String(x || '')) ? String(x) : '';
+    const atas: Ata[] = (Array.isArray(v?.atas) ? v.atas : []).flatMap((a: any, i: number) => {
+        const data = dataOk(a?.data);
+        if (!data) return [];
+        const nota = Number(a?.nota);
+        return [{
+            id: texto(a?.id, 40) || ('ata-' + Date.now().toString(36) + i),
+            numero: inteiro(a?.numero, 9999) || i + 1,
+            titulo: texto(a?.titulo, 120) || 'Reunião',
+            data, hora: horaOk(a?.hora), duracao: inteiro(a?.duracao, 1440),
+            formato: umDe(FORMATOS_REUNIAO, a?.formato),
+            participantes: texto(a?.participantes, 300),
+            temas: (Array.isArray(a?.temas) ? a.temas : []).map((t: any) => texto(t, 40)).filter(Boolean).slice(0, 15),
+            assuntos: (Array.isArray(a?.assuntos) ? a.assuntos : []).map((t: any) => texto(t, 2000)).filter(Boolean).slice(0, 30),
+            combinados: (Array.isArray(a?.combinados) ? a.combinados : []).flatMap((c: any) => {
+                const t = texto(c?.texto, 300);
+                return t ? [{ texto: t, responsavel: texto(c?.responsavel, 80), prazo: dataOk(c?.prazo), feito: !!c?.feito, feitoEm: c?.feito ? (dataOk(c?.feitoEm) || agora.toISOString().slice(0, 10)) : null }] : [];
+            }).slice(0, 30),
+            proxima: { data: dataOk(a?.proxima?.data), hora: horaOk(a?.proxima?.hora) },
+            observacoes: texto(a?.observacoes, 2000),
+            nota: Number.isFinite(nota) && a?.nota !== null && a?.nota !== '' ? Math.max(0, Math.min(100, Math.round(nota))) : null,
+            autor: texto(a?.autor, 80),
+            criadoEm: typeof a?.criadoEm === 'string' && !Number.isNaN(Date.parse(a.criadoEm)) ? a.criadoEm : agora.toISOString()
+        }];
+    }).slice(-300);
     const pcData = /^\d{4}-\d{2}-\d{2}$/.test(String(v?.proximoContato?.data || '')) ? String(v.proximoContato.data) : null;
     return {
         nascimento: nascOk,
@@ -93,6 +141,7 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         lgpdEm: lgpd ? (typeof v?.lgpdEm === 'string' && !Number.isNaN(Date.parse(v.lgpdEm)) ? v.lgpdEm : agora.toISOString()) : null,
         cidade: texto(v?.cidade, 80),
         notas,
-        proximoContato: { data: pcData, motivo: texto(v?.proximoContato?.motivo, 200) }
+        proximoContato: { data: pcData, motivo: texto(v?.proximoContato?.motivo, 200) },
+        atas
     };
 }

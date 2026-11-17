@@ -58,7 +58,7 @@ app.get('/api/mirror/health', (_req, res) => {
         ok: true,
         servico: 'TRIAD Mirror',
         versao: '0.2.0',
-        atualizacao: '17/11/2026 · Perfil do cliente',
+        atualizacao: '17/11/2026 · Perfil do cliente + atas de reunião',
         anthropicConfigurado: !!process.env.ANTHROPIC_API_KEY,
         supabaseConfigurado: !!supabaseAdmin,
         acessoProtegido: !!process.env.MIRROR_ACCESS_KEY,
