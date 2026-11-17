@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '17/11/2026 · Perfil do cliente + atas de reunião';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '17/11/2026 · Menu lateral + Agenda';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -257,6 +257,51 @@ button.at-tag{cursor:pointer}.at-tag.on{background:var(--primaria);color:#fff}
 .at-anteriores{background:var(--azul-fundo);color:var(--aviso-texto);border-radius:4px;padding:10px 14px;margin-top:16px;font-size:13px}.at-anteriores .at-ck{border-color:var(--azul-borda)}
 .at-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
 @media (max-width:900px){.at-grade{grid-template-columns:1fr}.at-form4{grid-template-columns:1fr 1fr}.at-comb{grid-template-columns:1fr 1fr}.at-comb input:first-child{grid-column:1/-1}.at-form2{grid-template-columns:1fr}}
+.trilho{position:fixed;left:0;top:0;bottom:0;width:72px;background:var(--primaria-escura);color:#CFE3D8;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;z-index:40}
+.tr-logo{display:block;width:58px;margin-bottom:14px}.tr-logo img{width:100%;display:block}
+.tr-it{position:relative;width:60px;padding:9px 0 7px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px;color:inherit;text-decoration:none;font-size:10.5px;font-weight:600;line-height:1.1;text-align:center}
+.tr-it i{font-size:22px}.tr-it:hover{background:rgba(255,255,255,.08);color:#fff}.tr-it.on{background:rgba(255,255,255,.16);color:#fff}
+.tr-n{position:absolute;top:4px;right:8px;background:var(--marca);color:#3D3300;font-size:10px;border-radius:9px;padding:0 5px;line-height:16px}
+.tr-fim{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+.trilho .btn-tema{color:#CFE3D8;border-color:rgba(255,255,255,.2);background:transparent}
+.trilho .avatar{background:var(--marca);color:#3D3300}
+body:has(.trilho){padding-left:72px}
+.topo{position:fixed!important;left:84px;bottom:18px;top:auto!important;height:auto!important;padding:0!important;background:transparent!important;border:0!important;z-index:30;pointer-events:none}
+.topo .dir{pointer-events:auto}.topo .salvo{background:var(--tinta);color:#fff;padding:6px 12px;border-radius:20px;font-size:12.5px;box-shadow:0 6px 18px rgba(var(--sombra-rgb),.2)}
+.menu-usuario{position:fixed!important;left:80px!important;right:auto!important;top:auto!important;bottom:16px;z-index:50!important}
+.cli-wrap{display:flex;align-items:flex-start;min-height:100vh}
+.cli-wrap>main{flex:1;min-width:0;margin:0 auto}
+.pf-topo .pf-stats{padding-bottom:20px}
+.cli-col{position:sticky;top:0;align-self:flex-start;width:250px;flex:none;height:100vh;overflow-y:auto;background:var(--branco);border-right:1px solid var(--borda);padding:18px 14px 24px}
+.cc-volta{display:inline-flex;align-items:center;gap:4px;color:var(--fraco);font-size:13px;text-decoration:none}.cc-volta:hover{color:var(--texto)}
+.cc-id{text-align:center;margin:16px 0 14px}.cc-id b{display:block;margin-top:10px;font-size:16.5px;line-height:1.25}.cc-id small{color:var(--fraco);display:block;margin-top:2px}
+.cc-foto{width:72px;height:72px;border-radius:50%;background:var(--primaria);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:28px;margin:0 auto}
+.cc-pills{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:9px}
+.cc-abas{display:grid;gap:2px}
+.cc-aba{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;border-radius:6px;padding:9px 10px;font:inherit;font-weight:600;color:var(--suave);cursor:pointer;text-align:left}
+.cc-aba i{font-size:19px}.cc-aba span{flex:1}.cc-aba em{font-style:normal;font-size:11.5px;background:var(--borda2);color:var(--suave);border-radius:10px;padding:1px 7px;font-weight:600}
+.cc-aba em.cc-ok{background:var(--verde-fundo);color:var(--primaria-texto)}
+.cc-aba:hover{background:var(--linha-hover);color:var(--texto)}.cc-aba.on{background:var(--verde-fundo);color:var(--primaria-texto)}
+.cc-t{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--fraco);margin:20px 10px 6px}
+.cc-acao{display:flex;align-items:center;gap:9px;width:100%;background:none;border:0;border-radius:6px;padding:8px 10px;font:inherit;color:var(--suave);cursor:pointer;text-align:left;font-size:13.5px}
+.cc-acao:hover{background:var(--linha-hover);color:var(--texto)}.cc-acao i{font-size:17px}
+.cc-forte{color:var(--primaria-texto);font-weight:600}
+.ag-grupo{padding:14px 18px!important;margin-bottom:14px;border:1px solid var(--borda)!important;border-radius:var(--r-painel)!important}.ag-atraso{border-left:3px solid var(--vermelho)!important}.ag-hoje{border-left:3px solid var(--marca)!important}
+.ag-it{display:flex;align-items:center;gap:14px;padding:11px 18px;border-top:1px solid var(--borda2);color:inherit;text-decoration:none}
+.ag-grupo .ag-it{padding:11px 0}.ag-it:first-of-type{border-top:0}.ag-it:hover .ag-txt b{text-decoration:underline}
+.ag-data{width:58px;flex:none;text-align:center}.ag-data b{display:block;font-size:15px}.ag-data small{color:var(--fraco);font-size:12px}
+.ag-ic{width:32px;height:32px;border-radius:50%;background:var(--borda2);display:grid;place-items:center;color:var(--suave);flex:none}
+.ag-txt{flex:1;min-width:0}.ag-txt b{display:block;font-weight:600}.ag-txt small{color:var(--fraco)}
+@media (max-width:900px){
+  body:has(.trilho){padding-left:0;padding-bottom:64px}
+  .trilho{top:auto;width:auto;right:0;height:62px;flex-direction:row;justify-content:space-around;padding:0 6px}
+  .tr-logo{display:none}.tr-it{width:auto;flex:1;padding:6px 0}.tr-fim{margin:0;flex-direction:row;gap:8px;padding:0 6px}.tr-fim .btn-tema{display:none}
+  .topo{left:12px;bottom:76px}.menu-usuario{left:auto!important;right:8px!important;bottom:70px}
+  .cli-wrap{display:block}.cli-col{position:static;width:auto;height:auto;border-right:0;border-bottom:1px solid var(--borda);padding:12px 16px}
+  .cli-col{display:flex;gap:4px;overflow-x:auto;align-items:center;white-space:nowrap;padding:8px 12px}
+  .cc-id,.cc-t{display:none}.cc-abas{display:contents}.cc-aba,.cc-acao{width:auto;flex:none;white-space:nowrap}.cc-volta{flex:none;margin-right:6px}
+  .pf-nome{padding-top:8px;min-width:100%}.pf-id{margin-top:-40px}
+}
 .docs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 20px;border-top:1px solid var(--borda)}
 .doc{border:1px solid var(--borda);border-radius:var(--r-ctrl);padding:6px 8px 6px 7px;display:flex;align-items:center;gap:8px;font-size:12px;background:var(--branco)}
 .doc button{border:0;background:none;color:var(--apagado);padding:0 2px;font-size:15px;border-radius:3px}
@@ -808,6 +853,8 @@ async function rotear() {
   if (h === '#/login') { location.hash = '#/clientes'; return; }
   if (!E.taxonomia) { try { E.taxonomia = await api('GET', '/api/app/categorias'); } catch (e) { return telaErro(e.message); } }
   if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
+  if (h === '#/agenda') { E.ap = null; return telaAgenda(); }
+  if (h === '#/reunioes') { E.ap = null; return telaReunioesGeral(); }
   const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
@@ -828,10 +875,8 @@ function telaErro(msg) {
 // Topo
 // ════════════════════════════════════════════════════════════════════════
 function topo(extraDir = '') {
-  return `<header class="topo">
-    <div class="logo" data-acao="ir-clientes" role="link" tabindex="0" aria-label="Ir para a lista de clientes"><img src="/img/logo-dees-destaque.png" alt="Dees" class="logo-img logo-tema-claro"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img logo-tema-escuro"></div>
-    <div class="dir">${extraDir}${botaoTema()}<button class="avatar" data-acao="menu-usuario" aria-label="Menu do usuário">${esc(iniciais(sessao?.usuario?.nome))}</button></div>
-  </header>`;
+  // A navegação fica no menu lateral; .topo .dir só guarda o aviso de "Salvo" (canto de baixo).
+  return trilho() + `<header class="topo"><div class="dir">${extraDir}</div></header>`;
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -1018,8 +1063,7 @@ function desenharCliente() {
   E.chipsDocs = chipsDocs;
   if (LANC_ABAS.includes(E.aba)) E.ultLanc = E.aba;
   const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes'].includes(E.aba);
-  $('#app').innerHTML = topo(salvoTxt()) + `<main>
-    <div style="margin-bottom:10px"><a href="#/clientes" class="suave" style="text-decoration:none;font-size:13px"><i class="ti ti-arrow-left"></i> Clientes</a></div>
+  $('#app').innerHTML = topo(salvoTxt()) + `<div class="cli-wrap">${colunaCliente()}<main>
     ${cabecalhoPerfil()}
     ${LANC_ABAS.includes(E.aba) && documentos.length ? `
     <div class="abas" role="tablist" style="margin-top:14px">
@@ -1029,13 +1073,7 @@ function desenharCliente() {
     </div>` : ''}
     ${precisaDoc ? `<div class="card vazio" style="margin-top:16px"><h2>Envie o primeiro documento</h2><p class="suave">Extrato bancário (conta) ou fatura do cartão de crédito, em PDF ou foto.</p><button class="btn primario" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button></div>`
       : `<div id="conteudo" style="${E.aba === 'perfil' ? '' : 'margin-top:14px'}"></div>`}
-  </main>
-  ${documentos.length ? `<div class="barra-acoes">
-    <button data-acao="novo-doc"><i class="ti ti-file-plus"></i> Documento</button>
-    <button data-acao="excel"><i class="ti ti-table-export"></i> Excel</button>
-    <button data-acao="editar-perfil"><i class="ti ti-user"></i> Ficha</button>
-    ${concluida ? '<button data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="destaque" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>'}
-  </div>` : ''}`;
+  </main></div>`;
   if (!precisaDoc) desenharConteudo();
 }
 
@@ -1092,14 +1130,6 @@ function cabecalhoPerfil() {
     </div>
     ${frase ? `<p class="pf-frase">“${esc(frase)}”</p>` : ''}
     <div class="pf-stats num">${stats.map(([v, l]) => `<div><b>${v}</b> <span>${esc(l)}</span></div>`).join('')}</div>
-    <div class="pf-abas" role="tablist">
-      ${aba('perfil', 'perfil', 'Visão geral')}
-      ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'Lançamentos')}
-      ${aba('docs', 'docs', `Documentos <span class="fraco">${documentos.length}</span>`)}
-      ${aba('plano', 'plano', 'Plano')}
-      ${aba('reunioes', 'reunioes', `Reuniões${(fi.atas || []).length ? ` <span class="fraco">${fi.atas.length}</span>` : ''}`)}
-      <button class="pf-aba" data-acao="app-cliente">App</button>
-    </div>
   </div>`;
 }
 
@@ -1489,6 +1519,139 @@ function pfUltimaReuniao() {
       <div class="suave" style="font-size:13px;margin-top:6px">${abertos ? abertos + (abertos > 1 ? ' combinados em aberto' : ' combinado em aberto') : 'Nenhum combinado em aberto'}${a.proxima?.data ? ' · próxima em ' + dataBR(a.proxima.data) : ''}</div>`
       : '<p class="suave" style="margin:0">Nenhuma reunião registrada.</p>'}
     <button class="btn primario" data-acao="ata-nova" style="width:100%;margin-top:12px"><i class="ti ti-plus"></i> Nova ata</button></div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// MENU LATERAL — barra fina de ícones (todas as telas) + coluna do cliente
+// (perfil aberto). Agenda e Reuniões juntam o que está na ficha de todos.
+// ════════════════════════════════════════════════════════════════════════
+function trilho() {
+  const h = location.hash || '#/clientes';
+  const ativo = h.startsWith('#/agenda') ? 'agenda' : h.startsWith('#/reunioes') ? 'reunioes' : h === '#/cliente/novo' ? 'novo' : 'carteira';
+  const n = E.agendaPendentes || 0;
+  const item = (id, href, ic, txt, extra = '') => `<a class="tr-it ${ativo === id ? 'on' : ''}" href="${href}" title="${txt}" aria-label="${txt}"${ativo === id ? ' aria-current="page"' : ''}><i class="ti ${ic}"></i>${extra}<span>${txt}</span></a>`;
+  return `<nav class="trilho" aria-label="Menu principal">
+    <a class="tr-logo" href="#/clientes" aria-label="Dees — início"><img src="/img/logo-dees-claro.png" alt="Dees"></a>
+    ${item('carteira', '#/clientes', 'ti-layout-dashboard', 'Carteira')}
+    ${item('agenda', '#/agenda', 'ti-calendar-event', 'Agenda', n ? `<b class="tr-n">${n > 99 ? '99+' : n}</b>` : '')}
+    ${item('reunioes', '#/reunioes', 'ti-messages', 'Reuniões')}
+    ${item('novo', '#/cliente/novo', 'ti-user-plus', 'Novo cliente')}
+    <div class="tr-fim">${botaoTema()}<button class="avatar" data-acao="menu-usuario" aria-label="Menu do usuário">${esc(iniciais(sessao?.usuario?.nome))}</button></div>
+  </nav>`;
+}
+
+/** Coluna do cliente aberto: mini perfil, abas na vertical e ações. */
+function colunaCliente() {
+  const { cliente: c, analise, documentos } = E.cli, fi = c.ficha || {};
+  const P = E.cli.perfil, idade = idadeDe(fi.nascimento), concluida = analise.status === 'concluida';
+  const secao = LANC_ABAS.includes(E.aba) ? 'lanc' : E.aba;
+  const nLanc = lancs().filter(l => l.situacao === 'incluido').length, nAtas = (fi.atas || []).length;
+  const aba = (id, alvo, ic, txt, n) => `<button class="cc-aba ${secao === id ? 'on' : ''}" data-acao="aba" data-aba="${alvo}" ${secao === id ? 'aria-current="page"' : ''}><i class="ti ${ic}"></i><span>${txt}</span>${n !== '' && n != null ? `<em>${n}</em>` : ''}</button>`;
+  return `<aside class="cli-col" aria-label="Menu do cliente">
+    <a href="#/clientes" class="cc-volta"><i class="ti ti-chevron-left"></i> Clientes</a>
+    <div class="cc-id"><span class="cc-foto">${esc(iniciais(c.nome))}</span><b>${esc(c.nome)}</b>
+      <small>${[fi.profissao ? esc(fi.profissao) : '', idade != null ? idade + ' anos' : ''].filter(Boolean).join(' · ') || '&nbsp;'}</small>
+      <div class="cc-pills">${P?.nota ? `<span class="pill verde">Nota ${P.nota.valor}</span>` : ''}${concluida ? '<span class="pill verde">Concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}</div></div>
+    <nav class="cc-abas">
+      ${aba('perfil', 'perfil', 'ti-layout-grid', 'Visão geral', '')}
+      ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'ti-list-details', 'Lançamentos', documentos.length ? nLanc : '')}
+      ${aba('docs', 'docs', 'ti-file-text', 'Documentos', documentos.length || '')}
+      ${aba('plano', 'plano', 'ti-target-arrow', 'Plano', '')}
+      ${aba('reunioes', 'reunioes', 'ti-messages', 'Reuniões', nAtas || '')}
+      <button class="cc-aba" data-acao="app-cliente"><i class="ti ti-device-mobile"></i><span>App do cliente</span><em class="${c.app_ativo ? 'cc-ok' : ''}">${c.app_publicado_em ? (c.app_ativo ? 'no ar' : 'desativado') : 'gerar'}</em></button>
+    </nav>
+    <div class="cc-t">Ações</div>
+    <button class="cc-acao" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button>
+    <button class="cc-acao" data-acao="ata-nova"><i class="ti ti-plus"></i> Nova ata</button>
+    ${documentos.length ? `<button class="cc-acao" data-acao="excel"><i class="ti ti-table-export"></i> Exportar planilha</button>` : ''}
+    <button class="cc-acao" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha do cliente</button>
+    ${documentos.length ? (concluida ? '<button class="cc-acao" data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="cc-acao cc-forte" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>') : ''}
+  </aside>`;
+}
+
+// ── Agenda e Reuniões (todos os clientes)
+async function carregarListaClientes() {
+  const r = await api('GET', '/api/app/clientes');
+  E.listaClientes = r.clientes || [];
+  E.agendaPendentes = itensAgenda().filter(i => i.data && i.data <= hojeISO()).length;
+  return E.listaClientes;
+}
+
+function itensAgenda() {
+  const out = [];
+  (E.listaClientes || []).forEach(c => {
+    const fi = c.ficha || {}, pc = fi.proximoContato || {};
+    if (pc.data) out.push({ data: pc.data, hora: '', tipo: 'contato', cliente: c, titulo: pc.motivo || 'Contato com o cliente', aba: 'perfil' });
+    (fi.atas || []).forEach(a => {
+      if (a.proxima?.data && a.proxima.data !== pc.data) out.push({ data: a.proxima.data, hora: a.proxima.hora || '', tipo: 'reuniao', cliente: c, titulo: 'Reunião combinada na ata nº ' + a.numero, aba: 'reunioes', ata: a.id });
+      (a.combinados || []).forEach(k => { if (!k.feito) out.push({ data: k.prazo, hora: '', tipo: 'combinado', cliente: c, titulo: k.texto, resp: k.responsavel, aba: 'reunioes', ata: a.id }); });
+    });
+  });
+  return out.sort((x, y) => (x.data || '9999').localeCompare(y.data || '9999') || x.hora.localeCompare(y.hora));
+}
+
+const DIAS_SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+async function telaAgenda() {
+  document.title = 'Agenda — Dees';
+  $('#app').innerHTML = topo() + `<main><div class="carregando">Montando a agenda…</div></main>`;
+  try { await carregarListaClientes(); } catch (e) { return telaErro(e.message); }
+  const hoje = hojeISO(), em7 = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+  const itens = itensAgenda().filter(i => i.tipo !== 'reuniao' || i.data >= hoje);
+  const grupos = [
+    ['Atrasados', itens.filter(i => i.data && i.data < hoje), 'ag-atraso'],
+    ['Hoje', itens.filter(i => i.data === hoje), 'ag-hoje'],
+    ['Próximos 7 dias', itens.filter(i => i.data > hoje && i.data <= em7), ''],
+    ['Mais adiante', itens.filter(i => i.data > em7), ''],
+    ['Combinados sem prazo', itens.filter(i => !i.data), '']
+  ].filter(g => g[1].length);
+  const TIPO = { contato: ['ti-phone', 'Contato'], reuniao: ['ti-messages', 'Reunião'], combinado: ['ti-checkbox', 'Combinado'] };
+  const linha = i => {
+    const d = i.data ? new Date(i.data + 'T12:00:00') : null;
+    return `<a class="ag-it" href="#/cliente/${i.cliente.id}/${i.aba}" data-acao="ag-abrir" data-ata="${esc(i.ata || '')}">
+      <span class="ag-data">${d ? `<b>${dataBR(i.data)}</b><small>${DIAS_SEM[d.getDay()]}${i.hora ? ' · ' + i.hora.replace(':', 'h') : ''}</small>` : '<small>—</small>'}</span>
+      <span class="ag-ic"><i class="ti ${TIPO[i.tipo][0]}"></i></span>
+      <span class="ag-txt"><b>${esc(i.titulo)}</b><small>${esc(i.cliente.nome)}${i.resp ? ' · responsável: ' + esc(i.resp) : ''}</small></span>
+      <span class="pill cinza">${TIPO[i.tipo][1]}</span></a>`;
+  };
+  $('#app').innerHTML = topo() + `<main>
+    <div class="cab-pagina"><div><h1>Agenda</h1><div class="suave" style="margin-top:4px">Próximos contatos, reuniões combinadas e combinados com prazo, de todos os clientes.</div></div></div>
+    ${grupos.length ? grupos.map(([t, l, cls]) => `<section class="card ag-grupo ${cls}"><div class="pf-t">${t} <span class="fraco" style="text-transform:none;letter-spacing:0">${l.length}</span></div>${l.map(linha).join('')}</section>`).join('')
+      : `<div class="card vazio"><h2>Nada na agenda</h2><p class="suave">Marque o próximo contato no perfil do cliente ou registre uma ata com a próxima reunião.</p></div>`}
+  </main>`;
+}
+
+async function telaReunioesGeral(recarregar = true) {
+  document.title = 'Reuniões — Dees';
+  if (recarregar) {
+    $('#app').innerHTML = topo() + `<main><div class="carregando">Juntando as atas…</div></main>`;
+    try { await carregarListaClientes(); } catch (e) { return telaErro(e.message); }
+  }
+  const hoje = hojeISO(), mes = hoje.slice(0, 7);
+  const atas = [];
+  E.listaClientes.forEach(c => ((c.ficha || {}).atas || []).forEach(a => atas.push({ a, c })));
+  atas.sort((x, y) => (y.a.data + y.a.hora).localeCompare(x.a.data + x.a.hora));
+  const busca = (E.buscaAtas || '').toLowerCase();
+  const filtradas = busca ? atas.filter(({ a, c }) => (c.nome + ' ' + a.titulo + ' ' + a.temas.join(' ') + ' ' + a.assuntos.join(' ')).toLowerCase().includes(busca)) : atas;
+  const abertos = atas.reduce((s, { a }) => s + a.combinados.filter(k => !k.feito).length, 0);
+  const atrasados = atas.reduce((s, { a }) => s + a.combinados.filter(k => !k.feito && k.prazo && k.prazo < hoje).length, 0);
+  $('#app').innerHTML = topo() + `<main>
+    <div class="cab-pagina"><div><h1>Reuniões</h1><div class="suave" style="margin-top:4px">Todas as atas registradas, de todos os clientes.</div></div></div>
+    <div class="pf-kpis" style="margin-bottom:14px">
+      <div class="card pf-kpi" style="padding:16px 18px"><small>Reuniões registradas</small><b class="num">${atas.length}</b></div>
+      <div class="card pf-kpi" style="padding:16px 18px"><small>Neste mês</small><b class="num">${atas.filter(x => x.a.data.slice(0, 7) === mes).length}</b></div>
+      <div class="card pf-kpi" style="padding:16px 18px"><small>Combinados em aberto</small><b class="num">${abertos}</b></div>
+      <div class="card pf-kpi" style="padding:16px 18px"><small>Combinados atrasados</small><b class="num ${atrasados ? 'pf-ruim' : ''}">${atrasados}</b></div>
+    </div>
+    <div class="card" style="padding:12px 14px;margin-bottom:14px"><input type="search" id="buscaAtas" placeholder="Buscar por cliente, tema ou assunto…" value="${esc(E.buscaAtas || '')}" aria-label="Buscar nas atas"></div>
+    <div class="card" style="padding:4px 0">${filtradas.length ? filtradas.map(({ a, c }) => {
+      const ab = a.combinados.filter(k => !k.feito).length;
+      return `<a class="ag-it" href="#/cliente/${c.id}/reunioes" data-acao="ag-abrir" data-ata="${esc(a.id)}">
+        <span class="ag-data"><b>${dataBR(a.data)}</b><small>${a.data.slice(0, 4)}</small></span>
+        <span class="ag-txt"><b>${esc(a.titulo)}</b><small>${esc(c.nome)}${metaAta(a) ? ' · ' + metaAta(a) : ''}</small>${a.temas.length ? `<span class="at-tags">${a.temas.slice(0, 4).map(t => `<span class="at-tag">${esc(t)}</span>`).join('')}</span>` : ''}</span>
+        <span class="fraco" style="font-size:13px;white-space:nowrap">${ab ? ab + ' em aberto' : a.combinados.length ? 'tudo feito' : ''}</span></a>`; }).join('')
+      : `<p class="suave" style="padding:14px 18px;margin:0">${atas.length ? 'Nenhuma ata encontrada para essa busca.' : 'Nenhuma reunião registrada ainda. Abra um cliente e use "Nova ata".'}</p>`}</div>
+  </main>`;
+  const b = $('#buscaAtas'); if (b) { b.oninput = () => { E.buscaAtas = b.value; clearTimeout(E.tBusca); E.tBusca = setTimeout(() => { telaReunioesGeral(false).then(() => { const x = $('#buscaAtas'); x?.focus(); x?.setSelectionRange(x.value.length, x.value.length); }); }, 300); }; }
 }
 
 function desenharConteudo() {
@@ -2808,6 +2971,7 @@ document.addEventListener('click', async ev => {
     case 'pf-nota-del': {
       const notas = [...((E.cli.cliente.ficha || {}).notas || [])]; notas.splice(+el.dataset.i, 1);
       pfSalvarFicha({ notas }, 'Anotação apagada'); break; }
+    case 'ag-abrir': E.ataSel = el.dataset.ata || E.ataSel; E.ataEdit = null; return;
     case 'ata-nova': E.ataEdit = novaAta(); E.ataAntFeitos = null; E.ataExcluir = null; if (E.aba !== 'reunioes') { E.aba = 'reunioes'; history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/reunioes`); desenharCliente(); } else desenharConteudo(); window.scrollTo({ top: 0 }); break;
     case 'ata-ver': E.ataSel = el.dataset.id; E.ataEdit = null; E.ataExcluir = null; desenharConteudo(); break;
     case 'ata-editar': E.ataEdit = JSON.parse(JSON.stringify(atasDe().find(x => x.id === el.dataset.id))); if (!E.ataEdit.assuntos.length) E.ataEdit.assuntos = ['']; E.ataAntFeitos = null; desenharConteudo(); break;
