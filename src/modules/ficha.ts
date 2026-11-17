@@ -39,6 +39,8 @@ export interface Ficha {
     lgpdEm: string | null;             // quando autorizou
     // ── perfil do cliente
     cidade: string;
+    obsRenda: string;                  // observações do passo "Renda e família"
+    obsDinheiro: string;               // observações do passo "Dinheiro hoje"
     notas: Nota[];                     // anotações da consultora (aparecem na linha do tempo)
     proximoContato: { data: string | null; motivo: string };
     atas: Ata[];                       // atas de reunião com o cliente
@@ -140,6 +142,8 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         lgpd,
         lgpdEm: lgpd ? (typeof v?.lgpdEm === 'string' && !Number.isNaN(Date.parse(v.lgpdEm)) ? v.lgpdEm : agora.toISOString()) : null,
         cidade: texto(v?.cidade, 80),
+        obsRenda: texto(v?.obsRenda, 2000),
+        obsDinheiro: texto(v?.obsDinheiro, 2000),
         notas,
         proximoContato: { data: pcData, motivo: texto(v?.proximoContato?.motivo, 200) },
         atas

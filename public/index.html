@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '17/11/2026 · Animações';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '17/11/2026 · Observações na ficha';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1222,7 +1222,7 @@ function pfSobre() {
     ['LGPD', fi.lgpd ? `<span class="pf-bom">Autorizado ${fi.lgpdEm ? dataBR(fi.lgpdEm.slice(0, 10)) : ''}</span>` : '<span class="pf-ruim">Não autorizado</span>']
   ].filter(([, v]) => v);
   return `<div class="card"><div class="pf-t">Sobre</div>${L.map(([k, v]) => `<div class="pf-lin"><span>${k}</span><b>${v}</b></div>`).join('')}
-    ${c.observacao ? `<div class="pf-obs">${esc(c.observacao)}</div>` : ''}</div>`;
+    ${[[c.observacao, ''], [fi.obsRenda, 'Renda e família'], [fi.obsDinheiro, 'Dinheiro hoje']].filter(([t]) => t).map(([t, r]) => `<div class="pf-obs">${r ? `<b style="display:block;font-size:11.5px;margin-bottom:2px">${r}</b>` : ''}${esc(t)}</div>`).join('')}</div>`;
 }
 
 function pfKpis() {
@@ -2608,7 +2608,7 @@ const FC_DEPEND = [[0, 'Nenhuma'], [1, '1'], [2, '2'], [3, '3 ou mais']];
 const FC_DIVIDAS = [['emprestimo', 'Empréstimo pessoal'], ['veiculo', 'Financiamento de veículo'], ['imobiliario', 'Financiamento imobiliário'], ['consignado', 'Consignado'], ['cheque_especial', 'Cheque especial'], ['outro', 'Outra dívida']];
 const FC_OBJ = [['reserva', 'Reserva de emergência', 'Para imprevistos'], ['dividas', 'Sair das dívidas', 'Rotativo, empréstimos'], ['viagem', 'Viagem', 'Férias, intercâmbio'],
   ['carro', 'Carro', 'Troca ou primeiro carro'], ['casa', 'Casa própria', 'Entrada ou quitação'], ['aposentadoria', 'Aposentadoria', 'Viver de renda']];
-const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null, cidade: '' });
+const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null, cidade: '', obsRenda: '', obsDinheiro: '' });
 const paraNumero = v => { if (v === '' || v == null) return null; const n = Number(String(v).replace(/[^\d,.-]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : null; };
 const fmtValor = n => n == null ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 const mascaraCpf = v => { const d = v.replace(/\D/g, '').slice(0, 11); return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); };
@@ -2687,7 +2687,8 @@ function desenharFicha() {
      <span class="fc-rot" id="rFr">Você recebe como</span>
      <div class="fc-chips" role="group" aria-labelledby="rFr">${FC_RENDA.map(([v, t]) => chip('formaRenda', v, t, f.formaRenda === v)).join('')}</div>
      <span class="fc-rot" id="rDp">Quantas pessoas dependem dessa renda além de você?</span>
-     <div class="fc-chips" role="group" aria-labelledby="rDp">${FC_DEPEND.map(([v, t]) => chip('dependentes', v, t, f.dependentes === v)).join('')}</div>`,
+     <div class="fc-chips" role="group" aria-labelledby="rDp">${FC_DEPEND.map(([v, t]) => chip('dependentes', v, t, f.dependentes === v)).join('')}</div>
+     <div style="margin-top:22px;max-width:680px"><label class="rot" for="fcObsRenda">Observações <span class="fraco" style="font-weight:400">(opcional)</span></label><textarea id="fcObsRenda" rows="2" data-fc="f.obsRenda" maxlength="2000" placeholder="Ex: recebe comissão variável, 13º vai para a reserva, filho estuda em escola particular…">${esc(f.obsRenda || '')}</textarea></div>`,
 
     `<h1 class="fc-pergunta">Se a renda parasse hoje, quanto você tem guardado?</h1>
      <p class="fc-apoio">Poupança, investimentos, dinheiro em conta separado. É o ponto de partida da sua reserva de emergência.</p>
@@ -2698,7 +2699,8 @@ function desenharFicha() {
         <div><label class="rot" for="dvS${k}">Quanto falta pagar</label>${dinheiroIn('dvS' + k, `div.${k}.saldo`, x.saldo, false)}</div>
         <div><label class="rot" for="dvP${k}">Parcela</label>${dinheiroIn('dvP' + k, `div.${k}.parcela`, x.parcela, false)}</div>
         <div><label class="rot" for="dvR${k}">Parcelas restantes</label><input id="dvR${k}" type="number" min="0" max="600" inputmode="numeric" data-fc="div.${k}.parcelasRestantes" value="${x.parcelasRestantes ?? ''}"></div>
-      </div></div>`).join('')}`,
+      </div></div>`).join('')}
+     <div style="margin-top:22px;max-width:680px"><label class="rot" for="fcObsDinheiro">Observações <span class="fraco" style="font-weight:400">(opcional)</span></label><textarea id="fcObsDinheiro" rows="2" data-fc="f.obsDinheiro" maxlength="2000" placeholder="Ex: reserva está na poupança, tem um empréstimo com a família, pensa em vender o carro…">${esc(f.obsDinheiro || '')}</textarea></div>`,
 
     `<h1 class="fc-pergunta">O que você quer conquistar?</h1>
      <p class="fc-apoio">Escolha até três. Com valor e prazo, a gente mostra quanto guardar por mês.</p>
