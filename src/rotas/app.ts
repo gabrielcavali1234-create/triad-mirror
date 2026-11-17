@@ -143,7 +143,8 @@ router.post('/api/app/clientes/:id/app/publicar', rota(async (req, res) => {
         parcelamentos: (apuracao.resumo as any).parcelamentos,
         mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia))),
         lancamentos: apuracao.lancamentos,
-        anterior: c.app_snapshot || null
+        anterior: c.app_snapshot || null,
+        whatsappConsultora: typeof req.body?.whatsapp === 'string' ? req.body.whatsapp : null
     });
     const salvo = await repo.salvarApp(c.id, { app_token: c.app_token || novoToken(), app_ativo: true, app_snapshot: foto, app_publicado_em: foto.publicadoEm });
     res.json(estadoApp(salvo!));

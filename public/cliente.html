@@ -34,7 +34,7 @@ html,body{margin:0;background:var(--bg);color:var(--t);font-family:var(--sans);-
 body{min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 main{max-width:520px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 18px 24px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
-.top .marca{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:-.01em}.top .marca span{color:#D9A400}
+.top .marca,.gv-cab .marca{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:-.01em}.top .marca span,.gv-cab .marca span{color:#D9A400}
 .top small{font-size:11.5px;color:var(--f);text-align:right}
 h1{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;margin:4px 0 4px}
 h1 b,.destaque{color:var(--p);font-weight:600}
@@ -105,10 +105,35 @@ nav button.on{color:var(--p);font-weight:700}
 .instalar button{border:0;background:var(--p);color:var(--hero-t);font:inherit;font-weight:700;border-radius:9px;padding:7px 11px;white-space:nowrap}
 .instalar .x{background:none;color:var(--f);padding:4px 6px;margin-left:auto}
 .vazio{text-align:center;padding:60px 10px;color:var(--s)}.vazio h1{margin-bottom:10px}
+#gaveta{position:fixed;left:0;top:0;bottom:0;width:276px;max-width:84vw;background:var(--bg);border-right:1px solid var(--b);padding:calc(16px + env(safe-area-inset-top)) 14px 18px;display:flex;flex-direction:column;z-index:60;transform:translateX(-102%);transition:transform .22s ease;overflow-y:auto}
+#gaveta.aberta{transform:none;box-shadow:10px 0 34px rgba(0,0,0,.22)}
+#veu{position:fixed;inset:0;background:rgba(15,22,18,.45);z-index:55;opacity:0;pointer-events:none;transition:opacity .2s}#veu.on{opacity:1;pointer-events:auto}
+.gv-cab{display:flex;justify-content:space-between;align-items:center}
+.gv-x{border:0;background:none;color:var(--f);font-size:22px;line-height:1;padding:4px 6px}
+.gv-id{display:flex;gap:11px;align-items:center;margin:16px 4px 12px}.gv-id b{display:block;font-size:15.5px}.gv-id small{color:var(--f)}
+.gv-foto{width:46px;height:46px;border-radius:50%;background:var(--p);color:var(--hero-t);display:grid;place-items:center;font-family:var(--serif);font-size:20px;flex:none}
+.gv-it{display:flex;gap:12px;align-items:center;width:100%;border:0;background:none;font:inherit;font-weight:600;color:var(--s);padding:10px;border-radius:10px;text-align:left;text-decoration:none;font-size:14px}
+.gv-it svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.gv-it em{margin-left:auto;font-style:normal;font-size:11.5px;background:var(--b2);color:var(--s);border-radius:9px;padding:1px 8px;font-weight:600}
+.gv-it.on{background:var(--p-fundo);color:var(--p)}
+.gv-t{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--f);margin:16px 10px 4px}
+.gv-reuniao{background:var(--p-fundo);border-radius:12px;padding:10px 12px;margin:10px 4px 0;font-size:13px}.gv-reuniao b{display:block;font-size:15px;color:var(--t)}
+.gv-zap{background:#25D366;color:#fff!important;justify-content:center;margin-top:4px}
+.gv-pe{margin-top:auto;padding:14px 10px 0;color:var(--f);font-size:11.5px}
+.bt-menu{border:0;background:none;color:var(--t);padding:4px;margin-left:-4px;display:flex}
+.bt-menu svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.top .esq{display:flex;align-items:center;gap:10px}
+@media (min-width:900px){
+  #gaveta{transform:none;width:260px;max-width:none}#veu,.bt-menu,.gv-x{display:none!important}
+  body{padding-left:260px}#nav{display:none!important}main{max-width:760px}
+  .tiles{grid-template-columns:repeat(4,1fr)!important}
+  .card svg{max-width:560px;max-height:240px;display:block;margin:0 auto}.top .marca{visibility:hidden}
+}
 .carregando{padding:80px 0;text-align:center;color:var(--f)}
 </style>
 </head>
 <body>
+<div id="veu" data-acao="fechar-menu"></div><aside id="gaveta" aria-label="Menu" hidden></aside>
 <main id="app"><div class="carregando">Carregando…</div></main>
 <nav id="nav" hidden><div class="in">
   <button data-aba="hoje"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Hoje</button>
@@ -134,7 +159,6 @@ let F = null, aba = 'hoje', horizonte = 0, pedidoInstalar = null;
 // ─── Hoje (v2): três visualizações à escolha (1 relatório · 2 cartões · 3 saúde) ──
 // Tudo comparado com o MÊS PASSADO (mais fácil de ler que "média").
 let modoGrafico = 'gastos';
-let visu = (() => { const v = +ler('dees.visualizacao'); return [1, 2, 3].includes(v) ? v : 1; })();
 const nomeCurto = k => mLongo(k).split(' ')[0];                    // "julho"
 const deltaMes = (v, ant, mesAnt, maisEhBom) => {
   if (ant == null) return '<em class="neu">&nbsp;</em>';
@@ -252,11 +276,39 @@ function visu3(ms, at, pa) {
 
 function telaHojeV2() {
   const ms = F.meses, at = ms[ms.length - 1], pa = ms.length > 1 ? ms[ms.length - 2] : null;
-  const sub = { 1: `${mLongo(at.mes).replace(/^./, c => c.toUpperCase())} · atualizado em ${dataBR(F.publicadoEm)}`, 2: `${mLongo(at.mes).replace(/^./, c => c.toUpperCase())}${pa ? ' · comparado com ' + nomeCurto(pa.mes) : ''}`, 3: `Sua saúde financeira em ${nomeCurto(at.mes)}` }[visu];
-  return `<h1>Olá, ${esc(F.nome)}</h1><p class="at">${sub}</p>
-    <div class="seg visu" role="tablist" aria-label="Visualização">${[1, 2, 3].map(v => `<button data-visu="${v}" class="${visu === v ? 'on' : ''}" role="tab" aria-selected="${visu === v}">Visualização ${v}</button>`).join('')}</div>
-    ${{ 1: visu1, 2: visu2, 3: visu3 }[visu](ms, at, pa)}`;
+  return `<h1>Olá, ${esc(F.nome)}</h1><p class="at">${mLongo(at.mes).replace(/^./, c => c.toUpperCase())}${pa ? ' · comparado com ' + nomeCurto(pa.mes) : ''}</p>
+    ${visu2(ms, at, pa)}`;
 }
+
+function telaObjetivos() {
+  const metas = F.futuro?.metas || [];
+  return `<h1>Seus objetivos</h1><p class="at">O que você está construindo com a sua consultora.</p>
+    ${metas.length ? `<div class="card">${blocoMetas()}</div>
+      ${metas.some(m => m.previsao && m.atual < m.valor) ? `<div class="card"><div class="t">Quando você chega lá, seguindo o plano</div>${metas.filter(m => m.previsao && m.atual < m.valor).map(m => `<div class="item"><span>${esc(m.titulo)}</span><b>${mLongo(m.previsao)}</b></div>`).join('')}</div>` : ''}`
+      : '<div class="vazio"><p>A sua consultora ainda vai definir os objetivos com você.</p></div>'}`;
+}
+
+const ICONES = {
+  hoje: '<path d="M3 12l9-8 9 8M5 10v10h14V10"/>', parcelas: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
+  plano: '<path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>', futuro: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  objetivos: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  zap: '<path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`;
+let menuAberto = false;
+function gaveta() {
+  const metas = F.futuro?.metas || [], prox = F.parcelas?.proxima, pr = F.proximaReuniao, w = F.contato?.whatsapp;
+  const it = (id, txt, extra) => `<button class="gv-it ${aba === id ? 'on' : ''}" data-aba="${id}">${svg(id)}${txt}${extra ? `<em>${extra}</em>` : ''}</button>`;
+  const dia = pr ? new Date(pr.data + 'T12:00:00') : null;
+  return `<div class="gv-cab"><span class="marca">De<span>es</span></span><button class="gv-x" data-acao="fechar-menu" aria-label="Fechar menu">✕</button></div>
+    <div class="gv-id"><span class="gv-foto">${esc((F.nome || '?')[0])}</span><span><b>${esc(F.nome)}</b><small>${F.nota ? 'Nota ' + F.nota.valor + ' · ' + esc(F.nota.rotulo) : 'Seu resumo financeiro'}</small></span></div>
+    ${it('hoje', 'Hoje')}${it('parcelas', 'Parcelas', prox ? brl0(prox.valor) : '')}${it('plano', 'Plano')}${it('futuro', 'Futuro')}${it('objetivos', 'Objetivos', metas.length || '')}
+    ${pr ? `<div class="gv-reuniao">Próxima conversa<b>${dia.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}${pr.hora ? ' às ' + pr.hora.replace(':', 'h') : ''}</b></div>` : ''}
+    ${F.consultora || w ? `<div class="gv-t">Sua consultora</div>${F.consultora ? `<div style="padding:2px 10px 6px;font-weight:600">${esc(F.consultora)}</div>` : ''}
+      ${w ? `<a class="gv-it gv-zap" href="https://wa.me/${esc(w)}?text=${encodeURIComponent('Olá' + (F.consultora ? ', ' + F.consultora.split(' ')[0] : '') + '! Aqui é ' + F.nome + '.')}" target="_blank" rel="noopener">${svg('zap')}Falar no WhatsApp</a>` : ''}` : ''}
+    <div class="gv-pe">Atualizado em ${dataBR(F.publicadoEm)}${F.consultora ? ' por ' + esc(F.consultora) : ''}</div>`;
+}
+function abrirMenu(v) { menuAberto = v; $('#gaveta').classList.toggle('aberta', v); $('#veu').classList.toggle('on', v); }
 
 function telaHoje() {
   if (F.meses && F.meses.length) return telaHojeV2();
@@ -341,25 +393,28 @@ function barraInstalar() {
 }
 
 function desenhar() {
-  const telas = { hoje: telaHoje, parcelas: telaParcelas, plano: telaPlano, futuro: telaFuturo };
-  $('#app').innerHTML = `<div class="top"><span class="marca">De<span>es</span></span><small>${F.consultora ? 'Sua consultora: ' + esc(F.consultora) : ''}</small></div>${barraInstalar()}${telas[aba]()}`;
+  const telas = { hoje: telaHoje, parcelas: telaParcelas, plano: telaPlano, futuro: telaFuturo, objetivos: telaObjetivos };
+  $('#app').innerHTML = `<div class="top"><span class="esq"><button class="bt-menu" data-acao="abrir-menu" aria-label="Abrir menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="marca">De<span>es</span></span></span><small>${F.consultora ? 'Sua consultora: ' + esc(F.consultora) : ''}</small></div>${barraInstalar()}${telas[aba]()}`;
+  const g = $('#gaveta'); g.hidden = false; g.innerHTML = gaveta();
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.aba === aba));
-  document.title = { hoje: 'Hoje', parcelas: 'Parcelas', plano: 'Plano', futuro: 'Futuro' }[aba] + ' — Dees';
+  document.title = { hoje: 'Hoje', parcelas: 'Parcelas', plano: 'Plano', futuro: 'Futuro', objetivos: 'Objetivos' }[aba] + ' — Dees';
 }
 
 document.addEventListener('click', ev => {
-  const b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.aba) { aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
+  const b = ev.target.closest('button,[data-acao]'); if (!b) return;
+  if (b.dataset.acao === 'abrir-menu') return abrirMenu(true);
+  if (b.dataset.acao === 'fechar-menu') return abrirMenu(false);
+  if (b.dataset.aba) { abrirMenu(false); aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
   else if (b.dataset.h) { horizonte = +b.dataset.h; desenhar(); }
   else if (b.dataset.g) { modoGrafico = b.dataset.g; desenhar(); }
-  else if (b.dataset.visu) { visu = +b.dataset.visu; guardar('dees.visualizacao', String(visu)); desenhar(); }
   else if (b.dataset.acao === 'fechar-instalar') { guardar('dees.instalar.fechado', '1'); desenhar(); }
   else if (b.dataset.acao === 'instalar' && pedidoInstalar) { pedidoInstalar.prompt(); pedidoInstalar = null; desenhar(); }
 });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuAberto) abrirMenu(false); });
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; if (F) desenhar(); });
 
 (async function iniciar() {
-  const h = location.hash.slice(1); if (['hoje', 'parcelas', 'plano', 'futuro'].includes(h)) aba = h;
+  const h = location.hash.slice(1); if (['hoje', 'parcelas', 'plano', 'futuro', 'objetivos'].includes(h)) aba = h;
   try {
     const r = await fetch('/api/publico/app/' + encodeURIComponent(token), { cache: 'no-store' });
     const j = await r.json().catch(() => ({}));

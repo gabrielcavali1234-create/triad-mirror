@@ -52,6 +52,8 @@ export interface FotoCliente {
     nota?: NotaSaude;
     eventos?: EventoCliente[];
     historico?: HistoricoPublicacao[];
+    contato?: { whatsapp: string | null };                    // WhatsApp da consultora (botão no menu do app)
+    proximaReuniao?: { data: string; hora: string } | null;   // próximo contato marcado no sistema
     publicadoEm: string;
     nome: string;                       // primeiro nome
     consultora: string | null;
@@ -82,6 +84,14 @@ export interface FotoCliente {
     };
 }
 
+/** Próximo contato marcado na ficha (só se ainda não passou); o horário vem da ata que combinou a data. */
+function proximaReuniaoDe(ficha: Ficha | null | undefined, agoraIso: string): { data: string; hora: string } | null {
+    const data = ficha?.proximoContato?.data;
+    if (!data || data < agoraIso.slice(0, 10)) return null;
+    const ata = (ficha?.atas || []).find(a => a.proxima?.data === data && a.proxima?.hora);
+    return { data, hora: ata?.proxima?.hora || '' };
+}
+
 /** Mês do plano (1 = mês que vem) em YYYY-MM, a partir da data de publicação. */
 const mesDoPlano = (hoje: string, n: number) => somarMeses(hoje.slice(0, 7), n);
 const mesesAte = (hoje: string, mes: string) => {
@@ -98,6 +108,7 @@ export function montarFoto(entrada: {
     mesesAnalise: string[];
     lancamentos?: Lancamento[];
     anterior?: FotoCliente | null;      // publicação anterior (para conquistas e histórico)
+    whatsappConsultora?: string | null;
     agora?: Date;
 }): FotoCliente {
     const { base, plano } = entrada;
@@ -188,6 +199,8 @@ export function montarFoto(entrada: {
         versao: 2,
         meses, nota, eventos,
         historico: [...(anterior?.historico || []), agoraHist].slice(-24),
+        contato: { whatsapp: (String(entrada.whatsappConsultora || '').replace(/\D/g, '').slice(0, 15)) || anterior?.contato?.whatsapp || null },
+        proximaReuniao: proximaReuniaoDe(entrada.cliente.ficha, agora),
         publicadoEm: agora,
         nome: (entrada.cliente.nome || '').trim().split(/\s+/)[0] || 'Cliente',
         consultora: entrada.consultora || null,

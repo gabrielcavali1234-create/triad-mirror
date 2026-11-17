@@ -2874,6 +2874,8 @@ function modalApp() {
   const msg = encodeURIComponent(`Olá, ${(c.nome || '').split(' ')[0]}! Este é o seu resumo financeiro no celular: ${link}\nDica: abra e toque em "Adicionar à tela inicial" para ter como app.`);
   abrirModal(`<h2>App do cliente</h2>
     <p class="suave" style="margin:0 0 14px">O cliente vê no celular um resumo da análise: como está hoje, as parcelas, o plano e o futuro. Ele só vê a versão que você publicar.</p>
+    ${E.cli.documentos?.length ? `<label for="appWhats" style="font-size:12px;font-weight:600;color:var(--fraco)">Seu WhatsApp <span style="font-weight:400">(o cliente fala com você pelo menu do app)</span></label>
+      <input id="appWhats" type="tel" placeholder="(11) 99999-9999" value="${esc((() => { try { return localStorage.getItem('mirror.whats') || ''; } catch { return ''; } })())}" style="margin:4px 0 12px">` : ''}
     ${!E.cli.documentos?.length ? `<div class="alerta azul" style="display:block;margin-bottom:12px">Envie pelo menos um extrato ou fatura deste cliente. Depois é só voltar aqui e clicar em <b>Gerar app do cliente</b>.</div>`
     : !publicado ? `<div class="alerta azul" style="display:block;margin-bottom:12px"><b>Como funciona:</b> 1) clique em <b>Gerar app do cliente</b>; 2) o sistema cria um link pessoal; 3) você manda o link pelo WhatsApp; 4) o cliente abre no celular e toca em <b>Adicionar à tela inicial</b> — fica como um app.</div>
       <button class="btn primario" data-acao="app-publicar"><i class="ti ti-device-mobile"></i> Gerar app do cliente</button>`
@@ -2933,7 +2935,8 @@ document.addEventListener('click', async ev => {
     case 'ir-clientes': location.hash = '#/clientes'; break;
     case 'cat-cartao': E.catCartao = el.dataset.cat || null; desenharConteudo(); if (E.catCartao) document.querySelector('.fatura-cab')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
     case 'app-cliente': modalApp(); break;
-    case 'app-publicar': el.disabled = true; await acaoApp('publicar', null, E.cli.cliente.app_publicado_em ? 'App atualizado para o cliente' : 'App do cliente gerado — agora envie o link'); break;
+    case 'app-publicar': { el.disabled = true; const w = ($('#appWhats')?.value || '').trim(); try { localStorage.setItem('mirror.whats', w); } catch {}
+      const dig = w.replace(/\D/g, ''); await acaoApp('publicar', { whatsapp: dig ? (dig.length <= 11 ? '55' + dig : dig) : '' }, E.cli.cliente.app_publicado_em ? 'App atualizado para o cliente' : 'App do cliente gerado — agora envie o link'); break; }
     case 'app-novo-link': if (confirm('Gerar um novo link? O link antigo para de funcionar na hora e você precisa mandar o novo para o cliente.')) await acaoApp('novo-link', null, 'Novo link gerado'); break;
     case 'app-ativo': await acaoApp('ativo', { ativo: !!el.dataset.ativo }, el.dataset.ativo ? 'Link ativado' : 'Link desativado'); break;
     case 'app-copiar': { const l = linkApp(); try { await navigator.clipboard.writeText(l); toast('Link copiado'); } catch { $('#appLink')?.select(); document.execCommand?.('copy'); toast('Link copiado'); } break; }
