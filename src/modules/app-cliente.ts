@@ -174,7 +174,7 @@ export function montarFoto(entrada: {
     const alivio = prox ? pm.slice(2).find(m => m.valor <= prox.valor / 2) || null : null;
     const pico = p?.mesMaisApertado ? pm.find(m => m.mes === p.mesMaisApertado) || null : null;
     const itens = (p?.itens || []).filter((i: any) => i.restantes > 0)
-        .sort((a: any, b: any) => a.fim.localeCompare(b.fim) || b.valorParcela - a.valorParcela).slice(0, 12)
+        .sort((a: any, b: any) => a.fim.localeCompare(b.fim) || b.valorParcela - a.valorParcela).slice(0, 60)
         .map((i: any) => ({ descricao: String(i.descricao || '').slice(0, 40), parcela: `${i.parcelaAtual}/${i.parcelaTotal}`, fim: i.fim, valor: arred(i.valorParcela) }));
 
     const mesesAn = entrada.mesesAnalise.filter(m => /^\d{4}-\d{2}$/.test(m)).sort();

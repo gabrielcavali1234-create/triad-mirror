@@ -163,6 +163,28 @@ nav button:active svg{transform:scale(.9)}
 #gaveta.aberta .gv-it:nth-of-type(2){animation-delay:.03s}#gaveta.aberta .gv-it:nth-of-type(3){animation-delay:.06s}#gaveta.aberta .gv-it:nth-of-type(4){animation-delay:.09s}#gaveta.aberta .gv-it:nth-of-type(5){animation-delay:.12s}
 button{transition:transform .12s}button:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.gp-card{padding:12px 4px 10px!important;margin:12px 0 6px}
+.gp-cal{display:flex;align-items:flex-end;gap:4px;padding:8px 8px 0}
+.gp-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;border:0;background:none;padding:6px 0 4px;border-radius:10px;font:inherit;color:inherit;cursor:pointer;transition:background-color .15s}
+.gp-col:hover,.gp-col.on{background:var(--bg2)}
+.gp-col .gp-fim{font-size:12px;font-weight:800;color:var(--p);min-height:28px;line-height:1.1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.gp-col .gp-fim small{font-size:9.5px;font-weight:600}
+.gp-col .gp-val{font-size:10.5px;letter-spacing:-.2px;font-weight:600;color:var(--s);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gp-barra{display:block;width:72%;max-width:44px;border-radius:6px 6px 2px 2px;background:var(--p);transition:transform .2s;transform-origin:bottom}
+.gp-col:hover .gp-barra{transform:scaleY(1.03)}
+.gp-col.atual .gp-barra{background:var(--b)}.gp-col.pico .gp-barra{background:#E3B600}.gp-col.on{background:var(--p-fundo)}.gp-col.on .gp-mes{color:var(--p);font-weight:800}
+.gp-col .gp-mes{font-size:11.5px;color:var(--f);margin-top:4px;white-space:nowrap}.gp-col.pico .gp-mes,.gp-col.pico .gp-val{font-weight:800;color:var(--t)}
+.gp-q{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.gp-q.cinza{background:var(--b)}.gp-q.am{background:#E3B600}
+.anima .gp-barra{animation:dCresceY .6s cubic-bezier(.2,.7,.2,1) .15s both}
+
+.gp-rolo{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.gp-rolo svg{display:block}
+.gp-pt{cursor:pointer;outline:none}.gp-pt:focus-visible circle{stroke:var(--p);stroke-width:3}
+.gp-val{font-size:11.5px;font-weight:600;fill:var(--t);font-variant-numeric:tabular-nums}.gp-val.pico{font-weight:800}
+.gp-fim{font-size:10.5px;font-weight:600;fill:var(--p)}
+.gp-mes{font-size:11.5px;fill:var(--f)}.gp-mes.pico{font-weight:800;fill:var(--t)}
+.gp-leg{font-size:11.5px;color:var(--f);margin:6px 12px 0;line-height:1.5}.gp-bola{display:inline-block;width:9px;height:9px;border-radius:50%;background:#E3B600;margin-right:5px;vertical-align:-1px}
+.gp-sel{margin:10px 8px 2px;border:1px solid var(--b);border-radius:12px;padding:10px 12px;background:var(--bg2)}
+.gp-sel-c{display:flex;justify-content:space-between;align-items:center}.gp-sel small{color:var(--f);display:block;margin:2px 0 4px}
+.gp-x{border:0;background:none;color:var(--f);font-size:16px;padding:2px 6px}
 .carregando{padding:80px 0;text-align:center;color:var(--f)}
 </style>
 </head>
@@ -181,6 +203,7 @@ const MESES_L = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'ju
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const brl0 = n => (n < 0 ? '−' : '') + 'R$ ' + Math.round(Math.abs(n)).toLocaleString('pt-BR');
+const brl = n => (n < 0 ? '−' : '') + 'R$ ' + Math.abs(Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const mc = k => /^\d{4}-\d{2}/.test(k || '') ? MESES[+k.slice(5, 7) - 1] + '/' + k.slice(2, 4) : '—';
 const mLongo = k => /^\d{4}-\d{2}/.test(k || '') ? MESES_L[+k.slice(5, 7) - 1] + ' de ' + k.slice(0, 4) : '';
 const dataBR = iso => { try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return ''; } };
@@ -358,32 +381,42 @@ function telaHoje() {
     ${h.categorias.map(c => `<div class="bar"><span>${esc(c.nome)}</span><span class="num">${brl0(c.valor)}</span><span class="tr"><i style="width:${Math.max(2, c.valor / max * 100)}%"></i></span></div>`).join('')}` : ''}`;
 }
 
-function linhaParcelas(pm, pico) {
-  if (pm.length < 2) return '';
-  const W = 320, H = 130, pl = 8, pr = 8, pt = 14, pb = 22, maxV = Math.max(...pm.map(m => m.valor)) * 1.12 || 1;
-  const x = i => pl + (W - pl - pr) * i / (pm.length - 1), y = v => pt + (H - pt - pb) * (1 - v / maxV);
-  const d = pm.map((m, i) => `${x(i).toFixed(1)},${y(m.valor).toFixed(1)}`).join(' L');
-  const rot = [0, Math.floor((pm.length - 1) / 2), pm.length - 1];
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Parcelas por mês">
-    <path d="M${d} L${x(pm.length - 1)},${y(0)} L${x(0)},${y(0)} Z" fill="var(--p-fundo)"/>
-    <path d="M${d}" fill="none" stroke="var(--p)" stroke-width="2.2" stroke-linejoin="round"/>
-    ${pm.map((m, i) => m.mes === pico ? `<circle cx="${x(i)}" cy="${y(m.valor)}" r="5.5" fill="#E3B600" stroke="var(--bg)" stroke-width="2"/>` : '').join('')}
-    ${rot.map(i => `<text x="${x(i)}" y="${H - 5}" font-size="11" fill="var(--f)" text-anchor="${i === 0 ? 'start' : i === pm.length - 1 ? 'end' : 'middle'}">${i === 0 ? 'agora' : mc(pm[i].mes)}</text>`).join('')}
-  </svg>`;
+let mesParc = null;   // mês tocado no gráfico de parcelas
+/** Calendário de parcelas: uma barra por fatura (cinza = atual, amarela = mais apertada), valor em cima e quantas acabam. */
+function graficoParcelas(p) {
+  const pm = p.porMes; if (!pm.length) return '';
+  const max = Math.max(...pm.map(m => m.valor)) || 1;
+  const vTxt = v => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `<div class="gp-rolo"><div class="gp-cal" style="min-width:${pm.length * (innerWidth >= 900 ? 52 : 64)}px">${pm.map((m, i) => {
+    const pico = m.mes === p.pico?.mes, sel = m.mes === mesParc;
+    return `<button class="gp-col ${i === 0 ? 'atual' : ''} ${pico ? 'pico' : ''} ${sel ? 'on' : ''}" data-mes="${m.mes}" aria-label="${i === 0 ? 'Fatura atual' : mc(m.mes)}: ${brl(m.valor)}${m.terminam && i > 0 ? ', ' + m.terminam + ' parcelas acabam' : ''}">
+      <span class="gp-fim">${m.terminam && i > 0 ? `−${m.terminam}<small>${m.terminam > 1 ? 'acabam' : 'acaba'}</small>` : ''}</span>
+      <span class="gp-val">${vTxt(m.valor)}</span>
+      <span class="gp-barra" style="height:${Math.max(3, Math.round(m.valor / max * 150))}px"></span>
+      <span class="gp-mes">${i === 0 ? 'atual' : mc(m.mes)}</span></button>`; }).join('')}</div></div>`;
 }
 
 function telaParcelas() {
   const p = F.parcelas;
   if (!p.porMes.length || !p.totalRestante) return `<h1>Você não tem parcelas pela frente.</h1><p class="at">Nenhuma compra parcelada nas faturas analisadas.</p>`;
+  const renda = F.hoje?.renda || 0, pctR = v => renda ? ` · ${Math.round(v / renda * 100)}% da renda` : '';
+  const sel = p.porMes.find(m => m.mes === mesParc);
+  const doMes = sel ? p.itens.filter(i => i.fim >= sel.mes) : [];
   return `<h1>${p.proxima ? `A próxima fatura já começa com <b>${brl0(p.proxima.valor)}</b> de parcelas.` : `Faltam <b>${brl0(p.totalRestante)}</b> em parcelas.`}</h1>
-    ${linhaParcelas(p.porMes, p.pico?.mes)}
     <div class="chips">
-      ${p.pico ? `<span class="chip am">Mês mais apertado: ${mc(p.pico.mes)}</span>` : ''}
-      ${p.alivio ? `<span class="chip p">Alívio a partir de ${mc(p.alivio.mes)}</span>` : ''}
-      ${p.livreEm ? `<span class="chip">Sem parcelas em ${mc(p.livreEm)}</span>` : ''}
+      ${p.pico ? `<span class="chip am">Mais apertado: ${mc(p.pico.mes)} · ${brl(p.pico.valor)}</span>` : ''}
+      ${p.alivio ? `<span class="chip p">Alívio a partir de ${mc(p.alivio.mes)} (cai para ${brl(p.alivio.valor)})</span>` : ''}
+      ${p.livreEm ? `<span class="chip">Sem parcelas a partir de ${mc(p.livreEm)}</span>` : ''}
+    </div>
+    <div class="card gp-card">${graficoParcelas(p)}
+      <p class="gp-leg"><i class="gp-q cinza"></i>fatura atual · <i class="gp-q am"></i>mês mais apertado · <b>acaba(m)</b>: parcelas que terminam naquele mês · toque num mês para ver as parcelas${innerWidth < 900 && p.porMes.length > 5 ? ' · arraste o gráfico para o lado' : ''}</p>
+      ${sel ? `<div class="gp-sel"><div class="gp-sel-c"><b>${mLongo(sel.mes).replace(/^./, c => c.toUpperCase())}: ${brl(sel.valor)}</b><button class="gp-x" data-acao="parc-fechar" aria-label="Fechar">✕</button></div>
+        <small>${doMes.length} ${doMes.length === 1 ? 'parcela' : 'parcelas'}${pctR(sel.valor)}${sel.terminam ? ` · ${sel.terminam} ${sel.terminam > 1 ? 'acabam' : 'acaba'} neste mês` : ''}</small>
+        ${doMes.slice().sort((a, b) => (a.fim === sel.mes ? -1 : 0) - (b.fim === sel.mes ? -1 : 0) || b.valor - a.valor).slice(0, 6).map(i => `<div class="item"><span>${esc(i.descricao)}<em>${i.fim === sel.mes ? 'última parcela' : 'termina em ' + mc(i.fim)}</em></span><b class="num">${brl(i.valor)}</b></div>`).join('')}
+        ${doMes.length > 6 ? `<small style="margin-top:6px">e mais ${doMes.length - 6} ${doMes.length - 6 === 1 ? 'parcela' : 'parcelas'} — a lista completa está logo abaixo</small>` : ''}</div>` : ''}
     </div>
     <h2>Ainda faltam ${brl0(p.totalRestante)} em parcelas</h2>
-    ${p.itens.map(i => `<div class="item"><span>${esc(i.descricao)}<em>parcela ${esc(i.parcela)} · termina em ${mc(i.fim)}</em></span><b class="num">${brl0(i.valor)}</b></div>`).join('')}
+    ${p.itens.map(i => `<div class="item"><span>${esc(i.descricao)}<em>parcela ${esc(i.parcela)} · termina em ${mc(i.fim)}</em></span><b class="num">${brl(i.valor)}</b></div>`).join('')}
     <p class="nota">Considera só as compras já feitas. Compras novas parceladas aumentam esses valores.</p>`;
 }
 
@@ -436,7 +469,10 @@ function desenhar() {
 }
 
 document.addEventListener('click', ev => {
+  const pt = ev.target.closest('.gp-col');
+  if (pt) { mesParc = mesParc === pt.dataset.mes ? null : pt.dataset.mes; const rolo = $('.gp-rolo')?.scrollLeft || 0; desenhar(); const r = $('.gp-rolo'); if (r) r.scrollLeft = rolo; return; }
   const b = ev.target.closest('button,[data-acao]'); if (!b) return;
+  if (b.dataset.acao === 'parc-fechar') { mesParc = null; return desenhar(); }
   if (b.dataset.acao === 'abrir-menu') return abrirMenu(true);
   if (b.dataset.acao === 'fechar-menu') return abrirMenu(false);
   if (b.dataset.aba) { abrirMenu(false); animarProx = true; aba = b.dataset.aba; history.replaceState(null, '', '#' + aba); desenhar(); window.scrollTo({ top: 0 }); }
