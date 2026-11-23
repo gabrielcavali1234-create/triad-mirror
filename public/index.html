@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '17/11/2026 · Documentos do cliente';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '23/11/2026 · Simuladores';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -384,6 +384,43 @@ svg rect,svg circle{transition:opacity .15s}.pf-col svg:hover rect:not(:hover)[h
 .dc-envio-lista{display:grid;gap:10px;max-height:320px;overflow:auto}
 .dc-envio-it{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--borda);border-radius:8px;padding:10px 12px}.dc-envio-it input{width:100%;margin:3px 0 4px}
 @media (max-width:900px){.dc-sub{white-space:nowrap;padding:10px 10px;font-size:13.5px}.dc-subabas{overflow-x:auto}.dc-cab{display:none}.dc-lin{grid-template-columns:1fr auto;row-gap:6px}.dc-lin>span:nth-child(3),.dc-lin>span:nth-child(4){grid-column:1}.dc-acoes{grid-row:1;grid-column:2}.dc-filtros input{width:100%}}
+.sm-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.sm-h{font-family:var(--serif);font-weight:500;font-size:28px;margin:0 0 4px}.sm-cab p{margin:0}
+.sm-taxa{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--suave);background:var(--branco);border:1px solid var(--borda);border-radius:8px;padding:6px 10px}.sm-taxa input{width:64px;padding:5px 6px}
+.sm-menu{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.sm-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:13px 14px;font:inherit;color:var(--texto);cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s,background-color .18s}
+.sm-tile i{font-size:22px;color:var(--primaria-texto);margin-bottom:2px;transition:transform .2s cubic-bezier(.3,1.6,.5,1)}.sm-tile b{font-size:13.5px;line-height:1.25}.sm-tile small{color:var(--fraco);font-size:12px;line-height:1.35}
+.sm-tile:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(var(--sombra-rgb),.08);border-color:var(--borda-forte)}.sm-tile:hover i{transform:scale(1.12)}
+.sm-tile.on{border-color:var(--primaria);background:var(--verde-fundo);box-shadow:inset 0 0 0 1px var(--primaria)}
+.sm-painel{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
+.sm-entradas,.sm-res{padding:18px 20px!important}
+.sm-campo{display:block;margin-top:12px}.sm-campo>span:first-child{display:block;font-size:12.5px;font-weight:600;color:var(--suave);margin-bottom:5px}.sm-campo input{width:100%}
+.sm-in{display:flex;align-items:center;border:1px solid var(--borda-forte);border-radius:var(--r-campo,4px);background:var(--branco);overflow:hidden}.sm-in:focus-within{outline:2px solid var(--primaria);outline-offset:-1px}
+.sm-in em{font-style:normal;color:var(--fraco);padding:0 10px;font-size:13px;white-space:nowrap}.sm-in input{border:0!important;outline:none!important;box-shadow:none!important;flex:1;min-width:0}
+.sm-dica{display:block;margin-top:4px;font-size:12px}
+.sm-sub{font-size:12.5px;font-weight:600;color:var(--suave);margin:16px 0 6px}
+.sm-chips{display:flex;gap:6px;flex-wrap:wrap}
+.sm-chk{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--borda);border-radius:8px;cursor:pointer}.sm-chk input{margin-top:3px;accent-color:var(--primaria);width:17px;height:17px}.sm-chk small{display:block;color:var(--fraco)}
+.sm-corte{margin-top:10px}.sm-corte input[type=range]{width:100%;accent-color:var(--primaria)}
+.sm-frase{font-family:var(--serif);font-size:21px;line-height:1.4;margin:0 0 16px}.sm-frase b{font-weight:600}
+.sm-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.sm-kpis>div{background:var(--linha-hover);border:1px solid var(--borda2);border-radius:8px;padding:10px 12px}.sm-kpis small{display:block;color:var(--fraco);font-size:11.5px;line-height:1.3}.sm-kpis b{display:block;font-size:17px;font-weight:650;margin-top:3px;overflow-wrap:anywhere}
+.sm-graf{display:block;max-height:240px}
+.sm-leg{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--suave);margin-top:6px}.sm-leg i{display:inline-block;width:18px;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.sm-lista{margin-top:14px;border-top:1px solid var(--borda2);padding-top:6px}
+.sm-como{margin-top:16px;font-size:13px;color:var(--suave)}.sm-como summary{cursor:pointer;font-weight:600;color:var(--fraco)}.sm-como p{margin:8px 0 0;line-height:1.5}
+.sm-barra-meta{margin-bottom:16px}
+.sm-pilha{display:flex;height:16px;border-radius:5px;overflow:hidden;margin-bottom:6px}.sm-pilha i{display:block;height:100%}
+.sm-barras{display:flex;gap:4px;align-items:flex-end;height:170px;margin:6px 0 8px}
+.sm-barras>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;min-width:0}
+.sm-col{flex:1;width:100%;max-width:30px;display:flex;flex-direction:column-reverse;border-radius:3px 3px 0 0;overflow:hidden}
+.sm-ja{display:block;background:var(--cal-barra)}.sm-nova{display:block;background:var(--primaria)}.sm-barras small{font-size:10.5px;color:var(--fraco)}
+.anima .sm-tile{animation:dEntra .4s cubic-bezier(.2,.7,.2,1) both}.anima .sm-tile:nth-child(2){animation-delay:.03s}.anima .sm-tile:nth-child(3){animation-delay:.06s}.anima .sm-tile:nth-child(4){animation-delay:.09s}.anima .sm-tile:nth-child(5){animation-delay:.12s}.anima .sm-tile:nth-child(6){animation-delay:.15s}.anima .sm-tile:nth-child(7){animation-delay:.18s}
+.anima .sm-painel>*{animation:dEntra .45s cubic-bezier(.2,.7,.2,1) .1s both}
+.anima .sm-graf polyline{stroke-dasharray:3000;animation:dSimLinha 1.2s ease .2s both}@keyframes dSimLinha{from{stroke-dashoffset:3000}to{stroke-dashoffset:0}}
+@media (max-width:1500px){.sm-menu{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:1100px){.sm-painel{grid-template-columns:1fr}.sm-kpis{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.sm-menu{grid-template-columns:1fr 1fr}}
 .docs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 20px;border-top:1px solid var(--borda)}
 .doc{border:1px solid var(--borda);border-radius:var(--r-ctrl);padding:6px 8px 6px 7px;display:flex;align-items:center;gap:8px;font-size:12px;background:var(--branco)}
 .doc button{border:0;background:none;color:var(--apagado);padding:0 2px;font-size:15px;border-radius:3px}
@@ -946,7 +983,7 @@ async function rotear() {
   if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
   if (h === '#/agenda') { E.ap = null; return telaAgenda(); }
   if (h === '#/reunioes') { E.ap = null; return telaReunioesGeral(); }
-  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|simuladores|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
     if (m[2] === 'apresentacao') return telaApresentacao(m[1]);
@@ -1153,7 +1190,7 @@ function desenharCliente() {
 
   E.chipsDocs = chipsDocs;
   if (LANC_ABAS.includes(E.aba)) E.ultLanc = E.aba;
-  const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes'].includes(E.aba);
+  const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes', 'simuladores'].includes(E.aba);
   $('#app').innerHTML = topo(salvoTxt()) + `<div class="cli-wrap">${colunaCliente()}<main>
     ${cabecalhoPerfil()}
     ${LANC_ABAS.includes(E.aba) && documentos.length ? `
@@ -1644,6 +1681,7 @@ function colunaCliente() {
       ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'ti-list-details', 'Lançamentos', documentos.length ? nLanc : '')}
       ${aba('docs', 'docs', 'ti-file-text', 'Documentos', (documentos.length + (E.cli.arquivos || []).length) || '')}
       ${aba('plano', 'plano', 'ti-target-arrow', 'Plano', '')}
+      ${aba('simuladores', 'simuladores', 'ti-calculator', 'Simuladores', '')}
       ${aba('reunioes', 'reunioes', 'ti-messages', 'Reuniões', nAtas || '')}
       <button class="cc-aba" data-acao="app-cliente"><i class="ti ti-device-mobile"></i><span>App do cliente</span><em class="${c.app_ativo ? 'cc-ok' : ''}">${c.app_publicado_em ? (c.app_ativo ? 'no ar' : 'desativado') : 'gerar'}</em></button>
     </nav>
@@ -1910,11 +1948,279 @@ async function abrirProtegido(rota, nome, baixar) {
   } catch (e) { janela?.close(); toast(e.message, true); }
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// SIMULADORES — aba do cliente com 7 simulações, já preenchidas com os
+// números da análise e da ficha. Tudo é calculado no navegador; nada é salvo,
+// exceto quando a consultora clica em "Salvar no plano do cliente".
+// ════════════════════════════════════════════════════════════════════════
+const SIMS = [
+  ['plano', 'ti-adjustments-horizontal', 'E se mudar alguns hábitos?', 'Cortes e saída do rotativo, lado a lado com "continuar assim".'],
+  ['objetivo', 'ti-target-arrow', 'Quanto guardar para um objetivo', 'Valor e prazo → quanto por mês. Ou o contrário.'],
+  ['reserva', 'ti-shield-check', 'Reserva de emergência', 'Quanto precisa ter e quando completa.'],
+  ['divida', 'ti-receipt-off', 'Quitar uma dívida', 'Quanto tempo e quanto de juros, pagando mais ou menos.'],
+  ['habito', 'ti-coffee', 'Quanto custa um hábito', 'Um gasto pequeno no mês, em 1, 5 e 10 anos.'],
+  ['parcela', 'ti-credit-card', 'Nova compra parcelada', 'Como uma compra mexe nas próximas faturas.'],
+  ['investir', 'ti-trending-up', 'Investir todo mês', 'Quanto vira guardando um valor fixo.']
+];
+const mesNome = n => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + n); return MESES[d.getMonth()].toLowerCase() + ' de ' + d.getFullYear(); };
+const mesCurtoN = n => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + n); return MESES_C[d.getMonth()] + '/' + String(d.getFullYear()).slice(2); };
+const tempoTxt = n => n == null ? '—' : n < 1 ? 'já' : n < 12 ? n + (n === 1 ? ' mês' : ' meses') : (() => { const a = Math.floor(n / 12), m = n % 12; return a + (a === 1 ? ' ano' : ' anos') + (m ? ' e ' + m + (m === 1 ? ' mês' : ' meses') : ''); })();
+const taxaMes = aa => Math.pow(1 + (Number(aa) || 0) / 100, 1 / 12) - 1;
+const num = v => { const n = Number(String(v ?? '').replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+
+function iniciarSim() {
+  const c = E.cli, b = c.plano?.base || {}, cfg = c.plano?.config || {}, fi = c.cliente.ficha || {};
+  const objs = (fi.objetivos || []).filter(o => o.valor);
+  const div = (fi.dividas || []).find(d => d.saldo);
+  const hab = (b.mediaPorCategoria || []).find(x => ['Delivery', 'Assinaturas', 'Alimentação', 'Lazer', 'Compras'].includes(x.categoria));
+  const taxa = cfg.taxaAno ?? 10;
+  const custoVida = Math.round(cfg.custoVidaMensal ?? b.custoVidaEstimado ?? 0);
+  E.sim = {
+    cli: c.cliente.id, atual: E.sim?.cli === c.cliente.id ? E.sim.atual : 'plano', taxa,
+    plano: { rot: !!(cfg.sairRotativo && b.emRotativo), anos: 10, cortes: (() => {
+      const fora = ['Pagamento de fatura', 'Investimento', 'Moradia', 'Saúde', 'Educação', 'Impostos e taxas', 'Transferência', 'Encargos e juros', 'Estorno', 'Salário', 'Outros', 'Empréstimos e financiamentos'];
+      const cats = (b.mediaPorCategoria || []).filter(x => !fora.includes(x.categoria) && !/Encargos|IOF|Transfer|Pagamento|Pix|TED|DOC|Saque/i.test(x.categoria)).slice(0, 6).map(x => x.categoria);
+      (cfg.cortes || []).forEach(k => { if (!cats.includes(k.categoria)) cats.push(k.categoria); });
+      return Object.fromEntries(cats.map(c => [c, (cfg.cortes || []).find(k => k.categoria === c)?.percentual || 0]));
+    })() },
+    objetivo: { modo: 'quanto', idx: objs.length ? 0 : -1, valor: objs[0]?.valor || 20000, prazo: objs[0]?.prazo || (() => { const d = new Date(); return (d.getFullYear() + 2) + '-' + String(d.getMonth() + 1).padStart(2, '0'); })(), ja: objs[0]?.tipo === 'reserva' ? (fi.reservaAtual || 0) : 0, mensal: 500 },
+    reserva: { custo: custoVida || 4000, meses: cfg.mesesReserva || 6, ja: Math.round(cfg.reservaAtual ?? fi.reservaAtual ?? 0), mensal: 500 },
+    divida: b.emRotativo && b.saldoRotativo > 0
+      ? { saldo: Math.round(b.saldoRotativo), juros: b.saldoRotativo ? Math.min(20, Math.max(1, +(b.jurosMensal / b.saldoRotativo * 100).toFixed(1))) : 12, parcela: Math.round(Math.max(b.jurosMensal * 1.5, b.saldoRotativo / 10)), extra: 200, nome: 'Rotativo do cartão' }
+      : div ? { saldo: Math.round(div.saldo), juros: 2, parcela: Math.round(div.parcela || div.saldo / 24), extra: 200, nome: { emprestimo: 'Empréstimo', veiculo: 'Financiamento do veículo', imobiliario: 'Financiamento imobiliário', consignado: 'Consignado', cheque_especial: 'Cheque especial' }[div.tipo] || 'Dívida' }
+      : { saldo: 5000, juros: 3, parcela: 400, extra: 200, nome: 'Dívida' },
+    habito: { nome: hab?.categoria || 'Delivery', valor: Math.round(hab?.valor || 300), freq: 'mes' },
+    parcela: { valor: 3000, vezes: 10 },
+    investir: { inicial: Math.round(fi.reservaAtual || 0), mensal: 500, anos: 10 }
+  };
+}
+
+function abaSimuladores() {
+  if (!E.sim || E.sim.cli !== E.cli.cliente.id) iniciarSim();
+  const S = E.sim;
+  return `<div class="sm-cab"><div><h2 class="sm-h">Simuladores</h2><p class="suave">Já preenchidos com os números de ${esc(E.cli.cliente.nome.split(' ')[0])}. Mude qualquer valor e o resultado atualiza na hora — nada é salvo.</p></div>
+      <label class="sm-taxa">Rendimento simulado <input type="number" min="0" max="30" step="0.5" data-sim="taxa" value="${S.taxa}"> % ao ano</label></div>
+    <div class="sm-menu" role="tablist">${SIMS.map(([id, ic, t, d]) => `<button class="sm-tile ${S.atual === id ? 'on' : ''}" data-acao="sim-abrir" data-v="${id}" role="tab" aria-selected="${S.atual === id}"><i class="ti ${ic}"></i><b>${t}</b><small>${d}</small></button>`).join('')}</div>
+    <div class="sm-painel" id="smPainel">${painelSim()}</div>`;
+}
+
+function painelSim() {
+  const S = E.sim, id = S.atual;
+  const ent = { plano: entradasPlano, objetivo: entradasObjetivo, reserva: entradasReserva, divida: entradasDivida, habito: entradasHabito, parcela: entradasParcela, investir: entradasInvestir }[id];
+  return `<div class="card sm-entradas"><div class="pf-t">${SIMS.find(s => s[0] === id)[2]}</div>${ent()}</div><div class="card sm-res" id="smRes" aria-live="polite">${resultadoSim()}</div>`;
+}
+function resultadoSim() {
+  return ({ plano: resPlano, objetivo: resObjetivo, reserva: resReserva, divida: resDivida, habito: resHabito, parcela: resParcela, investir: resInvestir }[E.sim.atual])();
+}
+
+// ── campos
+const campoR = (k, rot, v, extra = '') => `<label class="sm-campo"><span>${rot}</span><span class="sm-in"><em>R$</em><input type="number" min="0" step="50" data-sim="${k}" value="${Math.round(v || 0)}" ${extra}></span></label>`;
+const campoN = (k, rot, v, suf, extra = '') => `<label class="sm-campo"><span>${rot}</span><span class="sm-in"><input type="number" data-sim="${k}" value="${v}" ${extra}><em>${suf}</em></span></label>`;
+const chips = (k, atual, ops) => `<div class="sm-chips">${ops.map(([v, t]) => `<button type="button" class="dc-chip ${String(atual) === String(v) ? 'on' : ''}" data-acao="sim-chip" data-k="${k}" data-v="${v}">${t}</button>`).join('')}</div>`;
+const explica = t => `<details class="sm-como"><summary>Como calculamos</summary><p>${t}</p></details>`;
+const kpis = l => `<div class="sm-kpis">${l.map(([r, v, cls]) => `<div><small>${r}</small><b class="num ${cls || ''}">${v}</b></div>`).join('')}</div>`;
+
+/** Gráfico de linhas simples: séries [{nome, cor, pontos:[valores], tracejado}] por mês. */
+function graficoSim(series, rotuloX) {
+  const W = 620, H = 220, pl = 8, pr = 8, pt = 16, pb = 26, n = Math.max(...series.map(s => s.pontos.length)) - 1 || 1;
+  const vals = series.flatMap(s => s.pontos), max = Math.max(1, ...vals) * 1.08, min = Math.min(0, ...vals);
+  const x = i => pl + (W - pl - pr) * i / n, y = v => pt + (H - pt - pb) * (1 - (v - min) / (max - min));
+  const marcas = [0, Math.round(n / 4), Math.round(n / 2), Math.round(3 * n / 4), n];
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" class="sm-graf" role="img" aria-label="Gráfico da simulação">
+    <line x1="${pl}" x2="${W - pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--borda)"/>
+    ${series.map(s => `<polyline points="${s.pontos.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ')}" fill="none" stroke="${s.cor}" stroke-width="${s.tracejado ? 2 : 3}" ${s.tracejado ? 'stroke-dasharray="6 5"' : ''} stroke-linejoin="round"/>
+      <circle cx="${x(s.pontos.length - 1)}" cy="${y(s.pontos[s.pontos.length - 1])}" r="4" fill="${s.cor}"/>`).join('')}
+    ${marcas.map(i => `<text x="${x(i)}" y="${H - 6}" font-size="11" fill="var(--fraco)" text-anchor="${i === 0 ? 'start' : i === n ? 'end' : 'middle'}">${rotuloX(i)}</text>`).join('')}
+  </svg><div class="sm-leg">${series.map(s => `<span><i style="border-color:${s.cor};${s.tracejado ? 'border-top-style:dashed' : ''}"></i>${s.nome}</span>`).join('')}</div>`;
+}
+
+// ── 1. Plano de mudanças
+function cfgDoSim() {
+  const S = E.sim, cfg = E.cli.plano?.config || {};
+  return { ...cfg, taxaAno: S.taxa, sairRotativo: S.plano.rot, cortes: Object.entries(S.plano.cortes).filter(([, p]) => p > 0).map(([categoria, percentual]) => ({ categoria, percentual, titulo: (cfg.cortes || []).find(k => k.categoria === categoria)?.titulo || tituloDoCorte(categoria), texto: (cfg.cortes || []).find(k => k.categoria === categoria)?.texto || '' })) };
+}
+function entradasPlano() {
+  const b = E.cli.plano?.base, P = E.sim.plano;
+  if (!b || !(b.mediaPorCategoria || []).length) return '<p class="suave">Envie extrato ou fatura para simular cortes nos gastos reais do cliente.</p>';
+  const media = new Map(b.mediaPorCategoria.map(c => [c.categoria, c.valor]));
+  return `${b.emRotativo ? `<label class="sm-chk"><input type="checkbox" data-sim="plano.rot" ${P.rot ? 'checked' : ''}><span><b>Sair do rotativo</b><small>Deixa de pagar ${brl0(b.jurosMensal)} de juros por mês</small></span></label>` : ''}
+    <p class="sm-sub">Quanto cortar em cada gasto</p>
+    ${Object.entries(P.cortes).map(([cat, p]) => `<div class="sm-corte"><div class="pf-lin2"><span>${esc(cat)} <small class="fraco">${brl0(media.get(cat))}/mês</small></span><b class="num" data-rot="${esc(cat)}">${p}% · ${brl0((media.get(cat) || 0) * p / 100)}</b></div>
+      <input type="range" min="0" max="100" step="5" value="${p}" data-sim="plano.cortes.${esc(cat)}" aria-label="Corte em ${esc(cat)}"></div>`).join('')}
+    <p class="sm-sub">Prazo</p>${chips('plano.anos', P.anos, [[5, '5 anos'], [10, '10 anos'], [20, '20 anos']])}
+    <button class="btn primario" data-acao="sim-salvar-plano" style="width:100%;margin-top:16px"><i class="ti ti-device-floppy"></i> Salvar no plano do cliente</button>
+    <small class="fraco" style="display:block;margin-top:6px">Leva esses cortes para a aba Plano, para o "Ver como cliente" e para o app.</small>`;
+}
+function resPlano() {
+  const b = E.cli.plano?.base; if (!b || !(b.mediaPorCategoria || []).length) return '<div class="vazio"><p class="suave">Sem análise ainda.</p></div>';
+  const cfg = cfgDoSim(), meses = E.sim.plano.anos * 12, s = simularPlano(b, cfg, meses), fim = s.pontos[meses];
+  const dif = fim.comMudancas - fim.continuandoAssim;
+  if (s.economiaMensal <= 0) return `<p class="sm-frase">Escolha pelo menos um corte${b.emRotativo ? ' ou marque "Sair do rotativo"' : ''} para ver a diferença.</p>`;
+  return `<p class="sm-frase">Liberando <b>${brl0(s.economiaMensal)} por mês</b>, em ${E.sim.plano.anos} anos ${esc(E.cli.cliente.nome.split(' ')[0])} teria <b>${brl0(fim.comMudancas)}</b>. ${fim.continuandoAssim >= 0 ? `Continuando assim, teria ${brl0(fim.continuandoAssim)} — <b class="pf-bom">${brl0(dif)} a mais</b> com as mudanças.` : `Continuando assim, os juros do cartão somariam <b class="pf-ruim">${brl0(fim.jurosPagos)}</b> no período.`}</p>
+    ${kpis([['Libera por mês', brl0(s.economiaMensal), 'pf-bom'], ['Em ' + E.sim.plano.anos + ' anos, com as mudanças', brl0(fim.comMudancas)], ['Continuando assim', brl0(fim.continuandoAssim), fim.continuandoAssim < 0 ? 'pf-ruim' : ''],
+      [b.emRotativo && cfg.sairRotativo ? 'Sai do rotativo em' : 'Reserva completa em', b.emRotativo && cfg.sairRotativo ? (s.mesQuitaRotativo ? mesNome(s.mesQuitaRotativo) : 'mais de ' + E.sim.plano.anos + ' anos') : (s.mesReservaCompleta != null ? (s.mesReservaCompleta === 0 ? 'já completa' : mesNome(s.mesReservaCompleta)) : '—')]])}
+    ${graficoSim([{ nome: 'Com as mudanças', cor: 'var(--s-mudanca)', pontos: s.pontos.map(p => p.comMudancas) }, { nome: b.jurosMensal ? 'Continuando assim (menos os juros)' : 'Continuando assim', cor: 'var(--s-atual)', tracejado: true, pontos: s.pontos.map(p => p.continuandoAssim) }], i => i === 0 ? 'hoje' : (i % 12 === 0 ? i / 12 + (i === 12 ? ' ano' : ' anos') : mesCurtoN(i)))}
+    ${s.ganhos.cortes.filter(c => c.valor > 0).length ? `<div class="sm-lista">${s.ganhos.rotativo ? `<div class="pf-lin"><span>Juros do rotativo que deixa de pagar</span><b class="num">${brl0(s.ganhos.rotativo)}/mês</b></div>` : ''}${s.ganhos.cortes.filter(c => c.valor > 0).map(c => `<div class="pf-lin"><span>${esc(c.categoria)}</span><b class="num">${brl0(c.valor)}/mês</b></div>`).join('')}</div>` : ''}
+    ${explica('Corte = gasto médio mensal da categoria na análise × a %. A economia do mês quita primeiro o rotativo e depois é investida, rendendo ' + fmtValor(E.sim.taxa) + '% ao ano. "Continuando assim": o que já está guardado rende, menos os juros do cartão que continuam sendo pagos. Simulação, não promessa de retorno.')}`;
+}
+
+// ── 2. Objetivo
+function entradasObjetivo() {
+  const O = E.sim.objetivo, objs = ((E.cli.cliente.ficha || {}).objetivos || []).filter(o => o.valor);
+  return `${objs.length ? `<p class="sm-sub">Objetivos da ficha</p>${chips('objetivo.idx', O.idx, [...objs.map((o, i) => [i, o.descricao || 'Objetivo ' + (i + 1)]), [-1, 'Outro']])}` : ''}
+    <p class="sm-sub">O que você quer descobrir?</p>${chips('objetivo.modo', O.modo, [['quanto', 'Quanto guardar por mês'], ['quando', 'Quando chego lá']])}
+    ${campoR('objetivo.valor', 'Quanto custa o objetivo', O.valor)}
+    ${O.modo === 'quanto' ? `<label class="sm-campo"><span>Para quando</span><input type="month" data-sim="objetivo.prazo" value="${esc(O.prazo)}"></label>` : campoR('objetivo.mensal', 'Quanto dá para guardar por mês', O.mensal)}
+    ${campoR('objetivo.ja', 'Já tem guardado para isso', O.ja)}`;
+}
+function resObjetivo() {
+  const O = E.sim.objetivo, i = taxaMes(E.sim.taxa), valor = num(O.valor), ja = num(O.ja);
+  if (valor <= 0) return '<p class="sm-frase">Informe quanto custa o objetivo.</p>';
+  if (O.modo === 'quanto') {
+    const n = mesesAte(O.prazo);
+    if (n == null || n < 1) return '<p class="sm-frase">Escolha uma data a partir do mês que vem.</p>';
+    const futJa = ja * Math.pow(1 + i, n), falta = Math.max(0, valor - futJa), fator = i > 0 ? (Math.pow(1 + i, n) - 1) / i : n, mensal = falta / fator;
+    const pontos = Array.from({ length: n + 1 }, (_, m) => ja * Math.pow(1 + i, m) + mensal * (i > 0 ? (Math.pow(1 + i, m) - 1) / i : m));
+    if (mensal <= 0.5) return `<p class="sm-frase">Com o que já tem guardado, <b>esse objetivo já está garantido</b> até ${mesNome(n)}.</p>`;
+    return `<p class="sm-frase">Guardando <b>${brl0(Math.ceil(mensal))} por mês</b> a partir do mês que vem, chega a <b>${brl0(valor)}</b> em ${mesNome(n)}.</p>
+      ${kpis([['Por mês', brl0(Math.ceil(mensal)), 'pf-bom'], ['Prazo', tempoTxt(n)], ['Você deposita', brl0(ja + mensal * n)], ['O rendimento põe', brl0(Math.max(0, valor - ja - mensal * n))]])}
+      ${graficoSim([{ nome: 'Guardado', cor: 'var(--s-mudanca)', pontos }, { nome: 'Objetivo', cor: 'var(--fraco)', tracejado: true, pontos: pontos.map(() => valor) }], k => k === 0 ? 'hoje' : mesCurtoN(k))}
+      ${explica('Conta de quanto depositar todo mês (com rendimento de ' + fmtValor(E.sim.taxa) + '% ao ano) para, somado ao que já está guardado, chegar ao valor na data.')}`;
+  }
+  const m = num(O.mensal); let s = ja, n = 0; const pontos = [s];
+  while (s < valor && n < 600) { s = s * (1 + i) + m; n++; pontos.push(s); }
+  if (n >= 600) return '<p class="sm-frase">Com esse valor por mês, leva mais de 50 anos. Aumente o quanto guarda.</p>';
+  return `<p class="sm-frase">Guardando <b>${brl0(m)} por mês</b>, chega a <b>${brl0(valor)}</b> em <b>${mesNome(n)}</b> — daqui a ${tempoTxt(n)}.</p>
+    ${kpis([['Chega em', mesNome(n), 'pf-bom'], ['Tempo', tempoTxt(n)], ['Você deposita', brl0(ja + m * n)], ['O rendimento põe', brl0(Math.max(0, pontos[n] - ja - m * n))]])}
+    ${graficoSim([{ nome: 'Guardado', cor: 'var(--s-mudanca)', pontos }, { nome: 'Objetivo', cor: 'var(--fraco)', tracejado: true, pontos: pontos.map(() => valor) }], k => k === 0 ? 'hoje' : mesCurtoN(k))}
+    ${explica('Mês a mês: o que está guardado rende ' + fmtValor(E.sim.taxa) + '% ao ano e recebe o depósito do mês, até passar do valor do objetivo.')}`;
+}
+
+// ── 3. Reserva
+function entradasReserva() {
+  const R = E.sim.reserva;
+  return `${campoR('reserva.custo', 'Custo de vida por mês', R.custo)}<small class="fraco sm-dica">Estimado pela análise (sem pagamento de fatura e investimentos).</small>
+    <p class="sm-sub">Quantos meses de reserva</p>${chips('reserva.meses', R.meses, [[3, '3 meses'], [6, '6 meses'], [12, '12 meses']])}
+    ${campoR('reserva.ja', 'Já tem guardado', R.ja)}${campoR('reserva.mensal', 'Vai guardar por mês', R.mensal)}`;
+}
+function resReserva() {
+  const R = E.sim.reserva, meta = num(R.custo) * num(R.meses), ja = num(R.ja), m = num(R.mensal), i = taxaMes(E.sim.taxa);
+  if (meta <= 0) return '<p class="sm-frase">Informe o custo de vida por mês.</p>';
+  const pct = Math.min(100, ja / meta * 100);
+  let s = ja, n = 0; const pontos = [s];
+  while (s < meta && n < 600 && (m > 0 || i > 0)) { s = s * (1 + i) + m; n++; pontos.push(s); }
+  const ok = ja >= meta;
+  return `<p class="sm-frase">${ok ? `A reserva <b>já está completa</b>: ${brl0(ja)} cobrem ${(ja / num(R.custo)).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} meses de custo de vida.` : n >= 600 || (m <= 0 && i <= 0) ? `A meta é <b>${brl0(meta)}</b>. Com esse valor por mês não chega lá — aumente o quanto guarda.` : `A meta é <b>${brl0(meta)}</b> (${R.meses} meses de custo de vida). Guardando <b>${brl0(m)} por mês</b>, completa em <b>${mesNome(n)}</b>.`}</p>
+    <div class="sm-barra-meta"><div class="pf-barra" style="height:14px"><i style="width:${pct}%;background:var(--primaria)"></i></div><div class="pf-lin2" style="margin-top:6px"><small class="fraco">Hoje: ${brl0(ja)} (${Math.round(pct)}%)</small><small class="fraco">Meta: ${brl0(meta)}</small></div></div>
+    ${kpis([['Meta', brl0(meta)], ['Falta', brl0(Math.max(0, meta - ja)), ok ? 'pf-bom' : ''], ['Completa em', ok ? 'já completa' : n < 600 ? tempoTxt(n) : '—', 'pf-bom'], ['Cobre hoje', (ja / Math.max(1, num(R.custo))).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' meses']])}
+    ${!ok && n < 600 && n > 0 ? graficoSim([{ nome: 'Reserva', cor: 'var(--s-mudanca)', pontos }, { nome: 'Meta', cor: 'var(--fraco)', tracejado: true, pontos: pontos.map(() => meta) }], k => k === 0 ? 'hoje' : mesCurtoN(k)) : ''}
+    ${explica('Meta = custo de vida × meses escolhidos. A reserva rende ' + fmtValor(E.sim.taxa) + '% ao ano e recebe o depósito mensal até chegar na meta. Reserva é para imprevisto: fica em aplicação segura e de resgate rápido.')}`;
+}
+
+// ── 4. Dívida
+function entradasDivida() {
+  const D = E.sim.divida;
+  return `<p class="fraco" style="margin:0 0 10px">${esc(D.nome)}</p>${campoR('divida.saldo', 'Quanto deve hoje', D.saldo)}
+    ${campoN('divida.juros', 'Juros por mês', D.juros, '% ao mês', 'min="0" max="25" step="0.1"')}<small class="fraco sm-dica">Rotativo do cartão costuma passar de 10% ao mês; empréstimo pessoal, 2% a 6%.</small>
+    ${campoR('divida.parcela', 'Quanto paga por mês hoje', D.parcela)}${campoR('divida.extra', 'E se pagar a mais por mês', D.extra)}`;
+}
+function quitar(saldo, j, pg) {
+  let s = saldo, n = 0, juros = 0; const pts = [s];
+  while (s > 0.5 && n < 600) { const jm = s * j; if (pg <= jm) return { nunca: true, jurosMes: jm }; juros += jm; s = s + jm - pg; n++; pts.push(Math.max(0, s)); }
+  return { n, juros, pts };
+}
+function resDivida() {
+  const D = E.sim.divida, saldo = num(D.saldo), j = num(D.juros) / 100, pg = num(D.parcela), ex = num(D.extra);
+  if (saldo <= 0) return '<p class="sm-frase">Informe quanto deve.</p>';
+  const a = quitar(saldo, j, pg), b2 = quitar(saldo, j, pg + ex);
+  if (a.nunca && b2.nunca) return `<p class="sm-frase"><b class="pf-ruim">A dívida não acaba:</b> os juros do mês (${brl0(a.jurosMes)}) são maiores que o pagamento. Precisa pagar mais de ${brl0(Math.ceil(a.jurosMes))} por mês só para ela parar de crescer.</p>${explica('Juros do mês = saldo × taxa mensal. Se o pagamento for menor que isso, o saldo cresce todo mês.')}`;
+  const n = Math.max(a.pts?.length || 0, b2.pts?.length || 0);
+  const pad = p => p ? [...p, ...Array(Math.max(0, n - p.length)).fill(0)] : null;
+  return `<p class="sm-frase">${a.nunca ? `Pagando ${brl0(pg)}, <b class="pf-ruim">a dívida não acaba</b> (os juros do mês são ${brl0(a.jurosMes)}). ` : `Pagando ${brl0(pg)} por mês, quita em <b>${tempoTxt(a.n)}</b> e paga <b>${brl0(a.juros)} de juros</b>. `}${ex > 0 && !b2.nunca ? `Pagando <b>${brl0(pg + ex)}</b>, quita em <b>${tempoTxt(b2.n)}</b>${!a.nunca ? ` e <b class="pf-bom">economiza ${brl0(a.juros - b2.juros)}</b> de juros` : ''}.` : ''}</p>
+    ${kpis([['Hoje: quita em', a.nunca ? 'nunca' : tempoTxt(a.n), a.nunca ? 'pf-ruim' : ''], ['Juros pagando ' + brl0(pg), a.nunca ? '—' : brl0(a.juros)], ['Pagando ' + brl0(pg + ex) + ': quita em', b2.nunca ? 'nunca' : tempoTxt(b2.n), 'pf-bom'], ['Economia de juros', a.nunca || b2.nunca ? '—' : brl0(a.juros - b2.juros), 'pf-bom']])}
+    ${graficoSim([...(a.nunca ? [] : [{ nome: 'Pagando ' + brl0(pg), cor: 'var(--s-atual)', tracejado: true, pontos: pad(a.pts) }]), ...(b2.nunca ? [] : [{ nome: 'Pagando ' + brl0(pg + ex), cor: 'var(--s-mudanca)', pontos: pad(b2.pts) }])], k => k === 0 ? 'hoje' : mesCurtoN(k))}
+    ${explica('Todo mês o saldo recebe os juros (saldo × ' + fmtValor(num(D.juros)) + '%) e diminui o pagamento, até zerar. A linha mostra quanto ainda deve em cada mês.')}`;
+}
+
+// ── 5. Hábito
+function entradasHabito() {
+  const H = E.sim.habito, cats = (E.cli.plano?.base?.mediaPorCategoria || []).filter(c => !['Pagamento de fatura', 'Investimento', 'Moradia'].includes(c.categoria)).slice(0, 6);
+  return `${cats.length ? `<p class="sm-sub">Gastos do cliente (média por mês)</p>${chips('habito.cat', H.nome, cats.map(c => [c.categoria, c.categoria + ' · ' + brl0(c.valor)]))}` : ''}
+    <label class="sm-campo"><span>Hábito</span><input type="text" data-sim="habito.nome" value="${esc(H.nome)}" maxlength="40"></label>
+    ${campoR('habito.valor', 'Quanto gasta', H.valor)}${chips('habito.freq', H.freq, [['dia', 'por dia útil'], ['semana', 'por semana'], ['mes', 'por mês']])}`;
+}
+function resHabito() {
+  const H = E.sim.habito, v = num(H.valor), mes = H.freq === 'dia' ? v * 22 : H.freq === 'semana' ? v * 52 / 12 : v, i = taxaMes(E.sim.taxa);
+  if (mes <= 0) return '<p class="sm-frase">Informe quanto gasta.</p>';
+  const fv = n => i > 0 ? mes * (Math.pow(1 + i, n) - 1) / i : mes * n;
+  const pontos = Array.from({ length: 121 }, (_, n) => fv(n));
+  return `<p class="sm-frase"><b>${esc(H.nome || 'Esse hábito')}</b> custa <b>${brl0(mes)} por mês</b> — <b>${brl0(mes * 12)} por ano</b>. Se esse dinheiro fosse investido, em 10 anos seriam <b class="pf-bom">${brl0(fv(120))}</b>.</p>
+    ${kpis([['Por mês', brl0(mes)], ['Por ano', brl0(mes * 12)], ['Investido, em 5 anos', brl0(fv(60)), 'pf-bom'], ['Investido, em 10 anos', brl0(fv(120)), 'pf-bom']])}
+    <div class="sm-lista"><div class="pf-lin"><span>Cortando pela metade, por ano</span><b class="num">${brl0(mes * 6)}</b></div><div class="pf-lin"><span>Cortando pela metade, investido em 10 anos</span><b class="num pf-bom">${brl0(fv(120) / 2)}</b></div></div>
+    ${graficoSim([{ nome: 'Se fosse investido', cor: 'var(--s-mudanca)', pontos }, { nome: 'Só somando (sem render)', cor: 'var(--s-atual)', tracejado: true, pontos: pontos.map((_, n) => mes * n) }], n => n === 0 ? 'hoje' : n % 12 === 0 ? n / 12 + (n === 12 ? ' ano' : ' anos') : '')}
+    ${explica((H.freq === 'dia' ? 'Por dia útil × 22 dias. ' : H.freq === 'semana' ? 'Por semana × 52 ÷ 12. ' : '') + 'Investido: o valor do mês aplicado todo mês, rendendo ' + fmtValor(E.sim.taxa) + '% ao ano.')}`;
+}
+
+// ── 6. Nova compra parcelada
+function entradasParcela() {
+  const P = E.sim.parcela;
+  return `${campoR('parcela.valor', 'Valor da compra', P.valor)}${campoN('parcela.vezes', 'Em quantas vezes', P.vezes, 'x', 'min="1" max="48" step="1"')}
+    <small class="fraco sm-dica">Considera parcelas sem juros, começando na próxima fatura.</small>`;
+}
+function resParcela() {
+  const P = E.sim.parcela, v = num(P.valor), k = Math.max(1, Math.round(num(P.vezes))), parc = v / k;
+  const pm = (E.cli.perfil?.parcelas?.porMes || []).slice(0, 24), renda = E.cli.resumoPainel?.renda || E.cli.plano?.base?.rendaMensal || 0;
+  if (v <= 0) return '<p class="sm-frase">Informe o valor da compra.</p>';
+  const hojeMes = new Date(); const chave = n => { const d = new Date(hojeMes.getFullYear(), hojeMes.getMonth() + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+  const linhas = Array.from({ length: Math.max(k, pm.length ? 12 : k) }, (_, n) => { const ch = chave(n + 1), ja = pm.find(p => p.mes === ch)?.valor || 0; return { ch, ja, nova: n < k ? parc : 0 }; });
+  const pico = Math.max(...linhas.map(l => l.ja + l.nova)), prim = linhas[0];
+  const pct = renda ? (prim.ja + prim.nova) / renda * 100 : null;
+  const max = Math.max(1, pico);
+  return `<p class="sm-frase">Em <b>${k}x de ${brl(parc)}</b>, a próxima fatura passa a ter <b>${brl0(prim.ja + prim.nova)} em parcelas</b>${prim.ja ? ` (hoje: ${brl0(prim.ja)})` : ''}${pct != null ? ` — <b class="${pct >= 30 ? 'pf-ruim' : pct >= 15 ? 'pf-atencao' : 'pf-bom'}">${Math.round(pct)}% da renda</b>` : ''}. A última parcela cai em ${mesNome(k)}.</p>
+    ${kpis([['Parcela', brl(parc)], ['Parcelas no próximo mês', brl0(prim.ja + prim.nova)], ['% da renda', pct != null ? Math.round(pct) + '%' : '—', pct >= 30 ? 'pf-ruim' : ''], ['Termina em', mesNome(k)]])}
+    <div class="sm-barras">${linhas.slice(0, 18).map(l => `<div title="${nomeMes(l.ch)}: ${brl0(l.ja + l.nova)}"><span class="sm-col"><i class="sm-ja" style="height:${l.ja / max * 100}%"></i><i class="sm-nova" style="height:${l.nova / max * 100}%"></i></span><small>${MESES_C[Number(l.ch.slice(5, 7)) - 1]}</small></div>`).join('')}</div>
+    <div class="sm-leg"><span><i style="border-color:var(--cal-barra);border-top-width:8px"></i>Parcelas que já existem</span><span><i style="border-color:var(--primaria);border-top-width:8px"></i>Nova compra</span></div>
+    ${explica('Soma a parcela da nova compra às parcelas que já estão nas faturas analisadas. Acima de 30% da renda em parcelas é sinal de alerta.')}`;
+}
+
+// ── 7. Investir todo mês
+function entradasInvestir() {
+  const I = E.sim.investir;
+  return `${campoR('investir.inicial', 'Começa com', I.inicial)}${campoR('investir.mensal', 'Investe por mês', I.mensal)}
+    <p class="sm-sub">Por quanto tempo</p>${chips('investir.anos', I.anos, [[5, '5 anos'], [10, '10 anos'], [20, '20 anos'], [30, '30 anos']])}`;
+}
+function resInvestir() {
+  const I = E.sim.investir, ini = num(I.inicial), m = num(I.mensal), n = num(I.anos) * 12, i = taxaMes(E.sim.taxa);
+  const pontos = [ini]; let s = ini; for (let k = 1; k <= n; k++) { s = s * (1 + i) + m; pontos.push(s); }
+  const dep = ini + m * n, rend = s - dep;
+  if (s <= 0) return '<p class="sm-frase">Informe quanto vai investir.</p>';
+  return `<p class="sm-frase">Investindo <b>${brl0(m)} por mês</b>${ini ? ` a partir de ${brl0(ini)}` : ''}, em ${I.anos} anos teria <b>${brl0(s)}</b>. Desse total, <b class="pf-bom">${brl0(rend)}</b> vieram do rendimento.</p>
+    ${kpis([['Total em ' + I.anos + ' anos', brl0(s), 'pf-bom'], ['Você depositou', brl0(dep)], ['O rendimento pôs', brl0(rend), 'pf-bom'], ['Rendimento por mês no fim', brl0(s * i)]])}
+    <div class="sm-pilha"><i style="width:${dep / s * 100}%;background:var(--s-atual)"></i><i style="width:${rend / s * 100}%;background:var(--s-mudanca)"></i></div>
+    <div class="sm-leg"><span><i style="border-color:var(--s-atual);border-top-width:8px"></i>Depositado ${Math.round(dep / s * 100)}%</span><span><i style="border-color:var(--s-mudanca);border-top-width:8px"></i>Rendimento ${Math.round(rend / s * 100)}%</span></div>
+    ${graficoSim([{ nome: 'Total investido', cor: 'var(--s-mudanca)', pontos }, { nome: 'Só depositado', cor: 'var(--s-atual)', tracejado: true, pontos: pontos.map((_, k) => ini + m * k) }], k => k === 0 ? 'hoje' : k % 12 === 0 ? k / 12 + (k === 12 ? ' ano' : ' anos') : '')}
+    ${explica('Juros compostos: todo mês o saldo rende ' + fmtValor(E.sim.taxa) + '% ao ano (≈ ' + (i * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '% ao mês) e recebe o depósito. Não considera inflação nem imposto de renda.')}`;
+}
+
+/** Liga os campos: muda o estado e redesenha só o resultado (o campo não perde o foco). */
+function ligarSim() {
+  const p = $('#smPainel')?.parentElement; if (!p) return;
+  p.oninput = ev => {
+    const el = ev.target.closest('[data-sim]'); if (!el) return;
+    const k = el.dataset.sim, v = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.type === 'number' ? (el.value === '' ? 0 : +el.value) : el.value;
+    if (k === 'taxa') E.sim.taxa = Math.min(30, Math.max(0, v));
+    else if (k.startsWith('plano.cortes.')) { const cat = k.slice(13); E.sim.plano.cortes[cat] = v; const r = document.querySelector(`[data-rot="${CSS.escape(cat)}"]`); const md = (E.cli.plano.base.mediaPorCategoria.find(c => c.categoria === cat) || {}).valor || 0; if (r) r.textContent = `${v}% · ${brl0(md * v / 100)}`; }
+    else { const [g, c] = k.split('.'); E.sim[g][c] = v; }
+    $('#smRes').innerHTML = resultadoSim();
+  };
+}
+
 function desenharConteudo() {
   const el = $('#conteudo'); if (!el) return;
   if (E.aba === 'perfil') el.innerHTML = abaPerfil();
   else if (E.aba === 'docs') { el.innerHTML = abaDocs(); ligarDocs(); }
   else if (E.aba === 'reunioes') el.innerHTML = abaReunioes();
+  else if (E.aba === 'simuladores') { el.innerHTML = abaSimuladores(); ligarSim(); }
   else if (E.aba === 'conta') el.innerHTML = abaConta();
   else if (E.aba === 'cartao') el.innerHTML = abaCartao();
   else if (E.aba === 'plano') { el.innerHTML = abaPlano(); ligarPlano(); }
@@ -3232,6 +3538,17 @@ document.addEventListener('click', async ev => {
     case 'pf-nota-del': {
       const notas = [...((E.cli.cliente.ficha || {}).notas || [])]; notas.splice(+el.dataset.i, 1);
       pfSalvarFicha({ notas }, 'Anotação apagada'); break; }
+    case 'sim-abrir': E.sim.atual = el.dataset.v; marcarAnimacao(); desenharConteudo(); break;
+    case 'sim-chip': {
+      const [g, c] = el.dataset.k.split('.'), v = el.dataset.v, S = E.sim;
+      if (g === 'objetivo' && c === 'idx') {
+        S.objetivo.idx = +v; const o = ((E.cli.cliente.ficha || {}).objetivos || []).filter(x => x.valor)[+v];
+        if (o) Object.assign(S.objetivo, { valor: o.valor, prazo: o.prazo || S.objetivo.prazo, ja: o.tipo === 'reserva' ? (E.cli.cliente.ficha.reservaAtual || 0) : 0 });
+      } else if (g === 'habito' && c === 'cat') {
+        const x = (E.cli.plano?.base?.mediaPorCategoria || []).find(y => y.categoria === v); Object.assign(S.habito, { nome: v, valor: Math.round(x?.valor || 0), freq: 'mes' });
+      } else S[g][c] = isNaN(+v) ? v : +v;
+      const p = $('#smPainel'); if (p) { p.innerHTML = painelSim(); } break; }
+    case 'sim-salvar-plano': salvarPlano(cfgDoSim()); break;
     case 'docs-sub': E.docsAba = el.dataset.v; marcarAnimacao(); desenharConteudo(); break;
     case 'arq-filtro': E.arqFiltro = el.dataset.v; desenharConteudo(); break;
     case 'doc-ver': case 'doc-baixar': { const d = E.cli.documentos.find(x => x.id === id); abrirProtegido('/api/app/documentos/' + id + '/arquivo', d?.nome_arquivo || 'documento.pdf', a === 'doc-baixar'); break; }
