@@ -53,7 +53,7 @@ export interface FotoCliente {
     eventos?: EventoCliente[];
     historico?: HistoricoPublicacao[];
     contato?: { whatsapp: string | null };                    // WhatsApp da consultora (botão no menu do app)
-    proximaReuniao?: { data: string; hora: string } | null;   // próximo contato marcado no sistema
+    proximaReuniao?: { data: string; hora: string; duracao?: number } | null;   // próximo contato marcado no sistema
     publicadoEm: string;
     nome: string;                       // primeiro nome
     consultora: string | null;
@@ -85,11 +85,11 @@ export interface FotoCliente {
 }
 
 /** Próximo contato marcado na ficha (só se ainda não passou); o horário vem da ata que combinou a data. */
-function proximaReuniaoDe(ficha: Ficha | null | undefined, agoraIso: string): { data: string; hora: string } | null {
-    const data = ficha?.proximoContato?.data;
+function proximaReuniaoDe(ficha: Ficha | null | undefined, agoraIso: string): { data: string; hora: string; duracao: number } | null {
+    const pc = ficha?.proximoContato, data = pc?.data;
     if (!data || data < agoraIso.slice(0, 10)) return null;
     const ata = (ficha?.atas || []).find(a => a.proxima?.data === data && a.proxima?.hora);
-    return { data, hora: ata?.proxima?.hora || '' };
+    return { data, hora: pc?.hora || ata?.proxima?.hora || '', duracao: pc?.duracao || 60 };
 }
 
 /** Mês do plano (1 = mês que vem) em YYYY-MM, a partir da data de publicação. */

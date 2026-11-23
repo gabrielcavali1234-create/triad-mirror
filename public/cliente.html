@@ -127,6 +127,14 @@ nav button.on{color:var(--p);font-weight:700}
 #gaveta .gv-it.on{background:#1A1D1B;color:#fff;box-shadow:inset 3px 0 0 #D9A400}#gaveta .gv-it.on:hover{background:#1A1D1B}
 #gaveta .gv-it em{background:#262B28;color:#C9CFCB}
 #gaveta .gv-reuniao{background:#1A1D1B;color:#C9CFCB}#gaveta .gv-reuniao b{color:#fff}
+.re-card{display:block}.re-card .re-t{font-size:13px;color:var(--s)}.re-card b{display:block;font-size:17px;margin-top:2px;text-transform:none}
+.re-card b::first-letter{text-transform:uppercase}
+.re-acoes{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;margin-top:10px}
+.re-bt{display:inline-flex;align-items:center;gap:7px;background:var(--p);color:#fff;border-radius:10px;padding:9px 13px;font-weight:600;font-size:14px;text-decoration:none;transition:transform .18s,filter .18s}
+.re-bt:hover{transform:translateY(-1px);filter:brightness(1.08)}.re-bt svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.re-g{font-size:13px;color:var(--s);text-decoration:underline}
+@media (prefers-color-scheme:dark){.re-bt{color:#0B1A13}}
+#gaveta .re-bt{background:#fff;color:#111;font-size:13px;padding:8px 11px}#gaveta .re-g{color:#C9CFCB}
 #gaveta div[style*="font-weight:600"]{color:#fff}
 #gaveta .gv-zap{color:#fff!important}
 .bt-menu{border:0;background:none;color:var(--t);padding:4px;margin-left:-4px;display:flex}
@@ -331,10 +339,28 @@ function visu3(ms, at, pa) {
     ${nt ? '<p class="nota">A nota soma 4 pontos de até 25 cada: sobra do mês, juros do cartão, parcelas sobre a renda e reserva de emergência.</p>' : ''}`;
 }
 
+// ── Próxima conversa: botão para salvar na agenda do celular (.ics: iPhone, Outlook,
+// Samsung) e link para o Google Agenda. Horário de Brasília.
+function linkGoogle(pr) {
+  const quem = F.consultora || 'sua consultora', z = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  let datas;
+  if (pr.hora) { const ini = new Date(`${pr.data}T${pr.hora}:00-03:00`); datas = z(ini) + '/' + z(new Date(ini.getTime() + (pr.duracao || 60) * 60000)); }
+  else { const f = new Date(pr.data + 'T12:00:00Z'); f.setUTCDate(f.getUTCDate() + 1); datas = pr.data.replace(/-/g, '') + '/' + f.toISOString().slice(0, 10).replace(/-/g, ''); }
+  return 'https://calendar.google.com/calendar/render?' + new URLSearchParams({ action: 'TEMPLATE', text: `Conversa com ${quem} (Dees)`, dates: datas, details: `Conversa de acompanhamento financeiro com ${quem}.` });
+}
+function blocoReuniao(naGaveta) {
+  const pr = F.proximaReuniao; if (!pr) return '';
+  const dia = new Date(pr.data + 'T12:00:00');
+  const quando = dia.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' }) + (pr.hora ? ' às ' + pr.hora.replace(':', 'h') : '');
+  const ics = `/c/${encodeURIComponent(token)}/reuniao.ics`;
+  return `<div class="${naGaveta ? 'gv-reuniao' : 'card re-card'}">${naGaveta ? 'Próxima conversa' : `<span class="re-t">Próxima conversa com ${esc(F.consultora ? F.consultora.split(' ')[0] : 'a sua consultora')}</span>`}<b>${quando}</b>
+    <div class="re-acoes"><a class="re-bt" href="${ics}">${svg('cal')}Adicionar à minha agenda</a><a class="re-g" href="${esc(linkGoogle(pr))}" target="_blank" rel="noopener">ou no Google Agenda</a></div></div>`;
+}
+
 function telaHojeV2() {
   const ms = F.meses, at = ms[ms.length - 1], pa = ms.length > 1 ? ms[ms.length - 2] : null;
   return `<h1>Olá, ${esc(F.nome)}</h1><p class="at">${mLongo(at.mes).replace(/^./, c => c.toUpperCase())}${pa ? ' · comparado com ' + nomeCurto(pa.mes) : ''}</p>
-    ${visu2(ms, at, pa)}`;
+    ${blocoReuniao()}${visu2(ms, at, pa)}`;
 }
 
 function telaObjetivos() {
@@ -349,6 +375,7 @@ const ICONES = {
   hoje: '<path d="M3 12l9-8 9 8M5 10v10h14V10"/>', parcelas: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
   plano: '<path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>', futuro: '<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
   objetivos: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M12 13.5v5M9.5 16h5"/>',
   zap: '<path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z"/>'
 };
 const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`;
@@ -360,7 +387,7 @@ function gaveta() {
   return `<div class="gv-cab"><span class="marca">De<span>es</span></span><button class="gv-x" data-acao="fechar-menu" aria-label="Fechar menu">✕</button></div>
     <div class="gv-id"><span class="gv-foto">${esc((F.nome || '?')[0])}</span><span><b>${esc(F.nome)}</b><small>${F.nota ? 'Nota ' + F.nota.valor + ' · ' + esc(F.nota.rotulo) : 'Seu resumo financeiro'}</small></span></div>
     ${it('hoje', 'Hoje')}${it('parcelas', 'Parcelas', prox ? brl0(prox.valor) : '')}${it('plano', 'Plano')}${it('futuro', 'Futuro')}${it('objetivos', 'Objetivos', metas.length || '')}
-    ${pr ? `<div class="gv-reuniao">Próxima conversa<b>${dia.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}${pr.hora ? ' às ' + pr.hora.replace(':', 'h') : ''}</b></div>` : ''}
+    ${blocoReuniao(true)}
     ${F.consultora || w ? `<div class="gv-t">Sua consultora</div>${F.consultora ? `<div style="padding:2px 10px 6px;font-weight:600">${esc(F.consultora)}</div>` : ''}
       ${w ? `<a class="gv-it gv-zap" href="https://wa.me/${esc(w)}?text=${encodeURIComponent('Olá' + (F.consultora ? ', ' + F.consultora.split(' ')[0] : '') + '! Aqui é ' + F.nome + '.')}" target="_blank" rel="noopener">${svg('zap')}Falar no WhatsApp</a>` : ''}` : ''}
     <div class="gv-pe">Atualizado em ${dataBR(F.publicadoEm)}${F.consultora ? ' por ' + esc(F.consultora) : ''}</div>`;
@@ -372,7 +399,7 @@ function telaHoje() {
   const h = F.hoje, max = Math.max(1, ...h.categorias.map(c => c.valor));
   const per = F.periodo.de ? `Análise de ${mc(F.periodo.de)}${F.periodo.ate && F.periodo.ate !== F.periodo.de ? ' a ' + mc(F.periodo.ate) : ''}` : 'Sua análise';
   return `<h1>Olá, ${esc(F.nome)}</h1>
-    <p class="at">${per} · atualizada em ${dataBR(F.publicadoEm)}</p>
+    <p class="at">${per} · atualizada em ${dataBR(F.publicadoEm)}</p>${blocoReuniao()}
     <div class="hero ${h.sobra < 0 ? 'neg' : ''}"><small>${h.sobra >= 0 ? 'Em média, sobram por mês' : 'Em média, falta por mês'}</small>
       <span class="n num">${brl0(Math.abs(h.sobra))}</span>
       <div class="l"><span>Entra ${brl0(h.renda)}</span><span>Sai ${brl0(h.custoVida)}</span></div></div>

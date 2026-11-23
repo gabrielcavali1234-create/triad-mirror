@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '23/11/2026 · Parcelas no app';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '23/11/2026 · Reuniões no Outlook';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -289,7 +289,13 @@ body:has(.trilho){padding-left:72px}
 .cc-forte{color:var(--primaria-texto);font-weight:600}
 .ag-grupo{padding:14px 18px!important;margin-bottom:14px;border:1px solid var(--borda)!important;border-radius:var(--r-painel)!important}.ag-atraso{border-left:3px solid var(--vermelho)!important}.ag-hoje{border-left:3px solid var(--marca)!important}
 .ag-it{display:flex;align-items:center;gap:14px;padding:11px 18px;border-top:1px solid var(--borda2);color:inherit;text-decoration:none}
-.ag-grupo .ag-it{padding:11px 0}.ag-it:first-of-type{border-top:0}.ag-it:hover .ag-txt b{text-decoration:underline}
+.ag-grupo .ag-it{padding:11px 0}.ag-it:first-of-type{border-top:0}
+.ag-linha{display:flex;align-items:center;gap:10px;border-top:1px solid var(--borda2)}.ag-linha:first-of-type{border-top:0}.ag-linha .ag-it{flex:1;min-width:0;border-top:0}
+.ol-mini,.ol-btn{display:inline-flex;align-items:center;gap:7px;background:#0F6CBD;color:#fff!important;border:1px solid #0F6CBD;border-radius:9px;font-weight:600;text-decoration:none;white-space:nowrap;transition:background-color .18s,transform .18s,box-shadow .18s}
+.ol-mini{flex:none;height:34px;padding:0 12px;font-size:13px}.ol-btn{padding:9px 14px}
+.ol-mini:hover,.ol-btn:hover{background:#115EA3;border-color:#115EA3;transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,108,189,.28)}
+.ol-mini svg,.ol-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.pf-cont-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.pf-cont-grade>div:first-child{grid-column:1/-1}.pf-cont-grade>div{min-width:0}.pf-cont-grade input,.pf-cont-grade select{width:100%}.ag-it:hover .ag-txt b{text-decoration:underline}
 .ag-data{width:58px;flex:none;text-align:center}.ag-data b{display:block;font-size:15px}.ag-data small{color:var(--fraco);font-size:12px}
 .ag-ic{width:32px;height:32px;border-radius:50%;background:var(--borda2);display:grid;place-items:center;color:var(--suave);flex:none}
 .ag-txt{flex:1;min-width:0}.ag-txt b{display:block;font-weight:600}.ag-txt small{color:var(--fraco)}
@@ -1436,15 +1442,40 @@ function pfConquistas() {
     <div class="pf-selos">${B.map(([ic, t, ok]) => `<div class="pf-selo ${ok ? 'on' : ''}"><span><i class="ti ${ic}"></i></span>${t}</div>`).join('')}</div></div>`;
 }
 
+// ── Outlook (Microsoft 365 da empresa): abre o Outlook na web com o evento preenchido.
+// Horário de Brasília (-03:00, sem horário de verão). Sem hora = evento de dia todo.
+function linkOutlook({ titulo, data, hora, duracao, corpo }) {
+  const p = new URLSearchParams({ path: '/calendar/action/compose', rru: 'addevent', subject: titulo });
+  if (hora) {
+    const ini = new Date(`${data}T${hora}:00-03:00`), fim = new Date(ini.getTime() + (duracao || 60) * 60000);
+    const br = d => new Date(d.getTime() - 3 * 3600000).toISOString().slice(0, 19) + '-03:00';
+    p.set('startdt', br(ini)); p.set('enddt', br(fim));
+  } else {
+    const fim = new Date(data + 'T12:00:00Z'); fim.setUTCDate(fim.getUTCDate() + 1);
+    p.set('startdt', data); p.set('enddt', fim.toISOString().slice(0, 10)); p.set('allday', 'true');
+  }
+  if (corpo) p.set('body', corpo);
+  return 'https://outlook.office.com/calendar/0/deeplink/compose?' + p.toString().replace(/\+/g, '%20');
+}
+const ICONE_CAL = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3 10h18M12 13v5M9.5 15.5h5"/></svg>';
+function botaoOutlook(ev, compacto) {
+  return `<a class="${compacto ? 'ol-mini' : 'btn ol-btn'}" href="${esc(linkOutlook(ev))}" target="_blank" rel="noopener" title="Adicionar ao Outlook" aria-label="Adicionar ao Outlook">${ICONE_CAL}${compacto ? 'Outlook' : 'Adicionar ao Outlook'}</a>`;
+}
+const corpoReuniao = (c, extra) => [extra, 'Cliente: ' + c.nome, c.telefone ? 'Telefone: ' + c.telefone : '', c.email ? 'E-mail: ' + c.email : '', 'Perfil no Dees: ' + location.origin + '/#/cliente/' + c.id + '/perfil'].filter(Boolean).join('\n');
+const DURACOES = [[30, '30 min'], [45, '45 min'], [60, '1 hora'], [90, '1h30'], [120, '2 horas']];
+
 function pfContato() {
   const pc = (E.cli.cliente.ficha || {}).proximoContato || {};
   if (E.pfEditCont) return `<div class="card"><div class="pf-t">Próximo contato</div>
-    <label class="rot" for="pfData">Data</label><input id="pfData" type="date" value="${esc(pc.data || '')}" style="width:100%;margin-bottom:10px">
+    <div class="pf-cont-grade"><div><label class="rot" for="pfData">Data</label><input id="pfData" type="date" value="${esc(pc.data || '')}"></div>
+      <div><label class="rot" for="pfHora">Horário</label><input id="pfHora" type="time" value="${esc(pc.hora || '')}"></div>
+      <div><label class="rot" for="pfDur">Duração</label><select id="pfDur">${DURACOES.map(([v, t]) => `<option value="${v}" ${(pc.duracao || 60) === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
     <label class="rot" for="pfMotivo">Motivo</label><input id="pfMotivo" type="text" maxlength="200" value="${esc(pc.motivo || '')}" placeholder="Ex: revisão mensal, pedir faturas" style="width:100%">
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn primario" data-acao="pf-contato-salvar">Salvar</button><button class="btn" data-acao="pf-contato-cancelar">Cancelar</button>${pc.data ? '<button class="btn" data-acao="pf-contato-limpar" style="margin-left:auto">Limpar</button>' : ''}</div></div>`;
   const hoje = new Date().toISOString().slice(0, 10), atrasado = pc.data && pc.data < hoje;
   return `<div class="card"><div class="pf-t pf-t-flex"><span>Próximo contato</span><button class="pf-link" data-acao="pf-contato-editar">${pc.data ? 'Editar' : 'Marcar'}</button></div>
-    ${pc.data ? `<b class="${atrasado ? 'pf-ruim' : ''}">${dataCompleta(pc.data)}${atrasado ? ' · atrasado' : pc.data === hoje ? ' · hoje' : ''}</b>${pc.motivo ? `<div class="suave" style="margin-top:3px">${esc(pc.motivo)}</div>` : ''}`
+    ${pc.data ? `<b class="${atrasado ? 'pf-ruim' : ''}">${dataCompleta(pc.data)}${pc.hora ? ' · ' + pc.hora.replace(':', 'h') : ''}${atrasado ? ' · atrasado' : pc.data === hoje ? ' · hoje' : ''}</b>${pc.motivo ? `<div class="suave" style="margin-top:3px">${esc(pc.motivo)}</div>` : ''}
+      ${!atrasado ? `<div style="margin-top:12px">${botaoOutlook({ titulo: 'Reunião com ' + E.cli.cliente.nome, data: pc.data, hora: pc.hora, duracao: pc.duracao, corpo: corpoReuniao(E.cli.cliente, pc.motivo) })}</div>${pc.hora ? '' : '<div class="fraco" style="font-size:12px;margin-top:6px">Sem horário, entra como evento de dia todo.</div>'}` : ''}`
       : '<p class="suave" style="margin:0">Nenhum contato marcado.</p>'}</div>`;
 }
 
@@ -1531,7 +1562,7 @@ function verAta(a) {
     <div class="at-sec"><div class="pf-t">Combinados (próximos passos)</div>${a.combinados.length ? a.combinados.map((c, i) => `<label class="at-ck"><input type="checkbox" data-acao="ata-feito" data-id="${esc(a.id)}" data-i="${i}" ${c.feito ? 'checked' : ''}><span class="${c.feito ? 'at-feito' : ''}">${esc(c.texto)}</span>
       <small class="at-resp">${[c.responsavel, c.feito ? 'feito ' + (c.feitoEm ? dataBR(c.feitoEm) : '') : c.prazo ? 'até ' + dataBR(c.prazo) : ''].filter(Boolean).join(' · ')}${!c.feito && c.prazo && c.prazo < hoje ? ' · <b class="pf-ruim">atrasado</b>' : ''}</small></label>`).join('') : '<p class="suave">Nada combinado.</p>'}</div>
     ${a.observacoes ? `<div class="at-sec"><div class="pf-t">Observações</div><div class="pf-quebra">${esc(a.observacoes)}</div></div>` : ''}
-    <div class="at-sec at-rodape"><div><div class="pf-t">Próxima reunião</div><b>${a.proxima?.data ? dataCompleta(a.proxima.data) + (a.proxima.hora ? ' · ' + a.proxima.hora.replace(':', 'h') : '') : 'Não marcada'}</b></div>
+    <div class="at-sec at-rodape"><div><div class="pf-t">Próxima reunião</div><b>${a.proxima?.data ? dataCompleta(a.proxima.data) + (a.proxima.hora ? ' · ' + a.proxima.hora.replace(':', 'h') : '') : 'Não marcada'}</b>${a.proxima?.data && a.proxima.data >= hoje ? `<div style="margin-top:8px">${botaoOutlook({ titulo: 'Reunião com ' + E.cli.cliente.nome, data: a.proxima.data, hora: a.proxima.hora, duracao: 60, corpo: corpoReuniao(E.cli.cliente, 'Combinada na ata nº ' + a.numero + (a.titulo ? ' (' + a.titulo + ')' : '')) })}</div>` : ''}</div>
       ${a.nota != null ? `<div><div class="pf-t">Nota no dia</div><b>${a.nota}</b></div>` : ''}
       ${a.autor ? `<div><div class="pf-t">Registrada por</div><b>${esc(a.autor)}</b></div>` : ''}</div>
   </div>`;
@@ -1629,7 +1660,7 @@ async function salvarAtaEditada(comWhats) {
   const atas = atasDe().filter(x => x.id !== a.id);
   E.ataAntFeitos?.forEach(k => { const [id, i] = k.split('|'); const x = atas.find(y => y.id === id); if (x?.combinados[+i]) { x.combinados[+i].feito = true; x.combinados[+i].feitoEm = hojeISO(); } });
   atas.push(a);
-  const extra = a.proxima?.data && a.proxima.data >= hojeISO() ? { proximoContato: { data: a.proxima.data, motivo: 'Reunião' + (a.proxima.hora ? ' às ' + a.proxima.hora.replace(':', 'h') : '') + ' (combinada na ata nº ' + a.numero + ')' } } : null;
+  const extra = a.proxima?.data && a.proxima.data >= hojeISO() ? { proximoContato: { data: a.proxima.data, hora: a.proxima.hora || '', duracao: (E.cli.cliente.ficha || {}).proximoContato?.duracao || 60, motivo: 'Reunião combinada na ata nº ' + a.numero } } : null;
   E.ataEdit = null; E.ataSel = a.id; E.ataAntFeitos = null;
   await salvarAtas(atas, extra, 'Ata salva');
   if (comWhats) abrirWhatsAta(a);
@@ -1706,7 +1737,7 @@ function itensAgenda() {
   const out = [];
   (E.listaClientes || []).forEach(c => {
     const fi = c.ficha || {}, pc = fi.proximoContato || {};
-    if (pc.data) out.push({ data: pc.data, hora: '', tipo: 'contato', cliente: c, titulo: pc.motivo || 'Contato com o cliente', aba: 'perfil' });
+    if (pc.data) out.push({ data: pc.data, hora: pc.hora || '', duracao: pc.duracao, tipo: 'contato', cliente: c, titulo: pc.motivo || 'Contato com o cliente', aba: 'perfil' });
     (fi.atas || []).forEach(a => {
       if (a.proxima?.data && a.proxima.data !== pc.data) out.push({ data: a.proxima.data, hora: a.proxima.hora || '', tipo: 'reuniao', cliente: c, titulo: 'Reunião combinada na ata nº ' + a.numero, aba: 'reunioes', ata: a.id });
       (a.combinados || []).forEach(k => { if (!k.feito) out.push({ data: k.prazo, hora: '', tipo: 'combinado', cliente: c, titulo: k.texto, resp: k.responsavel, aba: 'reunioes', ata: a.id }); });
@@ -1732,11 +1763,12 @@ async function telaAgenda() {
   const TIPO = { contato: ['ti-phone', 'Contato'], reuniao: ['ti-messages', 'Reunião'], combinado: ['ti-checkbox', 'Combinado'] };
   const linha = i => {
     const d = i.data ? new Date(i.data + 'T12:00:00') : null;
-    return `<a class="ag-it" href="#/cliente/${i.cliente.id}/${i.aba}" data-acao="ag-abrir" data-ata="${esc(i.ata || '')}">
+    const ol = i.tipo !== 'combinado' && i.data >= hoje ? botaoOutlook({ titulo: 'Reunião com ' + i.cliente.nome, data: i.data, hora: i.hora, duracao: i.duracao, corpo: corpoReuniao(i.cliente, i.titulo) }, true) : '';
+    return `<div class="ag-linha"><a class="ag-it" href="#/cliente/${i.cliente.id}/${i.aba}" data-acao="ag-abrir" data-ata="${esc(i.ata || '')}">
       <span class="ag-data">${d ? `<b>${dataBR(i.data)}</b><small>${DIAS_SEM[d.getDay()]}${i.hora ? ' · ' + i.hora.replace(':', 'h') : ''}</small>` : '<small>—</small>'}</span>
       <span class="ag-ic"><i class="ti ${TIPO[i.tipo][0]}"></i></span>
       <span class="ag-txt"><b>${esc(i.titulo)}</b><small>${esc(i.cliente.nome)}${i.resp ? ' · responsável: ' + esc(i.resp) : ''}</small></span>
-      <span class="pill cinza">${TIPO[i.tipo][1]}</span></a>`;
+      <span class="pill cinza">${TIPO[i.tipo][1]}</span></a>${ol}</div>`;
   };
   $('#app').innerHTML = topo() + `<main>
     <div class="cab-pagina"><div><h1>Agenda</h1><div class="suave" style="margin-top:4px">Próximos contatos, reuniões combinadas e combinados com prazo, de todos os clientes.</div></div></div>
@@ -3593,8 +3625,8 @@ document.addEventListener('click', async ev => {
     case 'pf-tudo': E.pfTudo = !E.pfTudo; desenharConteudo(); break;
     case 'pf-contato-editar': E.pfEditCont = true; desenharConteudo(); break;
     case 'pf-contato-cancelar': E.pfEditCont = false; desenharConteudo(); break;
-    case 'pf-contato-salvar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: $('#pfData')?.value || null, motivo: $('#pfMotivo')?.value || '' } }, 'Próximo contato salvo'); break;
-    case 'pf-contato-limpar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: null, motivo: '' } }, 'Próximo contato removido'); break;
+    case 'pf-contato-salvar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: $('#pfData')?.value || null, hora: $('#pfHora')?.value || '', duracao: Number($('#pfDur')?.value) || 60, motivo: $('#pfMotivo')?.value || '' } }, 'Próximo contato salvo'); break;
+    case 'pf-contato-limpar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: null, hora: '', duracao: 60, motivo: '' } }, 'Próximo contato removido'); break;
     case 'aba': marcarAnimacao(); E.aba = el.dataset.aba; E.sel.clear(); history.replaceState(null, '', `#/cliente/${E.cli.cliente.id}/${E.aba}`); desenharCliente(); break;
     case 'mes': E.mesSel = el.dataset.mes || null; desenharConteudo(); break;
     case 'mix': E.modoMix = el.dataset.modo; desenharConteudo(); break;

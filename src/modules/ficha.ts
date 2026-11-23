@@ -42,7 +42,7 @@ export interface Ficha {
     obsRenda: string;                  // observações do passo "Renda e família"
     obsDinheiro: string;               // observações do passo "Dinheiro hoje"
     notas: Nota[];                     // anotações da consultora (aparecem na linha do tempo)
-    proximoContato: { data: string | null; motivo: string };
+    proximoContato: { data: string | null; hora: string; duracao: number; motivo: string };   // hora HH:MM ('' = dia todo), duração em minutos
     atas: Ata[];                       // atas de reunião com o cliente
 }
 
@@ -145,7 +145,12 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
         obsRenda: texto(v?.obsRenda, 2000),
         obsDinheiro: texto(v?.obsDinheiro, 2000),
         notas,
-        proximoContato: { data: pcData, motivo: texto(v?.proximoContato?.motivo, 200) },
+        proximoContato: {
+            data: pcData,
+            hora: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(v?.proximoContato?.hora || '')) ? String(v.proximoContato.hora) : '',
+            duracao: [15, 30, 45, 60, 90, 120].includes(Number(v?.proximoContato?.duracao)) ? Number(v.proximoContato.duracao) : 60,
+            motivo: texto(v?.proximoContato?.motivo, 200)
+        },
         atas
     };
 }

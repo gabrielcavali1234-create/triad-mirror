@@ -110,6 +110,43 @@ router.get('/c/:token/manifest.webmanifest', (req, res) => {
     }));
 });
 
+// Convite de calendário (.ics) da próxima conversa — botão "Adicionar à minha agenda"
+// do app. Abre direto no Calendário do iPhone, no Outlook e no Google Agenda.
+router.get('/c/:token/reuniao.ics', rota(async (req, res) => {
+    const token = String(req.params.token || '');
+    if (!repo || !TOKEN_OK.test(token)) return res.status(404).send('Link inválido.');
+    const c = await repo.obterClientePorToken(token);
+    const f: any = c?.app_ativo ? c.app_snapshot : null, pr = f?.proximaReuniao;
+    if (!pr?.data) return res.status(404).send('Nenhuma conversa marcada.');
+    const quem = f.consultora ? String(f.consultora) : 'sua consultora';
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    res.type('text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="conversa-dees.ics"');
+    res.send(montarIcs({ uid: `dees-${c!.id}-${pr.data}`, data: pr.data, hora: pr.hora, duracao: pr.duracao, titulo: `Conversa com ${quem} (Dees)`,
+        descricao: `Conversa de acompanhamento financeiro com ${quem}.` + (f.contato?.whatsapp ? ` WhatsApp: https://wa.me/${f.contato.whatsapp}` : '') }));
+}));
+
+/** Arquivo .ics de um evento. Horário de Brasília (sem horário de verão desde 2019); sem hora = dia todo. */
+function montarIcs(e: { uid: string; data: string; hora?: string; duracao?: number; titulo: string; descricao?: string }): string {
+    const esc = (t: string) => t.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    const z = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const dia = e.data.replace(/-/g, '');
+    let quando: string[];
+    if (e.hora) {
+        const ini = new Date(`${e.data}T${e.hora}:00-03:00`), fim = new Date(ini.getTime() + (e.duracao || 60) * 60_000);
+        quando = [`DTSTART:${z(ini)}`, `DTEND:${z(fim)}`];
+    } else {
+        const prox = new Date(`${e.data}T12:00:00Z`); prox.setUTCDate(prox.getUTCDate() + 1);
+        quando = [`DTSTART;VALUE=DATE:${dia}`, `DTEND;VALUE=DATE:${prox.toISOString().slice(0, 10).replace(/-/g, '')}`];
+    }
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Dees//App do cliente//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+        'BEGIN:VEVENT', `UID:${e.uid}@dees`, `DTSTAMP:${z(new Date())}`, ...quando, `SUMMARY:${esc(e.titulo)}`,
+        ...(e.descricao ? [`DESCRIPTION:${esc(e.descricao)}`] : []),
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Lembrete', 'TRIGGER:-PT1H', 'END:VALARM',
+        'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n');
+}
+
 router.use('/api/app', exigirLogin);
 
 router.get('/api/app/me', (req, res) => res.json({ usuario: req.usuario, banco: repo?.modo || null }));
