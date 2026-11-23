@@ -9,6 +9,7 @@
 import { Lancamento, somarMeses } from './consolidacao';
 import { BasePlano, PlanoConfig, simular } from './plano';
 import { Ficha } from './ficha';
+import { montarCalendario } from './calendario';
 
 const arred = (n: number) => Math.round(n * 100) / 100;
 
@@ -53,7 +54,8 @@ export interface FotoCliente {
     eventos?: EventoCliente[];
     historico?: HistoricoPublicacao[];
     contato?: { whatsapp: string | null };                    // WhatsApp da consultora (botão no menu do app)
-    proximaReuniao?: { data: string; hora: string; duracao?: number } | null;   // próximo contato marcado no sistema
+    proximaReuniao?: { data: string; hora: string; duracao?: number } | null;
+    calendario?: any;                                          // calendário financeiro (compacto) — ver calendario.ts   // próximo contato marcado no sistema
     publicadoEm: string;
     nome: string;                       // primeiro nome
     consultora: string | null;
@@ -109,6 +111,7 @@ export function montarFoto(entrada: {
     lancamentos?: Lancamento[];
     anterior?: FotoCliente | null;      // publicação anterior (para conquistas e histórico)
     whatsappConsultora?: string | null;
+    calendario?: ReturnType<typeof montarCalendario> | null;
     agora?: Date;
 }): FotoCliente {
     const { base, plano } = entrada;
@@ -201,6 +204,12 @@ export function montarFoto(entrada: {
         historico: [...(anterior?.historico || []), agoraHist].slice(-24),
         contato: { whatsapp: (String(entrada.whatsappConsultora || '').replace(/\D/g, '').slice(0, 15)) || anterior?.contato?.whatsapp || null },
         proximaReuniao: proximaReuniaoDe(entrada.cliente.ficha, agora),
+        calendario: entrada.calendario ? {
+            saldoInformado: entrada.calendario.saldoInicial != null, diaADia: entrada.calendario.diaADia,
+            meses: entrada.calendario.meses.map(m => ({ mes: m.mes, entra: m.entra, sai: m.sai, menor: m.menor, negativos: m.negativos,
+                dias: m.dias.map(d => ({ d: d.data, u: d.util ? 1 : 0, ...(d.feriado ? { f: d.feriado } : {}), s: d.saldo,
+                    ...(d.eventos.length ? { e: d.eventos.map(e => ({ t: e.titulo, k: e.tipo === 'entrada' ? 1 : 0, v: e.valor, ...(e.original ? { o: e.original } : {}), ...(e.estimado ? { x: 1 } : {}) })) } : {}) })) }))
+        } : (entrada.anterior?.calendario || null),
         publicadoEm: agora,
         nome: (entrada.cliente.nome || '').trim().split(/\s+/)[0] || 'Cliente',
         consultora: entrada.consultora || null,

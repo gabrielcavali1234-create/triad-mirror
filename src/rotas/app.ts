@@ -2,6 +2,7 @@
 // Rotas da APLICAÇÃO (analistas logados): /api/auth/*, /api/app/*, /api/admin/*
 // As rotas antigas /api/mirror/* (página /teste) continuam funcionando.
 // ══════════════════════════════════════════════════════════════════════════
+import { montarCalendario } from '../modules/calendario';
 import fs from 'fs';
 import path from 'path';
 import express, { Request, Response } from 'express';
@@ -176,7 +177,7 @@ router.post('/api/app/clientes/:id/app/publicar', rota(async (req, res) => {
     const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
     if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
     const analise = await repo.analiseAtual(c.id, req.usuario!);
-    const { docs, apuracao } = await montarApuracao(analise.id);
+    const { docs, entrada, apuracao } = await montarApuracao(analise.id);
     if (!docs.length) return res.status(400).json({ error: 'Envie pelo menos um extrato ou fatura antes de publicar para o cliente.' });
     const { base, config } = planoDaAnalise(analise, apuracao, c);
     const foto = montarFoto({
@@ -185,7 +186,8 @@ router.post('/api/app/clientes/:id/app/publicar', rota(async (req, res) => {
         mesesAnalise: Array.from(new Set(apuracao.lancamentos.map(l => l.mesReferencia))),
         lancamentos: apuracao.lancamentos,
         anterior: c.app_snapshot || null,
-        whatsappConsultora: typeof req.body?.whatsapp === 'string' ? req.body.whatsapp : null
+        whatsappConsultora: typeof req.body?.whatsapp === 'string' ? req.body.whatsapp : null,
+        calendario: (() => { try { return montarCalendario({ lancamentos: apuracao.lancamentos, faturas: entrada.faturas, ficha: c.ficha }); } catch (e: any) { console.error('[calendario]', e?.message); return null; } })()
     });
     const salvo = await repo.salvarApp(c.id, { app_token: c.app_token || novoToken(), app_ativo: true, app_snapshot: foto, app_publicado_em: foto.publicadoEm });
     res.json(estadoApp(salvo!));
@@ -311,6 +313,16 @@ router.get('/api/app/clientes/:id', rota(async (req, res) => {
     }
     const arquivos = await repo.listarArquivos(cliente.id);
     res.json({ cliente, analise, documentos: docs.map(resumoDocumento), arquivos, apuracao, plano, evolucao: evolucaoMensal(apuracao.lancamentos), perfil, resumoPainel: linhaDoPainel(cliente, analise, docs, apuracao) });
+}));
+
+// ─── Calendário financeiro (dia a dia, só dias úteis) ────────────────────
+router.get('/api/app/clientes/:id/calendario', rota(async (req, res) => {
+    if (!repo) return semRepo(res);
+    const c = UUID.test(pid(req)) ? await repo.obterCliente(pid(req)) : null;
+    if (!c) return res.status(404).json({ error: 'Cliente não encontrado.' });
+    const analise = await repo.analiseAtual(c.id, req.usuario!);
+    const { entrada, apuracao } = await montarApuracao(analise.id);
+    res.json(montarCalendario({ lancamentos: apuracao.lancamentos, faturas: entrada.faturas, ficha: c.ficha }));
 }));
 
 // ─── Documentos ──────────────────────────────────────────────────────────

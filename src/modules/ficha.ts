@@ -6,6 +6,7 @@
 // Usos: a reserva atual entra no plano sugerido (modules/plano.ts); os
 // objetivos com valor e prazo dizem quanto guardar por mês.
 // ══════════════════════════════════════════════════════════════════════════
+import { ConfigCalendario, normalizarConfig } from './calendario';
 
 export const FORMAS_RENDA = ['clt', 'autonomo', 'empresario', 'aposentado', 'outro'] as const;
 export const TIPOS_DIVIDA = ['emprestimo', 'veiculo', 'imobiliario', 'consignado', 'cheque_especial', 'outro'] as const;
@@ -44,6 +45,7 @@ export interface Ficha {
     notas: Nota[];                     // anotações da consultora (aparecem na linha do tempo)
     proximoContato: { data: string | null; hora: string; duracao: number; motivo: string };   // hora HH:MM ('' = dia todo), duração em minutos
     atas: Ata[];                       // atas de reunião com o cliente
+    calendario: ConfigCalendario;      // ajustes do calendário financeiro (saldo, contas incluídas, dias)
 }
 
 export interface Nota { texto: string; em: string; autor: string }
@@ -151,6 +153,7 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
             duracao: [15, 30, 45, 60, 90, 120].includes(Number(v?.proximoContato?.duracao)) ? Number(v.proximoContato.duracao) : 60,
             motivo: texto(v?.proximoContato?.motivo, 200)
         },
-        atas
+        atas,
+        calendario: normalizarConfig(v?.calendario)
     };
 }

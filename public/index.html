@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '23/11/2026 · Reuniões no Outlook';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '23/11/2026 · Calendário financeiro';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -392,6 +392,39 @@ svg rect,svg circle{transition:opacity .15s}.pf-col svg:hover rect:not(:hover)[h
 @media (max-width:900px){.dc-sub{white-space:nowrap;padding:10px 10px;font-size:13.5px}.dc-subabas{overflow-x:auto}.dc-cab{display:none}.dc-lin{grid-template-columns:1fr auto;row-gap:6px}.dc-lin>span:nth-child(3),.dc-lin>span:nth-child(4){grid-column:1}.dc-acoes{grid-row:1;grid-column:2}.dc-filtros input{width:100%}}
 .sm-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .sm-h{font-family:var(--serif);font-weight:500;font-size:28px;margin:0 0 4px}.sm-cab p{margin:0}
+.cal-saldo-in{display:flex;align-items:center;gap:8px}.cal-saldo-in input{width:130px}
+.cal-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.cal-kpis .card{margin:0;padding:14px 16px}
+.cal-kpis small{display:block;font-size:12px;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;font-weight:600}.cal-kpis b{display:block;font-size:22px;margin-top:4px;font-variant-numeric:tabular-nums}.cal-kpis em{display:block;font-style:normal;font-size:12px;color:var(--suave);margin-top:2px}
+.cal-pos{color:var(--verde)}.cal-neg{color:var(--vermelho)}
+.cal-card{padding:14px}.cal-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.cal-nav>b{font-size:18px;min-width:150px;text-align:center}.cal-nav .btn{padding:6px 9px}.cal-nav select{width:auto}
+.cal-leg{margin-left:auto;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--suave)}.cal-leg span{display:inline-flex;align-items:center;gap:5px}
+.cal-leg i.en,.cal-leg i.sa{width:9px;height:9px;border-radius:3px}.cal-leg i.en{background:var(--verde)}.cal-leg i.sa{background:var(--vermelho)}
+.cal-leg i.q{width:12px;height:12px;border-radius:3px;border:1px solid var(--borda)}.cal-leg i.q.nu{background:var(--cal-nu)}.cal-leg i.q.neg{background:var(--vermelho-fundo)}
+:root{--cal-nu:repeating-linear-gradient(135deg,var(--borda2) 0 6px,transparent 6px 12px)}
+.cal-sem,.cal-grade{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-sem span{font-size:11.5px;font-weight:700;color:var(--suave);text-transform:uppercase;letter-spacing:.05em;padding:0 6px 4px}
+.cal-d{min-height:112px;border:1px solid var(--borda2);border-radius:10px;padding:6px 6px 22px;position:relative;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0;transition:border-color .15s,box-shadow .15s,background-color .15s}
+.cal-d:hover{border-color:var(--borda-forte)}
+.cal-d.nu{background:var(--cal-nu);background-color:var(--linha-hover)}.cal-d.nu .cal-top b{color:var(--suave)}
+.cal-d.neg{background-color:var(--vermelho-fundo);border-color:#EBC3BC}
+.cal-d.hj{box-shadow:inset 0 0 0 2px var(--primaria)}.cal-d.on{border-color:var(--texto);box-shadow:0 0 0 2px var(--texto)}.cal-d.ps{opacity:.45}
+.cal-top{display:flex;align-items:baseline;gap:6px;min-width:0}.cal-top b{font-size:14px}
+.cal-fer{font-size:10.5px;font-weight:700;color:#8A6D00;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cal-fer.cal-fds{color:var(--fraco,var(--suave));font-weight:500}
+.cal-ev{display:flex;align-items:center;gap:4px;font-size:11.5px;line-height:1.25;border-radius:5px;padding:2px 5px;min-width:0}
+.cal-ev span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cal-ev b{font-weight:700;font-variant-numeric:tabular-nums;flex:none}
+.cal-ev.en{background:var(--verde-fundo);color:var(--verde)}.cal-ev.sa{background:var(--vermelho-fundo);color:var(--vermelho)}.cal-ev i{font-size:12px;flex:none}
+.cal-mais{font-size:11px;color:var(--suave);padding-left:4px}
+.cal-saldo{position:absolute;right:7px;bottom:5px;font-size:11.5px;font-weight:600;color:var(--suave);font-variant-numeric:tabular-nums}.cal-saldo.neg{color:var(--vermelho);font-weight:700}
+.cal-sel{margin-top:12px;padding:16px 18px}.cal-baixo .card{padding:16px 18px}
+.cal-baixo{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-top:12px;align-items:start}.cal-baixo>.card,.cal-baixo .card{margin:0}.cal-baixo .pf-col{display:flex;flex-direction:column;gap:12px}
+.cal-li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--borda2)}.cal-li:first-of-type{border-top:0}
+.cal-li.cal-off{opacity:.5}.cal-li .pf-link{flex:none}
+.cal-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:16px}.cal-ic.en{background:var(--verde-fundo);color:var(--verde)}.cal-ic.sa{background:var(--vermelho-fundo);color:var(--vermelho)}
+.cal-tx{flex:1;min-width:0}.cal-tx b{display:block;font-weight:600}.cal-tx small{display:block;font-size:12.5px;color:var(--suave)}
+.cal-li>b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.cal-dt{width:46px;flex:none;line-height:1.15}.cal-dt b{display:block}.cal-dt small{color:var(--suave);font-size:12px}
+.cal-form{background:var(--linha-hover);border-radius:10px;padding:12px;margin:6px 0 10px}.cal-f2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.cal-f2 input,.cal-f2 select{width:100%}
+@media (max-width:1100px){.cal-kpis{grid-template-columns:repeat(2,1fr)}.cal-baixo{grid-template-columns:1fr}.cal-ev span{display:none}.cal-ev{justify-content:center}.cal-d{min-height:86px}.cal-f2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .sm-taxa{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--suave);background:var(--branco);border:1px solid var(--borda);border-radius:8px;padding:6px 10px}.sm-taxa input{width:64px;padding:5px 6px}
 .sm-menu{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px}
 .sm-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:13px 14px;font:inherit;color:var(--texto);cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s,background-color .18s}
@@ -668,6 +701,7 @@ main > div > .card[style*="padding:16px"]{border:0;border-top:2px solid var(--te
 /* ── Plano do cliente: cores das duas linhas da simulação (validadas para daltonismo) ── */
 :root{--s-mudanca:#2E8B63;--s-atual:#C2410C}
 :root[data-tema="escuro"]{--s-mudanca:#38A374;--s-atual:#CC7A22}
+:root[data-tema="escuro"] .cal-d.neg{border-color:#5A2A24}:root[data-tema="escuro"] .cal-fer{color:#E3C04A}:root[data-tema="escuro"] .cal-fer.cal-fds{color:var(--fraco)}
 @media (prefers-color-scheme:dark){:root:not([data-tema="claro"]){--s-mudanca:#38A374;--s-atual:#CC7A22}}
 
 /* aba do analista */
@@ -989,7 +1023,7 @@ async function rotear() {
   if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
   if (h === '#/agenda') { E.ap = null; return telaAgenda(); }
   if (h === '#/reunioes') { E.ap = null; return telaReunioesGeral(); }
-  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|simuladores|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|simuladores|calendario|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
     if (m[2] === 'apresentacao') return telaApresentacao(m[1]);
@@ -1196,7 +1230,7 @@ function desenharCliente() {
 
   E.chipsDocs = chipsDocs;
   if (LANC_ABAS.includes(E.aba)) E.ultLanc = E.aba;
-  const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes', 'simuladores'].includes(E.aba);
+  const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes', 'simuladores', 'calendario'].includes(E.aba);
   $('#app').innerHTML = topo(salvoTxt()) + `<div class="cli-wrap">${colunaCliente()}<main>
     ${cabecalhoPerfil()}
     ${LANC_ABAS.includes(E.aba) && documentos.length ? `
@@ -1712,6 +1746,7 @@ function colunaCliente() {
       ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'ti-list-details', 'Lançamentos', documentos.length ? nLanc : '')}
       ${aba('docs', 'docs', 'ti-file-text', 'Documentos', (documentos.length + (E.cli.arquivos || []).length) || '')}
       ${aba('plano', 'plano', 'ti-target-arrow', 'Plano', '')}
+      ${aba('calendario', 'calendario', 'ti-calendar-dollar', 'Calendário', '')}
       ${aba('simuladores', 'simuladores', 'ti-calculator', 'Simuladores', '')}
       ${aba('reunioes', 'reunioes', 'ti-messages', 'Reuniões', nAtas || '')}
       <button class="cc-aba" data-acao="app-cliente"><i class="ti ti-device-mobile"></i><span>App do cliente</span><em class="${c.app_ativo ? 'cc-ok' : ''}">${c.app_publicado_em ? (c.app_ativo ? 'no ar' : 'desativado') : 'gerar'}</em></button>
@@ -2027,6 +2062,127 @@ function iniciarSim() {
   };
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// CALENDÁRIO FINANCEIRO — o mês dia a dia, só dias úteis. O servidor descobre
+// o que se repete (extrato) e os vencimentos (cartões); a consultora ajusta
+// e inclui contas em ficha.calendario. Fim de semana e feriado em cinza.
+// ════════════════════════════════════════════════════════════════════════
+const SEM_C = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const semDe = d => SEM_C[new Date(d + 'T12:00:00').getDay()].toLowerCase();
+const vC = v => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const vC0 = v => (v < 0 ? '−' : '') + Math.round(Math.abs(v)).toLocaleString('pt-BR');
+const MESES_CAL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const mesCal = k => MESES_CAL[+k.slice(5, 7) - 1].replace(/^./, c => c.toUpperCase()) + ' ' + k.slice(0, 4);
+const cfgCal = () => { const c = (E.cli.cliente.ficha || {}).calendario || {}; return { saldoInicial: c.saldoInicial ?? null, ajustes: { ...(c.ajustes || {}) }, extras: [...(c.extras || [])] }; };
+function regraTxt(it) {
+  if (it.freq === 'unica') return 'só em ' + dataCompleta(it.data);
+  if (it.freq === 'anual') return 'todo ano, ' + String(it.regra.dia).padStart(2, '0') + '/' + String(it.mes).padStart(2, '0');
+  return it.regra.tipo === 'util' ? it.regra.n + 'º dia útil' : 'todo dia ' + it.regra.dia;
+}
+async function carregarCal(forcar) {
+  const id = E.cli.cliente.id;
+  if (!forcar && E.cal && E.calCli === id) return;
+  E.cal = await api('GET', '/api/app/clientes/' + id + '/calendario'); E.calCli = id;
+  if (E.calMes == null || E.calMes >= E.cal.meses.length) E.calMes = 0;
+}
+async function salvarCal(cfg, msg) {
+  try {
+    const r = await api('PATCH', '/api/app/clientes/' + E.cli.cliente.id, { ficha: { calendario: cfg } });
+    E.cli.cliente = r.cliente; E.calEdit = null; await carregarCal(true); desenharConteudo(); if (msg) toast(msg);
+  } catch (e) { toast(e.message, true); }
+}
+function abaCalendario() {
+  if (!E.cal || E.calCli !== E.cli.cliente.id) {
+    carregarCal().then(desenharConteudo).catch(e => { const el = $('#conteudo'); if (el) el.innerHTML = `<div class="card vazio"><p>${esc(e.message)}</p></div>`; });
+    return '<div class="carregando">Montando o calendário…</div>';
+  }
+  const C = E.cal, M = C.meses[E.calMes], hoje = C.hoje, comSaldo = C.saldoInicial != null;
+  const prim = new Date(M.mes + '-01T12:00:00').getDay();
+  const cel = d => {
+    const ev = d.eventos, mostra = ev.slice(0, 3), neg = comSaldo && d.saldo < 0 && d.data >= hoje;
+    return `<div class="cal-d ${d.util ? '' : 'nu'} ${neg ? 'neg' : ''} ${d.data === hoje ? 'hj' : ''} ${d.data === E.calDia ? 'on' : ''} ${d.data < hoje ? 'ps' : ''}" data-acao="cal-dia" data-d="${d.data}" role="button" tabindex="0">
+      <div class="cal-top"><b>${+d.data.slice(8)}</b>${d.feriado ? `<span class="cal-fer" title="${esc(d.feriado)}">${esc(d.feriado)}</span>` : ''}</div>
+      ${mostra.map(e => `<div class="cal-ev ${e.tipo === 'entrada' ? 'en' : 'sa'}" title="${esc(e.titulo)}: ${brl(e.valor)}${e.original ? ' · era ' + semDe(e.original) + ' ' + dataBR(e.original) : ''}">${e.original ? '<i class="ti ti-arrow-forward-up"></i>' : ''}<span>${esc(e.titulo)}</span><b>${vC0(e.valor)}</b></div>`).join('')}
+      ${ev.length > 3 ? `<div class="cal-mais">+${ev.length - 3}</div>` : ''}
+      ${comSaldo && d.data >= hoje ? `<div class="cal-saldo ${d.saldo < 0 ? 'neg' : ''}">${vC0(d.saldo)}</div>` : ''}</div>`;
+  };
+  const sel = E.calDia && M.dias.find(d => d.data === E.calDia);
+  const fer = M.dias.filter(d => d.feriado);
+  const movidos = M.dias.flatMap(d => d.eventos.filter(e => e.original).map(e => ({ ...e, d: d.data })));
+  return `<div class="sm-cab"><div><h2 class="sm-h">Calendário financeiro</h2><p class="suave">Quando o dinheiro entra, quando cada conta sai e quanto sobra em cada dia. Só dias úteis: conta que cai em fim de semana ou feriado vai para o próximo dia útil.</p></div>
+      <label class="sm-taxa cal-saldo-in">Saldo na conta hoje <input type="number" step="0.01" id="calSaldo" value="${comSaldo ? C.saldoInicial : ''}" placeholder="R$"><button class="btn" data-acao="cal-saldo">Salvar</button></label></div>
+    <div class="cal-kpis">
+      <div class="card"><small>Entra em ${MESES_CAL[+M.mes.slice(5) - 1]}</small><b class="cal-pos">${brl(M.entra)}</b></div>
+      <div class="card"><small>Contas do mês</small><b>${brl(M.sai)}</b><em>+ ${brl0(C.diaADia)}/dia de dia a dia</em></div>
+      <div class="card"><small>Dia mais apertado</small>${comSaldo && M.menor ? `<b class="${M.menor.saldo < 0 ? 'cal-neg' : ''}">${brl(M.menor.saldo)}</b><em>${semDe(M.menor.data)}, ${dataBR(M.menor.data)}</em>` : '<b class="fraco">—</b><em>informe o saldo de hoje</em>'}</div>
+      <div class="card"><small>Dias no vermelho</small>${comSaldo ? `<b class="${M.negativos ? 'cal-neg' : 'cal-pos'}">${M.negativos}</b><em>${M.negativos ? 'saldo previsto negativo' : 'nenhum'}</em>` : '<b class="fraco">—</b>'}</div>
+    </div>
+    <div class="card cal-card">
+      <div class="cal-nav"><button class="btn" data-acao="cal-mes" data-v="-1" ${E.calMes ? '' : 'disabled'} aria-label="Mês anterior"><i class="ti ti-chevron-left"></i></button><b>${mesCal(M.mes)}</b><button class="btn" data-acao="cal-mes" data-v="1" ${E.calMes < C.meses.length - 1 ? '' : 'disabled'} aria-label="Próximo mês"><i class="ti ti-chevron-right"></i></button>
+        <select data-acao-change="cal-ir" aria-label="Ir para o mês">${C.meses.map((m, i) => `<option value="${i}" ${i === E.calMes ? 'selected' : ''}>${mesCal(m.mes)}</option>`).join('')}</select>
+        <span class="cal-leg"><span><i class="en"></i>entra</span><span><i class="sa"></i>sai</span><span><i class="q nu"></i>fim de semana / feriado</span><span><i class="ti ti-arrow-forward-up"></i>passou para o dia útil</span>${comSaldo ? '<span><i class="q neg"></i>saldo negativo</span>' : ''}</span></div>
+      <div class="cal-sem">${SEM_C.map(x => `<span>${x}</span>`).join('')}</div>
+      <div class="cal-grade">${'<span class="cal-vazio"></span>'.repeat(prim)}${M.dias.map(cel).join('')}</div>
+      ${!comSaldo ? '<p class="fraco" style="margin:10px 2px 0;font-size:13px">Informe o saldo na conta hoje para ver o saldo de cada dia e os dias no vermelho.</p>' : ''}
+    </div>
+    ${sel ? `<div class="card cal-sel"><div class="pf-t pf-t-flex"><span>${semDe(sel.data)}, ${dataCompleta(sel.data)}${sel.feriado ? ' · ' + esc(sel.feriado) : !sel.util ? ' · fim de semana' : ''}</span><button class="pf-link" data-acao="cal-dia" data-d="${sel.data}">Fechar</button></div>
+      ${sel.eventos.length ? sel.eventos.map(e => `<div class="cal-li"><span class="cal-ic ${e.tipo === 'entrada' ? 'en' : 'sa'}"><i class="ti ${e.tipo === 'entrada' ? 'ti-arrow-down-left' : 'ti-arrow-up-right'}"></i></span><span class="cal-tx"><b>${esc(e.titulo)}</b><small>${e.original ? `era ${semDe(e.original)}, ${dataBR(e.original)} · ${e.tipo === 'entrada' ? 'adiantado' : 'passou'} para o dia útil` : e.estimado ? 'valor previsto' : ''}</small></span><b class="${e.tipo === 'entrada' ? 'cal-pos' : ''}">${e.tipo === 'entrada' ? '+' : '−'} ${brl(e.valor)}</b></div>`).join('')
+        : `<p class="suave" style="margin:0">${sel.util ? 'Nenhuma conta neste dia.' : 'Sem expediente bancário.'}</p>`}
+      ${comSaldo ? `<div class="cal-li" style="border:0"><span class="cal-tx"><b>Saldo previsto no fim do dia</b></span><b class="${sel.saldo < 0 ? 'cal-neg' : ''}">${brl(sel.saldo)}</b></div>` : ''}</div>` : ''}
+    <div class="cal-baixo">
+      <div class="card"><div class="pf-t pf-t-flex"><span>Contas e entradas que se repetem</span><button class="pf-link" data-acao="cal-novo"><i class="ti ti-plus"></i> Incluir</button></div>
+        ${E.calEdit === 'novo' ? formCal(null) : ''}
+        ${C.itens.length ? C.itens.map(itemCal).join('') : '<p class="suave">Nada encontrado no extrato. Inclua as contas e entradas do cliente.</p>'}</div>
+      <div class="pf-col">
+        <div class="card"><div class="pf-t">Sem banco em ${MESES_CAL[+M.mes.slice(5) - 1]}</div>${fer.length ? fer.map(d => `<div class="cal-li"><span class="cal-dt"><b>${dataBR(d.data)}</b><small>${semDe(d.data)}</small></span><span class="cal-tx"><b>${esc(d.feriado)}</b></span></div>`).join('') : '<p class="suave" style="margin:0">Nenhum feriado neste mês, só os fins de semana.</p>'}
+          <p class="fraco" style="font-size:12px;margin:10px 0 0">Feriados nacionais e bancários${/s[ãa]o paulo/i.test(C.cidade || '') ? ' + São Paulo (25/01 e 09/07)' : ''}. Cidade da ficha: ${esc(C.cidade || 'não informada')}.</p></div>
+        ${movidos.length ? `<div class="card"><div class="pf-t">Mudaram de dia em ${MESES_CAL[+M.mes.slice(5) - 1]}</div>${movidos.map(e => `<div class="cal-li"><span class="cal-tx"><b>${esc(e.titulo)}</b><small>${semDe(e.original)} ${dataBR(e.original)} → ${semDe(e.d)} ${dataBR(e.d)}</small></span><b>${brl(e.valor)}</b></div>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+}
+function itemCal(it) {
+  if (E.calEdit === it.id) return formCal(it);
+  const orig = { extrato: 'extrato', cartao: 'cartão', manual: 'incluída por você' }[it.origem];
+  return `<div class="cal-li ${it.ativo ? '' : 'cal-off'}"><span class="cal-ic ${it.tipo === 'entrada' ? 'en' : 'sa'}"><i class="ti ${it.origem === 'cartao' ? 'ti-credit-card' : it.tipo === 'entrada' ? 'ti-arrow-down-left' : 'ti-arrow-up-right'}"></i></span>
+    <span class="cal-tx"><b>${esc(it.titulo)}</b><small>${regraTxt(it)} · ${orig}${it.estimado ? ' · valor muda a cada mês' : ''}${it.ativo ? '' : ' · desligada'}</small>${it.detalhe && it.origem === 'cartao' ? `<small class="fraco">${esc(it.detalhe.split(' · ').slice(1, 2).join(''))}</small>` : ''}</span>
+    <b class="${it.tipo === 'entrada' ? 'cal-pos' : ''}">${it.estimado ? '~' : ''}${brl(it.valor)}</b>
+    <button class="pf-link" data-acao="cal-editar" data-id="${esc(it.id)}">Editar</button></div>`;
+}
+function formCal(it) {
+  const novo = !it, r = it?.regra || { tipo: 'dia', dia: 10 };
+  const quando = novo ? 'dia' : it.freq === 'unica' ? 'unica' : it.freq === 'anual' ? 'anual' : r.tipo;
+  const dataVal = it?.freq === 'unica' ? it.data : it?.freq === 'anual' ? `${new Date().getFullYear()}-${String(it.mes).padStart(2, '0')}-${String(r.dia).padStart(2, '0')}` : '';
+  return `<div class="cal-form" data-id="${esc(it?.id || '')}">
+    <div class="cal-f2">${novo || it.origem === 'manual' ? `<div style="grid-column:1/-1"><label class="rot">Nome</label><input id="cfTitulo" value="${esc(it?.titulo || '')}" placeholder="Ex: IPVA, aluguel recebido, academia" maxlength="60"></div>
+      <div><label class="rot">Tipo</label><select id="cfTipo"><option value="saida" ${it?.tipo !== 'entrada' ? 'selected' : ''}>Conta (sai)</option><option value="entrada" ${it?.tipo === 'entrada' ? 'selected' : ''}>Entrada</option></select></div>` : `<div style="grid-column:1/-1"><b>${esc(it.titulo)}</b></div>`}
+      <div><label class="rot">Valor${it?.estimado ? ' (fixar)' : ''}</label><input id="cfValor" type="number" step="0.01" min="0" value="${it ? it.valor : ''}" placeholder="R$"></div>
+      <div><label class="rot">Quando</label><select id="cfQuando" data-acao-change="cal-quando">${[['dia', 'Dia do mês'], ['util', 'Dia útil nº'], ...(novo || it.origem === 'manual' ? [['anual', 'Todo ano'], ['unica', 'Só uma vez']] : [])].map(([v, t]) => `<option value="${v}" ${quando === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      <div id="cfNumBox" ${['anual', 'unica'].includes(quando) ? 'hidden' : ''}><label class="rot">Dia</label><input id="cfNum" type="number" min="1" max="31" value="${r.tipo === 'util' ? r.n : r.dia}"></div>
+      <div id="cfDataBox" ${['anual', 'unica'].includes(quando) ? '' : 'hidden'}><label class="rot">Data</label><input id="cfData" type="date" value="${esc(dataVal)}"></div></div>
+    ${it?.origem === 'cartao' ? '<p class="fraco" style="font-size:12px;margin:8px 0 0">Deixe o valor como está para usar o previsto de cada mês (parcelas + média à vista). Mudando, ele fica fixo.</p>' : ''}
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn primario" data-acao="cal-salvar">Salvar</button><button class="btn" data-acao="cal-cancelar">Cancelar</button>
+      ${!novo && it.origem !== 'manual' ? `<button class="btn" data-acao="cal-ligar" data-id="${esc(it.id)}" style="margin-left:auto">${it.ativo ? 'Desligar' : 'Ligar'}</button>` : ''}
+      ${!novo && it.origem === 'manual' ? `<button class="btn" data-acao="cal-excluir" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--vermelho)">Excluir</button>` : ''}</div></div>`;
+}
+function salvarFormCal() {
+  const f = $('.cal-form'); if (!f) return;
+  const id = f.dataset.id, it = id ? E.cal.itens.find(x => x.id === id) : null, cfg = cfgCal();
+  const quando = $('#cfQuando').value, num = Math.round(+$('#cfNum').value), dt = $('#cfData').value, valor = $('#cfValor').value;
+  if (['dia', 'util'].includes(quando) && !(num >= 1 && num <= (quando === 'util' ? 23 : 31))) return toast('Informe um dia válido.', true);
+  if (['anual', 'unica'].includes(quando) && !dt) return toast('Escolha a data.', true);
+  const regra = quando === 'util' ? { tipo: 'util', n: num } : quando === 'dia' ? { tipo: 'dia', dia: num } : { tipo: 'dia', dia: +dt.slice(8, 10) };
+  if (!it || it.origem === 'manual') {
+    const titulo = $('#cfTitulo').value.trim(); if (!titulo) return toast('Dê um nome.', true);
+    if (!(+valor > 0)) return toast('Informe o valor.', true);
+    const e = { id: it?.id || 'man-' + Date.now().toString(36), titulo, tipo: $('#cfTipo').value, valor: +valor, regra, freq: quando === 'anual' ? 'anual' : quando === 'unica' ? 'unica' : 'mensal', ...(quando === 'anual' ? { mes: +dt.slice(5, 7) } : {}), ...(quando === 'unica' ? { data: dt } : {}), ativo: true };
+    cfg.extras = cfg.extras.filter(x => x.id !== e.id).concat(e);
+    return salvarCal(cfg, it ? 'Conta atualizada' : 'Incluída no calendário');
+  }
+  const a = { ...(cfg.ajustes[id] || {}) }; a.regra = regra;
+  if (valor !== '' && Math.abs(+valor - it.valor) > 0.004) a.valor = +valor;
+  cfg.ajustes[id] = a; salvarCal(cfg, 'Calendário atualizado');
+}
+
 function abaSimuladores() {
   if (!E.sim || E.sim.cli !== E.cli.cliente.id) iniciarSim();
   const S = E.sim;
@@ -2253,6 +2409,7 @@ function desenharConteudo() {
   else if (E.aba === 'docs') { el.innerHTML = abaDocs(); ligarDocs(); }
   else if (E.aba === 'reunioes') el.innerHTML = abaReunioes();
   else if (E.aba === 'simuladores') { el.innerHTML = abaSimuladores(); ligarSim(); }
+  else if (E.aba === 'calendario') el.innerHTML = abaCalendario();
   else if (E.aba === 'conta') el.innerHTML = abaConta();
   else if (E.aba === 'cartao') el.innerHTML = abaCartao();
   else if (E.aba === 'plano') { el.innerHTML = abaPlano(); ligarPlano(); }
@@ -3517,6 +3674,11 @@ new MutationObserver(() => document.querySelectorAll('i.ti:not([aria-hidden])').
 document.addEventListener('keydown', ev => {
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target instanceof HTMLElement && ev.target.matches('[data-acao][tabindex]')) { ev.preventDefault(); ev.target.click(); }
 });
+document.addEventListener('change', ev => {
+  const el = ev.target.closest('[data-acao-change]'); if (!el) return;
+  if (el.dataset.acaoChange === 'cal-ir') { E.calMes = +el.value; E.calDia = null; desenharConteudo(); }
+  if (el.dataset.acaoChange === 'cal-quando') { const d = ['anual', 'unica'].includes(el.value); $('#cfNumBox').hidden = d; $('#cfDataBox').hidden = !d; }
+});
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { fecharMenus(); if (!document.querySelector('#dEnviar:disabled')) fecharModal(); } });
 
 // ════════════════════════════════════════════════════════════════════════
@@ -3623,6 +3785,15 @@ document.addEventListener('click', async ev => {
     case 'ata-excluir': E.ataExcluir = el.dataset.id; desenharConteudo(); break;
     case 'ata-excluir-sim': E.ataExcluir = null; E.ataSel = null; salvarAtas(atasDe().filter(x => x.id !== el.dataset.id), null, 'Ata excluída'); break;
     case 'pf-tudo': E.pfTudo = !E.pfTudo; desenharConteudo(); break;
+    case 'cal-dia': E.calDia = E.calDia === el.dataset.d ? null : el.dataset.d; desenharConteudo(); break;
+    case 'cal-mes': E.calMes = Math.max(0, Math.min(E.cal.meses.length - 1, E.calMes + +el.dataset.v)); E.calDia = null; desenharConteudo(); break;
+    case 'cal-novo': E.calEdit = 'novo'; desenharConteudo(); break;
+    case 'cal-editar': E.calEdit = el.dataset.id; desenharConteudo(); break;
+    case 'cal-cancelar': E.calEdit = null; desenharConteudo(); break;
+    case 'cal-salvar': salvarFormCal(); break;
+    case 'cal-saldo': { const v = $('#calSaldo').value, c = cfgCal(); c.saldoInicial = v === '' ? null : +v; salvarCal(c, 'Saldo salvo'); break; }
+    case 'cal-ligar': { const c = cfgCal(), it = E.cal.itens.find(x => x.id === el.dataset.id); c.ajustes[el.dataset.id] = { ...(c.ajustes[el.dataset.id] || {}), ativo: !it.ativo }; if (it.ativo === false) delete c.ajustes[el.dataset.id].ativo; salvarCal(c, it.ativo ? 'Desligada' : 'Ligada'); break; }
+    case 'cal-excluir': { const c = cfgCal(); c.extras = c.extras.filter(x => x.id !== el.dataset.id); salvarCal(c, 'Excluída'); break; }
     case 'pf-contato-editar': E.pfEditCont = true; desenharConteudo(); break;
     case 'pf-contato-cancelar': E.pfEditCont = false; desenharConteudo(); break;
     case 'pf-contato-salvar': E.pfEditCont = false; pfSalvarFicha({ proximoContato: { data: $('#pfData')?.value || null, hora: $('#pfHora')?.value || '', duracao: Number($('#pfDur')?.value) || 60, motivo: $('#pfMotivo')?.value || '' } }, 'Próximo contato salvo'); break;
