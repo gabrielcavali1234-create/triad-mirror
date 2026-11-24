@@ -118,6 +118,7 @@ export interface ConferenciaFatura {
     bateu: boolean | null;              // true só se TODAS as verificações possíveis bateram
     verificacoes: Verificacao[];
     observacao: string;
+    ajustes?: string[];                 // o que o sistema corrigiu sozinho antes de conferir (duplicados, linhas informativas)
 }
 
 const SYSTEM_PROMPT_FATURA = `Você é uma IA analista financeira especializada em FATURAS DE CARTÃO DE CRÉDITO brasileiras, trabalhando para uma consultoria financeira pessoal.
@@ -156,6 +157,13 @@ SEÇÕES — preencha "secao" em cada transação:
 - "internacional": "Lançamentos internacionais".
 - "produtos_servicos": "Lançamentos: produtos e serviços".
 - "encargos": quadro "Encargos cobrados nesta fatura" (juros do rotativo, juros de mora, multa por atraso, IOF de financiamento). Cada linha com valor vira UMA transação tipo "encargo" (o IOF de financiamento → tipo "iof"), com data = data de emissão e estabelecimento = nome do encargo. NÃO extraia a linha "Total de encargos".
+
+C6 BANK (e faturas no mesmo formato):
+- O quadro "Resumo da fatura" (Compras nacionais, Compras internacionais, "Anuidade diferenciada - Parcela 10/12", Tarifa de saque, Juros…) é RESUMO: não vira transação. A anuidade aparece de novo na lista do cartão; extraia só a de lá.
+- "Valores creditados" → "Pagamento antecipado (-) 0,30": transação tipo "pagamento", secao "pagamentos", e some em pagamentosEfetuados.
+- Linhas em destaque verde com ícone dentro da lista do cartão (ex: "Pagamento CDB") são informativas e NÃO entram no subtotal do cartão: não extraia.
+- "Saldo obrigações futuras" NÃO é totalProximasFaturas (inclui outros compromissos): deixe totalProximasFaturas vazio.
+- Os subtotais "Subtotal deste cartão R$ X" de cada bloco (C6 Carbon Final 1447, Cartão Virtual Final 5009…) vão em "cartoes", com o final.
 
 IGNORAR COMPLETAMENTE (não são lançamentos desta fatura):
 - "Compras parceladas - próximas faturas" (só leia dali os totais "Próxima fatura"/"Total para próximas faturas").
@@ -351,7 +359,8 @@ export function conferirFatura(f: ResultadoFatura): ConferenciaFatura {
     }
     add(verificar('Total dos lançamentos atuais', f.totalLancamentosAtuais, lancamentosAtuais, { alternativas: [lancamentosBrutos] }));
     add(verificar('Total de encargos', f.encargosTotal, encargosCalc));
-    add(verificar('Pagamentos efetuados', f.pagamentosEfetuados, pagamentosNasLinhas, { alternativas: [arred(pagamentosNasLinhas + creditos)] }));
+    // sem nenhuma linha de pagamento extraída não há o que comparar (o total já usa o valor impresso)
+    if (pagamentosNasLinhas > 0 || creditos > 0) add(verificar('Pagamentos efetuados', f.pagamentosEfetuados, pagamentosNasLinhas, { alternativas: [arred(pagamentosNasLinhas + creditos)] }));
     const vTotal = verificar('Total desta fatura', f.valorTotal, totalCalculado, { alternativas: [totalAlternativo] });
     add(vTotal);
     // Parcelas: o banco arredonda cada parcela; centavos de diferença são normais (tolerância R$ 1).
@@ -389,11 +398,56 @@ function corrigirAnoDasDatas(f: ResultadoFatura): ResultadoFatura {
     return { ...f, transacoes };
 }
 
-/** Passo final, depois de juntar os pedaços: corrige datas e roda a conferência. */
+const brl = (n: number) => 'R$ ' + n.toFixed(2).replace('.', ',');
+
+/**
+ * Correções automáticas antes de conferir — só quando os totais impressos provam o erro:
+ *  1. Anuidade lida duas vezes (do quadro de resumo e da lista do cartão): fica a do cartão.
+ *  2. Cartão cujo calculado passa do subtotal impresso exatamente pelo valor de UMA linha
+ *     com cara de crédito/informativa ("Pagamento CDB", "crédito", "pagamento"): a linha sai.
+ *  3. "Total para próximas faturas" do C6 ("Saldo obrigações futuras") não é só parcelas: não confere.
+ */
+export function limparFatura(f: ResultadoFatura): { fatura: ResultadoFatura; ajustes: string[] } {
+    const ajustes: string[] = [];
+    let ts = [...(f.transacoes || [])];
+    // 1. anuidade duplicada
+    const anuidades = ts.filter(t => t.tipo === 'anuidade');
+    for (const semCartao of anuidades.filter(t => !t.cartaoFinal)) {
+        const gemea = anuidades.find(o => o !== semCartao && o.cartaoFinal && Math.abs(o.valor - semCartao.valor) < 0.01
+            && (o.parcelaAtual ?? null) === (semCartao.parcelaAtual ?? null));
+        if (gemea && ts.includes(semCartao)) {
+            ts = ts.filter(t => t !== semCartao);
+            ajustes.push(`Anuidade de ${brl(semCartao.valor)} aparecia duas vezes (resumo e lista do cartão): contada uma vez só.`);
+        }
+    }
+    // 2. linha informativa que não entra no subtotal do cartão
+    const INFORMATIVA = /pagamento|cr[eé]dito|cdb|estorno|devolu/i;
+    for (const c of f.cartoes || []) {
+        if (c.subtotal == null || !c.final) continue;
+        const doCartao = ts.filter(t => t.secao === 'compras' && t.cartaoFinal === c.final);
+        const excesso = arred(somaAssinada(doCartao) - c.subtotal);
+        if (excesso <= TOLERANCIA) continue;
+        const alvo = doCartao.filter(t => valorAssinado(t) > 0 && Math.abs(t.valor - excesso) <= TOLERANCIA && INFORMATIVA.test(t.estabelecimento || ''));
+        if (alvo.length === 1) {
+            ts = ts.filter(t => t !== alvo[0]);
+            ajustes.push(`"${alvo[0].estabelecimento}" (${brl(alvo[0].valor)}) no cartão final ${c.final} é informativo e não entra no subtotal do banco: fora da conta.`);
+        }
+    }
+    let fatura: ResultadoFatura = { ...f, transacoes: ts };
+    // 3. C6: o "saldo de obrigações futuras" inclui mais do que parcelas
+    if (/\bC6\b/i.test(f.banco || '') && f.totalProximasFaturas != null) {
+        fatura = { ...fatura, totalProximasFaturas: undefined };
+        ajustes.push('O "Saldo obrigações futuras" do C6 inclui mais do que parcelas de compras: não foi usado na conferência.');
+    }
+    return { fatura, ajustes };
+}
+
+/** Passo final, depois de juntar os pedaços: corrige datas, limpa duplicados e roda a conferência. */
 export function finalizarFatura(f: ResultadoFatura): ResultadoFatura {
-    const corrigida = corrigirAnoDasDatas(f);
-    const conferencia = conferirFatura(corrigida);
-    return { ...corrigida, conferencia };
+    const { fatura, ajustes } = limparFatura(corrigirAnoDasDatas(f));
+    const conferencia = conferirFatura(fatura);
+    if (!ajustes.length) return { ...fatura, conferencia };
+    return { ...fatura, conferencia: { ...conferencia, ajustes, observacao: conferencia.observacao + ' Ajustes automáticos: ' + ajustes.join(' ') } };
 }
 
 function juntarPedacosFatura(resultados: ResultadoFatura[]): ResultadoFatura {
