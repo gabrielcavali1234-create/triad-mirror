@@ -14,6 +14,7 @@ export const TIPOS_OBJETIVO = ['reserva', 'dividas', 'viagem', 'carro', 'casa', 
 
 export interface Divida {
     tipo: typeof TIPOS_DIVIDA[number];
+    nome: string;                      // nome dado pela consultora (ex: "Empréstimo Itaú"); vazio = nome do tipo
     saldo: number | null;              // quanto falta pagar
     parcela: number | null;
     parcelasRestantes: number | null;
@@ -90,7 +91,7 @@ export function normalizarFicha(v: any, agora = new Date()): Ficha {
     const nascOk = nasc && nasc >= '1900-01-01' && nasc <= agora.toISOString().slice(0, 10) ? nasc : null;
     const dividas: Divida[] = (Array.isArray(v?.dividas) ? v.dividas : []).flatMap((d: any) => {
         const tipo = umDe(TIPOS_DIVIDA, d?.tipo);
-        return tipo ? [{ tipo, saldo: dinheiro(d?.saldo), parcela: dinheiro(d?.parcela), parcelasRestantes: inteiro(d?.parcelasRestantes, 600) }] : [];
+        return tipo ? [{ tipo, nome: texto(d?.nome, 60), saldo: dinheiro(d?.saldo), parcela: dinheiro(d?.parcela), parcelasRestantes: inteiro(d?.parcelasRestantes, 600) }] : [];
     }).slice(0, 8);
     const objetivos: Objetivo[] = (Array.isArray(v?.objetivos) ? v.objetivos : []).flatMap((o: any) => {
         const tipo = umDe(TIPOS_OBJETIVO, o?.tipo);

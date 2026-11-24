@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '23/11/2026 · Calendário financeiro';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '23/11/2026 · Nome das dívidas';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -849,7 +849,12 @@ main > div > .card[style*="padding:16px"]{border:0;border-top:2px solid var(--te
 .fc-dica{font-size:12px;color:var(--fraco);margin-top:4px;min-height:16px}
 .fc-erro{font-size:13px;color:var(--vermelho);margin-top:6px;font-weight:600}
 .fc-divida{margin-top:18px;max-width:680px}
-.fc-divida h3{font-family:"Public Sans",sans-serif;font-size:14px;font-weight:700;margin:0 0 8px}
+.fc-dv-cab{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--borda);margin-bottom:10px;padding-bottom:2px}
+.fc-dv-cab>.ti-pencil{color:var(--fraco);font-size:15px}
+.fc-dv-nome{flex:1;min-width:0;border:0!important;background:none!important;box-shadow:none!important;font:inherit;font-size:15px;font-weight:700;color:var(--texto);padding:6px 0!important}
+.fc-dv-nome:focus{outline:none}.fc-dv-cab:focus-within{border-color:var(--primaria)}.fc-dv-nome[aria-invalid="true"]::placeholder{color:var(--vermelho)}
+.fc-dv-x{border:0;background:none;color:var(--fraco);width:30px;height:30px;border-radius:50%;cursor:pointer;display:grid;place-items:center}.fc-dv-x:hover{background:var(--linha-hover);color:var(--vermelho)}
+.fc-chip-mais{border-style:dashed}
 .fc-objs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .fc-objc{border:1px solid var(--borda-forte);border-radius:4px;padding:16px;text-align:left;background:var(--branco);color:var(--texto)}
 .fc-objc:hover:not(:disabled){border-color:var(--texto)}
@@ -1252,7 +1257,8 @@ function desenharCliente() {
 // ════════════════════════════════════════════════════════════════════════
 const LANC_ABAS = ['tudo', 'conta', 'cartao'];
 const FORMA_RENDA_TXT = { clt: 'CLT', autonomo: 'Autônomo', empresario: 'Empresário', aposentado: 'Aposentado', outro: '' };
-const DIVIDA_TXT = { emprestimo: 'Empréstimo', veiculo: 'Financiamento do veículo', imobiliario: 'Financiamento imobiliário', consignado: 'Consignado', cheque_especial: 'Cheque especial', outro: 'Outra dívida' };
+const DIVIDA_TXT = { emprestimo: 'Empréstimo pessoal', veiculo: 'Financiamento de veículo', imobiliario: 'Financiamento imobiliário', consignado: 'Consignado', cheque_especial: 'Cheque especial', outro: 'Dívida' };
+const nomeDivida = d => String(d?.nome || '').trim() || DIVIDA_TXT[d?.tipo] || 'Dívida';
 const mesCurtoPf = k => /^\d{4}-\d{2}/.test(k || '') ? MESES_C[Number(k.slice(5, 7)) - 1] + '/' + k.slice(2, 4) : '';
 const mesNomePf = k => /^\d{4}-\d{2}/.test(k || '') ? MESES[Number(k.slice(5, 7)) - 1].toLowerCase() : '';
 const PF_CORES = ['var(--primaria)', '#3B7D5E', 'var(--cal-barra)', '#C9A227', 'var(--borda-forte)'];
@@ -1443,7 +1449,7 @@ function pfObjetivos() {
 
 function pfDividas() {
   const fi = E.cli.cliente.ficha || {}, Pp = E.cli.perfil?.parcelas, rot = E.cli.apuracao?.resumo?.endividamentoCartao;
-  const L = (fi.dividas || []).map(d => [DIVIDA_TXT[d.tipo] || 'Dívida', [d.saldo ? brl0(d.saldo) : '', d.parcela ? brl0(d.parcela) + (d.parcelasRestantes ? ' · ' + d.parcelasRestantes + 'x' : '') : ''].filter(Boolean).join(' · ') || '—']);
+  const L = (fi.dividas || []).map(d => [nomeDivida(d), [d.saldo ? brl0(d.saldo) : '', d.parcela ? brl0(d.parcela) + (d.parcelasRestantes ? ' · ' + d.parcelasRestantes + 'x' : '') : ''].filter(Boolean).join(' · ') || '—']);
   if (Pp?.totalRestante > 0) L.push(['Cartão parcelado', brl0(Pp.totalRestante) + (Pp.livreEm ? ' · até ' + mesCurtoPf(Pp.livreEm) : '')]);
   if (E.cli.documentos.some(d => d.tipo === 'fatura')) L.push(['Rotativo', rot?.emRotativo ? `<span class="pf-ruim">Sim${rot.encargos ? ' · ' + brl0(rot.encargos) + ' de juros' : ''}</span>` : '<span class="pf-bom">Nenhum</span>']);
   return `<div class="card"><div class="pf-t">Dívidas</div>${L.length ? L.map(([k, v]) => `<div class="pf-lin"><span>${esc(k)}</span><b class="num">${v}</b></div>`).join('') : `<p class="suave" style="margin:0">${fi.semDividas ? 'Cliente sem dívidas.' : 'Nenhuma dívida informada.'}</p>`}</div>`;
@@ -2054,7 +2060,7 @@ function iniciarSim() {
     reserva: { custo: custoVida || 4000, meses: cfg.mesesReserva || 6, ja: Math.round(cfg.reservaAtual ?? fi.reservaAtual ?? 0), mensal: 500 },
     divida: b.emRotativo && b.saldoRotativo > 0
       ? { saldo: Math.round(b.saldoRotativo), juros: b.saldoRotativo ? Math.min(20, Math.max(1, +(b.jurosMensal / b.saldoRotativo * 100).toFixed(1))) : 12, parcela: Math.round(Math.max(b.jurosMensal * 1.5, b.saldoRotativo / 10)), extra: 200, nome: 'Rotativo do cartão' }
-      : div ? { saldo: Math.round(div.saldo), juros: 2, parcela: Math.round(div.parcela || div.saldo / 24), extra: 200, nome: { emprestimo: 'Empréstimo', veiculo: 'Financiamento do veículo', imobiliario: 'Financiamento imobiliário', consignado: 'Consignado', cheque_especial: 'Cheque especial' }[div.tipo] || 'Dívida' }
+      : div ? { saldo: Math.round(div.saldo), juros: 2, parcela: Math.round(div.parcela || div.saldo / 24), extra: 200, nome: nomeDivida(div) }
       : { saldo: 5000, juros: 3, parcela: 400, extra: 200, nome: 'Dívida' },
     habito: { nome: hab?.categoria || 'Delivery', valor: Math.round(hab?.valor || 300), freq: 'mes' },
     parcela: { valor: 3000, vezes: 10 },
@@ -3298,7 +3304,7 @@ window.addEventListener('resize', () => { if (E.ap && $('#apSvg')) { clearTimeou
 const FC_PASSOS = ['Quem é', 'Renda e família', 'Dinheiro hoje', 'Objetivos'];
 const FC_RENDA = [['clt', 'CLT'], ['autonomo', 'Autônomo'], ['empresario', 'Empresário'], ['aposentado', 'Aposentado'], ['outro', 'Outro']];
 const FC_DEPEND = [[0, 'Nenhuma'], [1, '1'], [2, '2'], [3, '3 ou mais']];
-const FC_DIVIDAS = [['emprestimo', 'Empréstimo pessoal'], ['veiculo', 'Financiamento de veículo'], ['imobiliario', 'Financiamento imobiliário'], ['consignado', 'Consignado'], ['cheque_especial', 'Cheque especial'], ['outro', 'Outra dívida']];
+const FC_DIVIDAS = [['emprestimo', 'Empréstimo pessoal'], ['veiculo', 'Financiamento de veículo'], ['imobiliario', 'Financiamento imobiliário'], ['consignado', 'Consignado'], ['cheque_especial', 'Cheque especial']];
 const FC_OBJ = [['reserva', 'Reserva de emergência', 'Para imprevistos'], ['dividas', 'Sair das dívidas', 'Rotativo, empréstimos'], ['viagem', 'Viagem', 'Férias, intercâmbio'],
   ['carro', 'Carro', 'Troca ou primeiro carro'], ['casa', 'Casa própria', 'Entrada ou quitação'], ['aposentadoria', 'Aposentadoria', 'Viver de renda']];
 const fichaVazia = () => ({ nascimento: null, profissao: '', formaRenda: null, dependentes: null, outrasRendas: null, reservaAtual: null, semDividas: false, dividas: [], objetivos: [], lgpd: false, lgpdEm: null, cidade: '', obsRenda: '', obsDinheiro: '' });
@@ -3323,6 +3329,8 @@ async function telaFicha(id) {
     dados: { nome: c?.nome || '', cpf: c?.cpf || '', telefone: c?.telefone || '', email: c?.email || '', renda_declarada: c?.renda_declarada ?? null, observacao: c?.observacao || '' },
     f: { ...fichaVazia(), ...(c?.ficha || {}) }
   };
+  // dívidas sem nome ganham o nome do tipo (a "outra dívida" fica em branco para a consultora nomear)
+  E.ficha.f.dividas = (E.ficha.f.dividas || []).map(x => ({ ...x, nome: String(x.nome || '').trim() || (x.tipo === 'outro' ? '' : DIVIDA_TXT[x.tipo] || '') }));
   // ficha antiga (só o texto "objetivo"): vira um objetivo "outro" para não perder
   if (c?.objetivo && !E.ficha.f.objetivos.length) E.ficha.f.objetivos = [{ tipo: 'outro', descricao: c.objetivo.slice(0, 120), valor: null, prazo: null }];
   document.title = (c ? 'Ficha de ' + c.nome : 'Novo cliente') + ' — TRIAD Mirror';
@@ -3387,8 +3395,8 @@ function desenharFicha() {
      <p class="fc-apoio">Poupança, investimentos, dinheiro em conta separado. É o ponto de partida da sua reserva de emergência.</p>
      ${dinheiroIn('fcReserva', 'f.reservaAtual', f.reservaAtual, true, 'Quanto tem guardado')}
      <span class="fc-rot" id="rDv">Você tem alguma dessas dívidas fora do cartão?</span>
-     <div class="fc-chips" role="group" aria-labelledby="rDv">${FC_DIVIDAS.map(([v, t]) => chip('divida', v, t, f.dividas.some(x => x.tipo === v))).join('')}${chip('semDividas', 1, 'Nenhuma', f.semDividas)}</div>
-     ${f.dividas.map((x, k) => `<div class="fc-divida"><h3>${esc(FC_DIVIDAS.find(t => t[0] === x.tipo)?.[1] || 'Dívida')}</h3><div class="fc-g3">
+     <div class="fc-chips" role="group" aria-labelledby="rDv">${FC_DIVIDAS.map(([v, t]) => chip('divida', v, t, f.dividas.some(x => x.tipo === v))).join('')}<button type="button" class="fc-chip fc-chip-mais" data-acao="fc-div-nova"><i class="ti ti-plus"></i> Outra dívida (dar nome)</button>${chip('semDividas', 1, 'Nenhuma', f.semDividas)}</div>
+     ${f.dividas.map((x, k) => `<div class="fc-divida"><div class="fc-dv-cab"><i class="ti ti-pencil" aria-hidden="true"></i><input class="fc-dv-nome" id="dvN${k}" type="text" maxlength="60" data-fc="div.${k}.nome" value="${esc(x.nome || '')}" placeholder="Dê um nome: ex. Empréstimo com a família" aria-label="Nome da dívida" ${F.erroDiv === k ? 'aria-invalid="true"' : ''}><button type="button" class="fc-dv-x" data-acao="fc-div-remover" data-k="${k}" aria-label="Remover esta dívida" title="Remover"><i class="ti ti-x"></i></button></div>${F.erroDiv === k ? '<div class="fc-erro" role="alert">Dê um nome para esta dívida.</div>' : ''}<div class="fc-g3">
         <div><label class="rot" for="dvS${k}">Quanto falta pagar</label>${dinheiroIn('dvS' + k, `div.${k}.saldo`, x.saldo, false)}</div>
         <div><label class="rot" for="dvP${k}">Parcela</label>${dinheiroIn('dvP' + k, `div.${k}.parcela`, x.parcela, false)}</div>
         <div><label class="rot" for="dvR${k}">Parcelas restantes</label><input id="dvR${k}" type="number" min="0" max="600" inputmode="numeric" data-fc="div.${k}.parcelasRestantes" value="${x.parcelasRestantes ?? ''}"></div>
@@ -3444,6 +3452,7 @@ function atualizarCampoFicha(t, final) {
   else if (partes[0] === 'div') f.dividas[+partes[1]][partes[2]] = v;
   else if (partes[0] === 'obj') f.objetivos[+partes[1]][partes[2]] = partes[2] === 'prazo' ? (v || null) : v;
   else F.dados[campo] = v;
+  if (partes[0] === 'div' && partes[2] === 'nome' && F.erroDiv === +partes[1] && String(v).trim()) { F.erroDiv = null; t.removeAttribute('aria-invalid'); t.closest('.fc-divida')?.querySelector('.fc-erro')?.remove(); }
   if (campo === 'nome' && F.erro && String(v).trim()) { F.erro = ''; t.removeAttribute('aria-invalid'); $('#fcErro')?.remove(); }
   if (campo === 'f.nascimento') { const a = idadeDe(v); $('#fcIdade').textContent = a != null ? a + ' anos' : ''; }
   if (partes[0] === 'obj') { const r = $('#obR' + partes[1]); if (r) r.innerHTML = textoGuardar(f.objetivos[+partes[1]]); }
@@ -3458,10 +3467,16 @@ function fichaClique(a, el) {
     else if (campo === 'semDividas') { f.semDividas = !f.semDividas; if (f.semDividas) f.dividas = []; }
     else if (campo === 'divida') {
       const k = f.dividas.findIndex(x => x.tipo === raw);
-      if (k >= 0) f.dividas.splice(k, 1); else { f.dividas.push({ tipo: raw, saldo: null, parcela: null, parcelasRestantes: null }); f.semDividas = false; }
+      if (k >= 0) f.dividas.splice(k, 1); else { f.dividas.push({ tipo: raw, nome: DIVIDA_TXT[raw] || '', saldo: null, parcela: null, parcelasRestantes: null }); f.semDividas = false; }
+      F.erroDiv = null;
     }
     desenharFicha(); return;
   }
+  if (a === 'fc-div-nova') {
+    f.dividas.push({ tipo: 'outro', nome: '', saldo: null, parcela: null, parcelasRestantes: null }); f.semDividas = false; F.erroDiv = null;
+    desenharFicha(); setTimeout(() => $('#dvN' + (f.dividas.length - 1))?.focus(), 30); return;
+  }
+  if (a === 'fc-div-remover') { f.dividas.splice(+el.dataset.k, 1); F.erroDiv = null; desenharFicha(); return; }
   if (a === 'fc-obj') {
     const tipo = el.dataset.tipo, k = f.objetivos.findIndex(o => o.tipo === tipo);
     if (k >= 0) f.objetivos.splice(k, 1);
@@ -3477,6 +3492,8 @@ function fichaClique(a, el) {
 function irPassoFicha(n) {
   const F = E.ficha;
   if (n > 0 && F.passo === 0 && !F.dados.nome.trim()) { F.erro = 'Informe o nome do cliente para continuar.'; desenharFicha(); return; }
+  if (n > F.passo && F.passo === 2) { const k = F.f.dividas.findIndex(x => !String(x.nome || '').trim()); if (k >= 0) { F.erroDiv = k; desenharFicha(); setTimeout(() => $('#dvN' + k)?.focus(), 30); return; } }
+  F.erroDiv = null;
   F.passo = Math.max(0, Math.min(3, n)); F.erro = '';
   desenharFicha(); window.scrollTo(0, 0);
 }
@@ -3484,6 +3501,7 @@ function irPassoFicha(n) {
 async function salvarFicha(sair) {
   const F = E.ficha, d = F.dados;
   if (!d.nome.trim()) { F.passo = 0; F.erro = 'Informe o nome do cliente.'; desenharFicha(); return; }
+  { const k = F.f.dividas.findIndex(x => !String(x.nome || '').trim()); if (k >= 0) { F.passo = 2; F.erroDiv = k; desenharFicha(); setTimeout(() => $('#dvN' + k)?.focus(), 30); return; } }
   if (d.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) { F.passo = 0; desenharFicha(); toast('E-mail inválido. Confira no passo 1.', true); $('#fcEmail')?.focus(); return; }
   const objetivosTxt = F.f.objetivos.map(o => o.descricao || FC_OBJ.find(t => t[0] === o.tipo)?.[1]).filter(Boolean).join(', ');
   const corpo = { ...d, nome: d.nome.trim(), objetivo: objetivosTxt || null, ficha: F.f };
@@ -3702,7 +3720,7 @@ document.addEventListener('click', async ev => {
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/perfil'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;
     case 'editar-perfil': location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
-    case 'fc-chip': case 'fc-obj': case 'fc-passo': case 'fc-voltar': case 'fc-seguir': case 'fc-concluir': fichaClique(a, el); break;
+    case 'fc-chip': case 'fc-obj': case 'fc-div-nova': case 'fc-div-remover': case 'fc-passo': case 'fc-voltar': case 'fc-seguir': case 'fc-concluir': fichaClique(a, el); break;
     case 'fechar-modal': fecharModal(); break;
     case 'menu-usuario': {
       if (document.querySelector('.menu-usuario')) { fecharMenus(); break; }
