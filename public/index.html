@@ -196,6 +196,14 @@ main > .card:has(.perfil){border:0;border-radius:0;border-bottom:2px solid var(-
 .pf-grade{display:grid;grid-template-columns:290px minmax(0,1fr) 290px;gap:14px;margin-top:14px;align-items:start}
 .pf-col{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
 .pf-col>.card,.pf-dupla>.card,.pf-col>.pf-kpis>.card,.pf-docs{padding:16px 18px}
+.cad-topo{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}.cad-topo p{margin:0}
+.cad-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}@media (max-width:1100px){.cad-grade{grid-template-columns:minmax(0,1fr)}}
+.cad-card{margin:0;padding:18px 20px}.cad-cab{display:flex;align-items:center;gap:10px;margin-bottom:10px}.cad-cab h3{margin:0;flex:1;font-size:16px}
+.cad-n{width:24px;height:24px;border-radius:50%;background:var(--botao);color:var(--botao-texto);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.cad-vazio{color:var(--fraco);font-weight:400;font-style:italic}
+.cad-obs{margin-top:10px;padding-top:10px;border-top:1px solid var(--borda2)}.cad-obs span{font-size:12px;color:var(--fraco)}.cad-obs p{margin:4px 0 0;white-space:pre-wrap;line-height:1.5}
+.cad-sub{font-size:12px;font-weight:600;color:var(--fraco);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px}
+.cad-item{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--borda2)}.cad-item:first-of-type{border-top:0}.cad-item span{font-size:13px;color:var(--suave)}
 .pf-t{font-size:12px;font-weight:600;color:var(--fraco);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
 .pf-t-flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .pf-leg{text-transform:none;letter-spacing:0;font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pf-leg i{width:10px;height:10px;display:inline-block;border-radius:2px;margin-left:6px}
@@ -1029,7 +1037,7 @@ async function rotear() {
   if (h === '#/cliente/novo') { E.ap = null; return telaFicha(null); }
   if (h === '#/agenda') { E.ap = null; return telaAgenda(); }
   if (h === '#/reunioes') { E.ap = null; return telaReunioesGeral(); }
-  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|docs|reunioes|simuladores|calendario|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
+  const m = h.match(/^#\/cliente\/([0-9a-f-]{36})(?:\/(perfil|cadastro|docs|reunioes|simuladores|calendario|conta|cartao|tudo|plano|apresentacao|ficha))?$/i);
   if (m) {
     if (!E.cli || E.cli.cliente.id !== m[1]) { E.mesSel = null; E.filtroCat = {}; E.busca = {}; E.sel = new Set(); E.planoEdit = null; }
     if (m[2] === 'apresentacao') return telaApresentacao(m[1]);
@@ -1236,7 +1244,7 @@ function desenharCliente() {
 
   E.chipsDocs = chipsDocs;
   if (LANC_ABAS.includes(E.aba)) E.ultLanc = E.aba;
-  const precisaDoc = !documentos.length && !['perfil', 'docs', 'reunioes', 'simuladores', 'calendario'].includes(E.aba);
+  const precisaDoc = !documentos.length && !['perfil', 'cadastro', 'docs', 'reunioes', 'simuladores', 'calendario'].includes(E.aba);
   $('#app').innerHTML = topo(salvoTxt()) + `<div class="cli-wrap">${colunaCliente()}<main>
     ${cabecalhoPerfil()}
     ${LANC_ABAS.includes(E.aba) && documentos.length ? `
@@ -1299,7 +1307,7 @@ function cabecalhoPerfil() {
       <div class="pf-nome"><h1>${esc(c.nome)}</h1><div class="suave">${info || 'Complete a ficha para ver profissão, idade e cidade aqui'}</div></div>
       <div class="pf-botoes">
         ${fone ? `<a class="btn" href="https://wa.me/${fone.length <= 11 ? '55' + fone : fone}" target="_blank" rel="noopener" style="text-decoration:none"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>` : ''}
-        <button class="btn" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha</button>
+        <a class="btn" href="#/cliente/${c.id}/cadastro" style="text-decoration:none"><i class="ti ti-id-badge-2"></i> Ficha</a>
         <button class="btn ${c.app_publicado_em ? '' : 'primario'}" data-acao="app-cliente"><i class="ti ti-device-mobile"></i> ${c.app_publicado_em ? 'App do cliente' : 'Gerar app do cliente'}</button>
       </div>
     </div>
@@ -1750,6 +1758,7 @@ function colunaCliente() {
       <div class="cc-pills">${P?.nota ? `<span class="pill verde">Nota ${P.nota.valor}</span>` : ''}${concluida ? '<span class="pill verde">Concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}</div></div>
     <nav class="cc-abas">
       ${aba('perfil', 'perfil', 'ti-layout-grid', 'Visão geral', '')}
+      ${aba('cadastro', 'cadastro', 'ti-id-badge-2', 'Ficha cadastral', '')}
       ${aba('lanc', LANC_ABAS.includes(E.ultLanc) ? E.ultLanc : 'tudo', 'ti-list-details', 'Lançamentos', documentos.length ? nLanc : '')}
       ${aba('docs', 'docs', 'ti-file-text', 'Documentos', (documentos.length + (E.cli.arquivos || []).length) || '')}
       ${aba('plano', 'plano', 'ti-target-arrow', 'Plano', '')}
@@ -1762,7 +1771,6 @@ function colunaCliente() {
     <button class="cc-acao" data-acao="novo-doc"><i class="ti ti-upload"></i> Enviar documento</button>
     <button class="cc-acao" data-acao="ata-nova"><i class="ti ti-plus"></i> Nova ata</button>
     ${documentos.length ? `<button class="cc-acao" data-acao="excel"><i class="ti ti-table-export"></i> Exportar planilha</button>` : ''}
-    <button class="cc-acao" data-acao="editar-perfil"><i class="ti ti-user-edit"></i> Ficha do cliente</button>
     ${documentos.length ? (concluida ? '<button class="cc-acao" data-acao="status" data-status="aberta"><i class="ti ti-arrow-back-up"></i> Reabrir análise</button>' : '<button class="cc-acao cc-forte" data-acao="status" data-status="concluida"><i class="ti ti-check"></i> Concluir análise</button>') : ''}
   </aside>`;
 }
@@ -2190,6 +2198,37 @@ function salvarFormCal() {
   cfg.ajustes[id] = a; salvarCal(cfg, 'Calendário atualizado');
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// FICHA CADASTRAL — tudo o que foi cadastrado, em leitura, com "Alterar" em
+// cada parte (abre a ficha direto naquele passo).
+// ════════════════════════════════════════════════════════════════════════
+function abaCadastro() {
+  const c = E.cli.cliente, f = { ...fichaVazia(), ...(c.ficha || {}) };
+  const vazio = '<span class="cad-vazio">Não informado</span>';
+  const v = x => (x == null || x === '' ? vazio : esc(String(x)));
+  const din = n => n == null ? vazio : brl(n);
+  const lin = (rot, val) => `<div class="pf-lin"><span>${rot}</span><b>${val}</b></div>`;
+  const obs = t => t ? `<div class="cad-obs"><span>Observações</span><p>${esc(t)}</p></div>` : '';
+  const idade = idadeDe(f.nascimento);
+  const card = (k, titulo, corpo) => `<section class="card cad-card"><div class="cad-cab"><span class="cad-n">${k + 1}</span><h3>${titulo}</h3>
+      <button class="btn" data-acao="cad-editar" data-p="${k}"><i class="ti ti-pencil"></i> Alterar</button></div>${corpo}</section>`;
+  const mesAno = m => /^\d{4}-\d{2}$/.test(m || '') ? MESES_C[+m.slice(5, 7) - 1] + '/' + m.slice(0, 4) : vazio;
+  const dividas = f.dividas.length
+    ? f.dividas.map(d => `<div class="cad-item"><b>${esc(nomeDivida(d))}</b><span>${d.saldo != null ? 'Falta ' + brl(d.saldo) : 'Saldo não informado'}${d.parcela != null ? ' · parcela ' + brl(d.parcela) : ''}${d.parcelasRestantes != null ? ' · ' + d.parcelasRestantes + ' restantes' : ''}</span></div>`).join('')
+    : `<p class="cad-vazio" style="margin:6px 0 0">${f.semDividas ? 'Nenhuma dívida fora do cartão.' : 'Nenhuma dívida informada.'}</p>`;
+  const objetivos = f.objetivos.length
+    ? f.objetivos.map(o => `<div class="cad-item"><b>${esc(o.descricao || FC_OBJ.find(t => t[0] === o.tipo)?.[1] || 'Objetivo')}</b><span>${o.valor != null ? brl(o.valor) : 'Valor não informado'} · ${o.prazo ? 'até ' + mesAno(o.prazo) : 'sem prazo'}</span></div>`).join('')
+    : '<p class="cad-vazio" style="margin:6px 0 0">Nenhum objetivo escolhido.</p>';
+  return `<div class="cad-topo"><div><h2 class="sm-h">Ficha cadastral</h2><p class="suave">Os dados cadastrados de ${esc(c.nome.split(' ')[0])}. Use "Alterar" em cada parte para corrigir ou completar.</p></div>
+      <button class="btn primario" data-acao="cad-editar" data-p="0"><i class="ti ti-edit"></i> Alterar ficha completa</button></div>
+    <div class="cad-grade">
+      ${card(0, 'Quem é', lin('Nome', v(c.nome)) + lin('Nascimento', f.nascimento ? f.nascimento.split('-').reverse().join('/') + (idade != null ? ` (${idade} anos)` : '') : vazio) + lin('WhatsApp', v(c.telefone)) + lin('CPF', v(c.cpf)) + lin('E-mail', v(c.email)) + lin('Profissão', v(f.profissao)) + lin('Cidade', v(f.cidade)) + obs(c.observacao))}
+      ${card(1, 'Renda e família', lin('Renda líquida por mês', din(c.renda_declarada)) + lin('Outras rendas por mês', din(f.outrasRendas)) + lin('Recebe como', v(FC_RENDA.find(t => t[0] === f.formaRenda)?.[1])) + lin('Dependentes', f.dependentes == null ? vazio : esc(FC_DEPEND.find(t => t[0] === f.dependentes)?.[1] || String(f.dependentes))) + obs(f.obsRenda))}
+      ${card(2, 'Dinheiro hoje', lin('Guardado (reserva)', din(f.reservaAtual)) + '<div class="cad-sub">Dívidas fora do cartão</div>' + dividas + obs(f.obsDinheiro))}
+      ${card(3, 'Objetivos', objetivos + '<div style="margin-top:10px">' + lin('LGPD', f.lgpd ? `<span class="pf-bom">Autorizado${f.lgpdEm ? ' em ' + f.lgpdEm.slice(0, 10).split('-').reverse().join('/') : ''}</span>` : '<span class="pf-ruim">Não autorizado</span>') + '</div>')}
+    </div>`;
+}
+
 function abaSimuladores() {
   if (!E.sim || E.sim.cli !== E.cli.cliente.id) iniciarSim();
   const S = E.sim;
@@ -2416,6 +2455,7 @@ function desenharConteudo() {
   else if (E.aba === 'docs') { el.innerHTML = abaDocs(); ligarDocs(); }
   else if (E.aba === 'reunioes') el.innerHTML = abaReunioes();
   else if (E.aba === 'simuladores') { el.innerHTML = abaSimuladores(); ligarSim(); }
+  else if (E.aba === 'cadastro') el.innerHTML = abaCadastro();
   else if (E.aba === 'calendario') el.innerHTML = abaCalendario();
   else if (E.aba === 'conta') el.innerHTML = abaConta();
   else if (E.aba === 'cartao') el.innerHTML = abaCartao();
@@ -3325,8 +3365,9 @@ async function telaFicha(id) {
     }
     c = E.cli.cliente;
   }
+  const passoIni = Math.min(3, Math.max(0, E.fichaPasso || 0)); E.fichaPasso = 0;
   E.ficha = {
-    id: c?.id || null, passo: 0, erro: '',
+    id: c?.id || null, passo: c ? passoIni : 0, erro: '',
     dados: { nome: c?.nome || '', cpf: c?.cpf || '', telefone: c?.telefone || '', email: c?.email || '', renda_declarada: c?.renda_declarada ?? null, observacao: c?.observacao || '' },
     f: { ...fichaVazia(), ...(c?.ficha || {}) }
   };
@@ -3420,7 +3461,7 @@ function desenharFicha() {
     <header class="fc-topo">
       <div class="logo"><img src="/img/logo-dees-destaque.png" alt="Dees" class="logo-img logo-tema-claro"><img src="/img/logo-dees-claro.png" alt="Dees" class="logo-img logo-tema-escuro"></div>
       <div class="dir"><span class="fc-quem">${nomeTopo}${analista ? ' · com ' + esc(analista) : ''}</span>${botaoTema()}
-        ${F.id ? '<button class="btn" type="button" data-acao="fc-concluir" data-sair="1">Salvar e sair</button>' : ''}
+        ${F.id ? '<button class="btn primario" type="button" data-acao="fc-concluir" data-sair="1"><i class="ti ti-check"></i> Salvar alterações</button>' : ''}
         <a class="btn" href="${F.id ? '#/cliente/' + F.id + '/' + (E.aba || 'perfil') : '#/clientes'}" style="text-decoration:none">${F.id ? 'Fechar' : 'Cancelar'}</a></div>
     </header>
     <ol class="fc-passos">${FC_PASSOS.map((t, k) => `<li><button type="button" data-acao="fc-passo" data-p="${k}" class="${k < p ? 'feito' : k === p ? 'atual' : ''}" ${k === p ? 'aria-current="step"' : ''}><b>Passo ${k + 1}</b>${t}</button></li>`).join('')}</ol>
@@ -3721,6 +3762,7 @@ document.addEventListener('click', async ev => {
     case 'abrir-cliente': location.hash = '#/cliente/' + id + '/perfil'; break;
     case 'novo-cliente': location.hash = '#/cliente/novo'; break;
     case 'editar-perfil': location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
+    case 'cad-editar': E.fichaPasso = +el.dataset.p || 0; location.hash = '#/cliente/' + E.cli.cliente.id + '/ficha'; break;
     case 'fc-chip': case 'fc-obj': case 'fc-div-nova': case 'fc-div-remover': case 'fc-passo': case 'fc-voltar': case 'fc-seguir': case 'fc-concluir': fichaClique(a, el); break;
     case 'fechar-modal': fecharModal(); break;
     case 'menu-usuario': {
