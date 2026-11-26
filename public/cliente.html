@@ -347,7 +347,8 @@ function visu3(ms, at, pa) {
   const corPilar = { ok: 'var(--p-fundo)', atencao: 'var(--am-fundo)', ruim: 'var(--v-fundo)' }, simb = { ok: '✓', atencao: '!', ruim: '✕' };
   return `${nt ? `<div class="card" style="margin-top:0"><div class="score"><span class="sn">${nt.valor}<small>/100</small></span><div><b style="font-size:16px">${esc(nt.rotulo)}${nt.anterior != null && nt.valor > nt.anterior ? ', e melhorando' : ''}</b>
       <p class="at" style="margin:4px 0 0">${nt.anterior == null ? 'Primeira avaliação. Vamos acompanhar a cada mês.' : nt.valor > nt.anterior ? `Era ${nt.anterior}. Subiu ${nt.valor - nt.anterior} pontos desde a última atualização.` : nt.valor < nt.anterior ? `Era ${nt.anterior}. Caiu ${nt.anterior - nt.valor} pontos desde a última atualização.` : 'Igual à última atualização.'}</p></div></div>
-      <div class="pil">${nt.pilares.map(p => `<div style="background:${corPilar[p.status]}"><b>${esc(p.nome)} ${simb[p.status]}</b>${esc(p.texto)}</div>`).join('')}</div></div>` : ''}
+      <div class="pil">${nt.pilares.map(p => `<div style="background:${corPilar[p.status]}"><b>${esc(p.nome)} ${p.faixa ? '· ' + esc(p.faixa) : simb[p.status]}</b>${p.valor ? `<span style="font-weight:700">${esc(p.valor)}</span> · ` : ''}${esc(p.texto)}</div>`).join('')}</div>
+      ${nt.passo ? `<p class="at" style="margin:10px 0 0">Para chegar à faixa <b>${esc(nt.passo.faixa)}</b>: ${esc(nt.passo.texto)}.</p>` : ''}</div>` : ''}
     ${ms.length > 1 ? `<h2>Mês a mês</h2><div class="spark3">
       ${at.semRenda ? '' : `<div><small>Entrou</small><b class="num">${brl0(at.entrou)}</b>${sparkSVG(ms.map(m => m.entrou), 'var(--s)')}</div>`}
       <div><small>Gastou</small><b class="num">${brl0(at.gastou)}</b>${sparkSVG(ms.map(m => m.gastou), 'var(--v)')}</div>

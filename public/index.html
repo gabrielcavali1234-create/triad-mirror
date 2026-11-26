@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF">
 <script>
-const VERSAO_SISTEMA = '26/11/2026 · Ficha cadastral';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
+const VERSAO_SISTEMA = '26/11/2026 · Nova saúde financeira';try{var t=localStorage.getItem('mirror.tema');if(t==="escuro"||t==="claro")document.documentElement.dataset.tema=t}catch(e){}</script>
 <title>TRIAD Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -213,6 +213,20 @@ main > .card:has(.perfil){border:0;border-radius:0;border-bottom:2px solid var(-
 .pf-anel{position:relative;width:150px;height:150px;margin:2px auto 6px}.pf-anel div{position:absolute;inset:0;display:grid;place-items:center;align-content:center}.pf-anel b{font-family:var(--serif);font-size:40px;font-weight:500;line-height:1}.pf-anel small{color:var(--fraco)}
 .pf-centro{text-align:center;font-size:13px;font-weight:600;margin-bottom:14px}
 .pf-pilares{display:grid;gap:10px}
+:root{--nota-delicada:#C2483A;--nota-atencao:#D9A400;--nota-boa:#4E9C76;--nota-otima:#1F8A57}
+.sn-regua-box{position:relative;padding-top:34px;margin-top:4px}
+.sn-regua{display:flex;height:12px;border-radius:6px;overflow:hidden}.sn-regua i{display:block;height:100%}
+.sn-mk{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}.sn-mk b{font-family:var(--serif);font-size:26px;line-height:1;font-weight:500}
+.sn-mk::after{content:"";width:2px;height:22px;background:var(--texto);margin-top:2px;border-radius:1px}
+.sn-faixas{display:flex;font-size:11px;color:var(--fraco);margin-top:6px}.sn-faixas span{text-align:center}.sn-faixas span.on{color:var(--texto);font-weight:700}
+.sn-delta{font-size:12.5px;margin-top:10px;text-align:center}
+.sn-parte{padding:10px 0;border-top:1px solid var(--borda2)}.sn-parte:first-of-type{border-top:0}
+.sn-cab{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}.sn-cab span{font-size:12px;font-weight:700}
+.sn-mini{position:relative;height:6px;border-radius:3px;background:var(--borda2);margin:7px 0 6px}.sn-mini i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.sn-mini u{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--borda-forte)}
+.sn-rod{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--suave)}.sn-rod b{color:var(--texto);white-space:nowrap;font-weight:600}
+.sn-passo{margin-top:12px;background:var(--botao-fundo);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.45}.sn-passo b{font-weight:700}
+.sn-nota{font-size:11.5px;color:var(--fraco);margin:10px 0 0;line-height:1.45}
 .pf-bom{color:var(--primaria-texto)}.pf-ruim{color:var(--vermelho)}.pf-atencao{color:#8A6D00}
 .pf-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .pf-kpi small{display:block;color:var(--fraco);font-size:12px}.pf-kpi b{font-size:21px;font-weight:600;display:block;margin:2px 0}.pf-d{font-size:12px}
@@ -1317,15 +1331,26 @@ function cabecalhoPerfil() {
 }
 
 // ── blocos da visão geral
+const FAIXAS_NOTA = [[0, 40, 'Delicada', 'var(--nota-delicada)'], [40, 60, 'Atenção', 'var(--nota-atencao)'], [60, 80, 'Boa', 'var(--nota-boa)'], [80, 100, 'Ótima', 'var(--nota-otima)']];
+const faixaNota = n => FAIXAS_NOTA.find(f => n < f[1]) || FAIXAS_NOTA[3];
 function pfNota() {
   const N = E.cli.perfil?.nota; if (!N) return '';
-  const r = 50, C = 2 * Math.PI * r, d = N.valor / 100 * C;
   const delta = N.anterior != null ? N.valor - N.anterior : null;
-  return `<div class="card"><div class="pf-t">Saúde financeira</div>
-    <div class="pf-anel"><svg viewBox="0 0 120 120" width="150" height="150" aria-hidden="true"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--borda2)" stroke-width="11"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--primaria)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${d.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/></svg>
-      <div><b>${N.valor}</b><small>${esc(N.rotulo)}</small></div></div>
-    <div class="pf-centro ${delta > 0 ? 'pf-bom' : delta < 0 ? 'pf-ruim' : 'fraco'}">${delta == null ? 'Nota de 0 a 100' : delta === 0 ? 'Igual à última publicação' : `${delta > 0 ? '▲' : '▼'} ${Math.abs(delta)} pontos desde a última publicação`}</div>
-    <div class="pf-pilares">${N.pilares.map(p => `<div title="${esc(p.texto)}"><div class="pf-lin2"><span>${esc(p.nome)}</span><b class="num">${p.pontos}/25</b></div><div class="pf-barra"><i style="width:${p.pontos / 25 * 100}%;background:${p.status === 'ok' ? 'var(--primaria)' : p.status === 'atencao' ? '#C9A227' : 'var(--vermelho)'}"></i></div></div>`).join('')}</div>
+  const fx = faixaNota(N.valor);
+  const partes = N.pilares.map(p => {
+    const n = p.nota ?? Math.round((p.pontos || 0) * 4), f = faixaNota(n);
+    return `<div class="sn-parte"><div class="sn-cab"><b>${esc(p.nome)}</b><span style="color:${f[3]}">${f[2]}</span></div>
+      <div class="sn-mini"><i style="width:${Math.max(2, n)}%;background:${f[3]}"></i><u style="left:40%"></u><u style="left:60%"></u><u style="left:80%"></u></div>
+      <div class="sn-rod"><span>${esc(p.texto)}</span>${p.valor ? `<b>${esc(p.valor)}</b>` : ''}</div></div>`;
+  }).join('');
+  return `<div class="card sn"><div class="pf-t">Saúde financeira</div>
+    <div class="sn-regua-box"><div class="sn-mk" style="left:${Math.min(97, Math.max(3, N.valor))}%"><b>${N.valor}</b></div>
+      <div class="sn-regua">${FAIXAS_NOTA.map(f => `<i style="width:${f[1] - f[0]}%;background:${f[3]}"></i>`).join('')}</div>
+      <div class="sn-faixas">${FAIXAS_NOTA.map(f => `<span style="width:${f[1] - f[0]}%" class="${f === fx ? 'on' : ''}">${f[2]}</span>`).join('')}</div></div>
+    <div class="sn-delta ${delta > 0 ? 'pf-bom' : delta < 0 ? 'pf-ruim' : 'fraco'}">${delta == null ? 'Nota de 0 a 100' : delta === 0 ? 'Igual à última publicação do app' : `${delta > 0 ? '▲ subiu' : '▼ caiu'} ${Math.abs(delta)} desde a última publicação do app`}</div>
+    <div class="pf-t" style="margin-top:16px">Como está cada parte</div>${partes}
+    ${N.passo ? `<div class="sn-passo">Faltam <b>${Math.max(1, N.passo.alvo - N.valor)}</b> para a faixa <b>${esc(N.passo.faixa)}</b>: ${esc(N.passo.texto)}.</div>` : N.valor >= 80 ? '<div class="sn-passo">Nota na faixa mais alta. O trabalho agora é manter.</div>' : ''}
+    <p class="sn-nota">A nota geral é uma média das quatro partes. Sobra e reserva pesam mais, porque são o que protege o cliente de um imprevisto.</p>
   </div>`;
 }
 
@@ -1755,7 +1780,7 @@ function colunaCliente() {
     <a href="#/clientes" class="cc-volta"><i class="ti ti-chevron-left"></i> Clientes</a>
     <div class="cc-id"><span class="cc-foto">${esc(iniciais(c.nome))}</span><b>${esc(c.nome)}</b>
       <small>${[fi.profissao ? esc(fi.profissao) : '', idade != null ? idade + ' anos' : ''].filter(Boolean).join(' · ') || '&nbsp;'}</small>
-      <div class="cc-pills">${P?.nota ? `<span class="pill verde">Nota ${P.nota.valor}</span>` : ''}${concluida ? '<span class="pill verde">Concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}</div></div>
+      <div class="cc-pills">${P?.nota ? `<span class="pill ${P.nota.valor >= 60 ? 'verde' : P.nota.valor >= 40 ? 'amarelo' : 'vermelho'}">Nota ${P.nota.valor}</span>` : ''}${concluida ? '<span class="pill verde">Concluída</span>' : documentos.length ? '<span class="pill amarelo">Em revisão</span>' : '<span class="pill cinza">Sem documentos</span>'}</div></div>
     <nav class="cc-abas">
       ${aba('perfil', 'perfil', 'ti-layout-grid', 'Visão geral', '')}
       ${aba('cadastro', 'cadastro', 'ti-id-badge-2', 'Ficha cadastral', '')}

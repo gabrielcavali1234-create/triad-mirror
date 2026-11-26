@@ -41,7 +41,19 @@ export interface NotaSaude {
     valor: number;                      // 0 a 100
     rotulo: string;                     // Ótima / Boa / Atenção / Delicada
     anterior: number | null;            // nota da publicação anterior
-    pilares: { nome: string; pontos: number; status: 'ok' | 'atencao' | 'ruim'; texto: string }[];
+    faixa?: Faixa;
+    pilares: Pilar[];
+    passo?: { alvo: number; faixa: string; texto: string } | null;   // o que leva à próxima faixa
+}
+export type Faixa = 'Delicada' | 'Atenção' | 'Boa' | 'Ótima';
+export interface Pilar {
+    nome: string;
+    nota: number;                       // 0 a 100, mesma régua da nota geral
+    faixa: Faixa;
+    valor: string;                      // o número do cliente ("−R$ 1.738", "4% da renda")
+    texto: string;                      // explicação curta com a meta
+    status: 'ok' | 'atencao' | 'ruim';
+    pontos?: number;                    // legado (0 a 25), só para apps publicados antes
 }
 
 export interface HistoricoPublicacao { data: string; nota: number; sobra: number; juros: number; rotativo: boolean; metasConcluidas: string[] }
@@ -277,9 +289,14 @@ export function mesesDoCliente(lancamentos: Lancamento[], rendaDeclarada = 0): M
     });
 }
 
-// ─── Nota de saúde financeira (0 a 100, 4 pilares de 25) ────────────────
+// ─── Nota de saúde financeira ────────────────────────────────────────────
+// Cada parte tem uma nota de 0 a 100 (mesma régua e faixas da nota geral).
+// A nota geral é a média ponderada: sobra e reserva pesam mais, porque são o
+// que protege o cliente de um imprevisto.
 const limitar = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-const statusDe = (pontos: number): 'ok' | 'atencao' | 'ruim' => pontos >= 18 ? 'ok' : pontos >= 8 ? 'atencao' : 'ruim';
+export const PESOS_NOTA = { sobra: 0.35, reserva: 0.30, juros: 0.20, parcelas: 0.15 };
+export const faixaDe = (n: number): Faixa => n >= 80 ? 'Ótima' : n >= 60 ? 'Boa' : n >= 40 ? 'Atenção' : 'Delicada';
+const statusDe = (n: number): 'ok' | 'atencao' | 'ruim' => n >= 60 ? 'ok' : n >= 40 ? 'atencao' : 'ruim';
 const pct = (v: number) => Math.round(v * 100);
 
 /**
@@ -294,23 +311,50 @@ export function notaSaude(e: { base: BasePlano; plano: PlanoConfig; atual: MesCl
     const sobra = e.atual ? e.atual.sobra : e.base.rendaMensal - e.base.custoVidaEstimado;
     const juros = e.atual ? e.atual.juros : (e.base.emRotativo ? e.base.jurosMensal : 0);
     const custo = e.base.custoVidaEstimado || 1;
-    const pSobra = renda > 0 ? limitar((sobra / renda) / 0.15, 0, 1) * 25 : 0;
-    const pJuros = juros <= 0.5 ? 25 : renda > 0 && juros / renda <= 0.01 ? 12 : 0;
+    const metaMeses = e.plano.mesesReserva || 6;
+    const nSobra = renda > 0 ? limitar((sobra / renda) / 0.15, 0, 1) * 100 : 0;
+    const nJuros = juros <= 0.5 ? 100 : renda > 0 && juros / renda <= 0.01 ? 50 : 0;
     const fracParc = renda > 0 ? e.proximaParcela / renda : 1;
-    const pParc = limitar((0.5 - fracParc) / 0.4, 0, 1) * 25;
+    const nParc = limitar((0.5 - fracParc) / 0.4, 0, 1) * 100;
     const mesesGuardados = e.plano.reservaAtual / custo;
-    const pRes = limitar(mesesGuardados / (e.plano.mesesReserva || 6), 0, 1) * 25;
-    const valor = Math.round(pSobra + pJuros + pParc + pRes);
+    const nRes = limitar(mesesGuardados / metaMeses, 0, 1) * 100;
+    const P = PESOS_NOTA;
+    const bruto = nSobra * P.sobra + nRes * P.reserva + nJuros * P.juros + nParc * P.parcelas;
+    const valor = Math.round(bruto);
     const fmt = (n: number) => n.toFixed(1).replace('.', ',').replace(',0', '');
+    const reais = (n: number) => (n < 0 ? '−' : '') + 'R$ ' + Math.round(Math.abs(n)).toLocaleString('pt-BR');
+    const pil = (nome: string, n: number, valor: string, texto: string): Pilar =>
+        ({ nome, nota: Math.round(n), faixa: faixaDe(n), valor, texto, status: statusDe(n), pontos: Math.round(n / 4) });
+
+    // próximo passo: quanto falta para a próxima faixa, pelo caminho mais direto (sobra; se não der, reserva)
+    let passo: NotaSaude['passo'] = null;
+    const alvo = valor < 40 ? 40 : valor < 60 ? 60 : valor < 80 ? 80 : null;
+    if (alvo != null && renda > 0) {
+        const falta = alvo - bruto;
+        const nSobraNec = nSobra + falta / P.sobra;
+        if (nSobraNec <= 100) {
+            const sobraNec = Math.ceil((nSobraNec / 100) * 0.15 * renda / 10) * 10;
+            passo = { alvo, faixa: faixaDe(alvo), texto: `sobrar ${reais(sobraNec)} por mês já leva a nota para ${alvo}` };
+        } else {
+            const nResNec = nRes + (falta - (100 - nSobra) * P.sobra) / P.reserva;
+            if (nResNec <= 100) {
+                const mesesNec = (nResNec / 100) * metaMeses;
+                passo = { alvo, faixa: faixaDe(alvo), texto: `sobrar 15% da renda e juntar ${reais(mesesNec * custo)} de reserva leva a nota para ${alvo}` };
+            }
+        }
+    }
     return {
         valor,
-        rotulo: valor >= 80 ? 'Ótima' : valor >= 60 ? 'Boa' : valor >= 40 ? 'Atenção' : 'Delicada',
+        rotulo: faixaDe(valor),
+        faixa: faixaDe(valor),
         anterior: e.anterior,
+        passo,
         pilares: [
-            { nome: 'Sobra', pontos: Math.round(pSobra), status: statusDe(pSobra), texto: sobra >= 0 ? `${pct(renda ? sobra / renda : 0)}% da renda sobra no mês` : 'O mês fecha no vermelho' },
-            { nome: 'Juros', pontos: Math.round(pJuros), status: statusDe(pJuros), texto: juros <= 0.5 ? 'Sem juros do cartão' : `R$ ${Math.round(juros).toLocaleString('pt-BR')} de juros no mês` },
-            { nome: 'Parcelas', pontos: Math.round(pParc), status: statusDe(pParc), texto: e.proximaParcela ? `${pct(fracParc)}% da renda na próxima fatura` : 'Sem parcelas pela frente' },
-            { nome: 'Reserva', pontos: Math.round(pRes), status: statusDe(pRes), texto: `${fmt(mesesGuardados)} de ${e.plano.mesesReserva || 6} meses guardados` }
+            pil('Sobra do mês', nSobra, sobra >= 0 ? `${pct(renda ? sobra / renda : 0)}% da renda` : reais(sobra),
+                sobra >= 0 ? `Sobra ${reais(sobra)} no mês. Meta: sobrar 15%` : 'Saiu mais do que entrou. Meta: sobrar 15%'),
+            pil('Reserva de emergência', nRes, `${fmt(mesesGuardados)} de ${metaMeses} meses`, `Meta: ${metaMeses} meses de custo de vida guardados`),
+            pil('Juros do cartão', nJuros, reais(Math.max(0, juros)), juros <= 0.5 ? 'Nenhum juro ou encargo no mês' : 'Juros e encargos no mês. Meta: zero'),
+            pil('Parcelas', nParc, e.proximaParcela ? `${pct(fracParc)}% da renda` : 'nenhuma', e.proximaParcela ? 'Na próxima fatura. Meta: até 10%' : 'Sem parcelas pela frente')
         ]
     };
 }
